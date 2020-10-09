@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>不编译apk直接在android上部署tvm编译结果 | mjblog</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="技术路线理论上android就是一个linux内核加用户态库。因此tvm部署模型到android并不一定需要做一个apk，只需构建一个elf程序提供rpc的功能就可以了。查看到https:&#x2F;&#x2F;github.com&#x2F;apache&#x2F;incubator-tvm&#x2F;pull&#x2F;4281，tvm主线已经添加了c++版本的rpc实现。因此，可以使用android ndk中的工具链编译tvm rpc c++实现，绕">
+<meta property="og:type" content="article">
+<meta property="og:title" content="不编译apk直接在android上部署tvm编译结果">
+<meta property="og:url" content="http://mjblog.github.io/2020/05/18/tvm_android_deploy/index.html">
+<meta property="og:site_name" content="mjblog">
+<meta property="og:description" content="技术路线理论上android就是一个linux内核加用户态库。因此tvm部署模型到android并不一定需要做一个apk，只需构建一个elf程序提供rpc的功能就可以了。查看到https:&#x2F;&#x2F;github.com&#x2F;apache&#x2F;incubator-tvm&#x2F;pull&#x2F;4281，tvm主线已经添加了c++版本的rpc实现。因此，可以使用android ndk中的工具链编译tvm rpc c++实现，绕">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2020-05-18T03:24:26.000Z">
+<meta property="article:modified_time" content="2020-08-08T09:04:08.560Z">
+<meta property="article:author" content="Ma Jiang">
+<meta property="article:tag" content="AI">
+<meta name="twitter:card" content="summary">
+  
+    <link rel="alternate" href="/atom.xml" title="mjblog" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+  
+
+<meta name="generator" content="Hexo 4.2.1"></head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">mjblog</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="搜索"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://mjblog.github.io"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-tvm_android_deploy" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2020/05/18/tvm_android_deploy/" class="article-date">
+  <time datetime="2020-05-18T03:24:26.000Z" itemprop="datePublished">2020-05-18</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      不编译apk直接在android上部署tvm编译结果
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h1 id="技术路线"><a href="#技术路线" class="headerlink" title="技术路线"></a>技术路线</h1><p>理论上android就是一个linux内核加用户态库。因此tvm部署模型到android并不一定需要做一个apk，只需构建一个elf程序提供rpc的功能就可以了。<br>查看到<a href="https://github.com/apache/incubator-tvm/pull/4281，tvm主线已经添加了c++版本的rpc实现。" target="_blank" rel="noopener">https://github.com/apache/incubator-tvm/pull/4281，tvm主线已经添加了c++版本的rpc实现。</a><br>因此，可以使用android ndk中的工具链编译tvm rpc c++实现，绕开复杂且不必要的android apk构建(当然有一个可能的问题是，由于android的权限管控，编译好的程序在非root情况下可能无法启动。本次是在android7.1上/data/local/tmp目录可以用于执行)。</p>
+<h1 id="编译构建"><a href="#编译构建" class="headerlink" title="编译构建"></a>编译构建</h1><p>根据手机型号(坚果pro)和android版本7.1.1，下载android-ndk-r21并选择aarch64-linux-android24-clang++作为交叉编译器。</p>
+<h2 id="tvm创建build目录并编辑config-make"><a href="#tvm创建build目录并编辑config-make" class="headerlink" title="tvm创建build目录并编辑config.make"></a>tvm创建build目录并编辑config.make</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">在tvm目录下</span><br><span class="line">mkdir build_arm64</span><br><span class="line">cd  build_arm64</span><br><span class="line">cp ..&#x2F;config.make .&#x2F;</span><br></pre></td></tr></table></figure>
+<p>为了支持rpc和gpu运算，编辑config.make确保下面两项正确。其中vulkan的设置目录dep_dirs会在后面的步骤中配置好。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"># Whether enable RPC runtime</span><br><span class="line">set(USE_RPC ON)</span><br><span class="line">set(USE_VULKAN &#x2F;home&#x2F;majiang&#x2F;hd&#x2F;opensource&#x2F;tvm&#x2F;build_arm64&#x2F;dep_dirs)</span><br></pre></td></tr></table></figure>
+
+<h2 id="构建交叉版本的spirv-tools"><a href="#构建交叉版本的spirv-tools" class="headerlink" title="构建交叉版本的spirv-tools"></a>构建交叉版本的spirv-tools</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">git <span class="built_in">clone</span> https://github.com/KhronosGroup/SPIRV-Tools.git</span><br><span class="line"><span class="built_in">cd</span> SPIRV-Tools/</span><br><span class="line">git <span class="built_in">clone</span> https://github.com/KhronosGroup/SPIRV-Headers.git external/spirv-headers</span><br><span class="line">mkdir build</span><br><span class="line"><span class="built_in">cd</span> build</span><br><span class="line">cmake .. -DCMAKE_CXX_COMPILER=<span class="string">"/home/majiang/hd/opensource/android_sdk/android-ndk-r21/toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android24-clang++"</span> -DCMAKE_C_COMPILER=<span class="string">"/home/majiang/hd/opensource/android_sdk/android-ndk-r21/toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android24-clang"</span></span><br><span class="line">make -j 8</span><br><span class="line">mkdir inst</span><br><span class="line">make install DESTDIR=`<span class="built_in">pwd</span>`/inst</span><br><span class="line"><span class="comment">#本来使用make  install-headers 应该更为标准，但是spirv-headers的makefile没有写好，其忽略了DESTDIR变量，直接把头文件拷贝到了/usr/local下。规避方案直接copy</span></span><br><span class="line">cp ../external/spirv-headers/include/* inst/usr/<span class="built_in">local</span>/include/ -r</span><br></pre></td></tr></table></figure>
+
+<h2 id="构建交叉版本的runtime"><a href="#构建交叉版本的runtime" class="headerlink" title="构建交叉版本的runtime"></a>构建交叉版本的runtime</h2><p>进入build_arm64目录<br>mkdir dep_dirs<br>cd dep_dirs/<br>mkdir include<br>cp ~/hd/opensource/android_sdk/android-ndk-r21/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/include/vulkan ./include -r<br>cp ~/hd/opensource/android_sdk/android-ndk-r21/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/lib/aarch64-linux-android/24 ./lib -r<br>cp ~/hd/opensource/android_sdk/spirv-tools/SPIRV-Tools/build/inst/usr/local/include/spirv-tools/ ./include/ -r<br>cp ~/hd/opensource/android_sdk/spirv-tools/SPIRV-Tools/build/inst/usr/local/lib/* ./lib/<br>#(可选的strip -g)<br> cp ~/hd/opensource/android_sdk/spirv-tools/SPIRV-Tools/external/spirv-headers/include/spirv/ ./include/ -r<br> cd ../<br> cmake .. -DCMAKE_CXX_COMPILER=”/home/majiang/hd/opensource/android_sdk/android-ndk-r21/toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android24-clang++” -DCMAKE_C_COMPILER=”/home/majiang/hd/opensource/android_sdk/android-ndk-r21/toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android24-clang”<br>(修改config.cmake 将修改 USE_VULKAN指向 dep_dirs set(USE_VULKAN /.xxx…/tvm/build_arm64/dep_dirs))<br>make runtime -j8</p>
+<h2 id="构建cpp版本的rpc服务程序"><a href="#构建cpp版本的rpc服务程序" class="headerlink" title="构建cpp版本的rpc服务程序"></a>构建cpp版本的rpc服务程序</h2><p>在build_arm64目录下执行如下命令。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">make -C ..&#x2F;apps&#x2F;cpp_rpc CXX&#x3D;&#x2F;home&#x2F;majiang&#x2F;hd&#x2F;opensource&#x2F;android_sdk&#x2F;android-ndk-r21&#x2F;toolchains&#x2F;llvm&#x2F;prebuilt&#x2F;linux-x86_64&#x2F;bin&#x2F;aarch64-linux-android24-clang++  TVM_RUNTIME_DIR&#x3D;&#x2F;home&#x2F;majiang&#x2F;hd&#x2F;opensource&#x2F;tvm&#x2F;build_arm64&#x2F;</span><br></pre></td></tr></table></figure>
+<p>tvm当前的makefile会把所有的cc都加进去编译(cmake文件不会)，其中包括windows的win32_process.cc。为了阻止编译错误，手动将其改名为win32_process.cc-nouse。<br>有可能因为搜索路径的问题，找不到vulkan库，可以使用如下命令手动链接(添加-Wl,-rpath-link到对应api的lib目录;-Wl,-rpath-link=/home/majiang/hd/opensource/android_sdk/android-ndk-r21/platforms/android-24/arch-arm64/usr/lib/)。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&#x2F;home&#x2F;majiang&#x2F;hd&#x2F;opensource&#x2F;android_sdk&#x2F;android-ndk-r21&#x2F;toolchains&#x2F;llvm&#x2F;prebuilt&#x2F;linux-x86_64&#x2F;bin&#x2F;aarch64-linux-android24-clang++ -std&#x3D;c++14 -O2 -fPIC -Wall -I&#x2F;media&#x2F;majiang&#x2F;c6b38ac3-8b8a-4613-8259-dddbffe2f4cb&#x2F;majiang&#x2F;opensource&#x2F;tvm&#x2F;include -I&#x2F;media&#x2F;majiang&#x2F;c6b38ac3-8b8a-4613-8259-dddbffe2f4cb&#x2F;majiang&#x2F;opensource&#x2F;tvm&#x2F;3rdparty&#x2F;dmlc-core&#x2F;include -I&#x2F;media&#x2F;majiang&#x2F;c6b38ac3-8b8a-4613-8259-dddbffe2f4cb&#x2F;majiang&#x2F;opensource&#x2F;tvm&#x2F;3rdparty&#x2F;dlpack&#x2F;include -o tvm_rpc main.cc rpc_env.cc rpc_server.cc -L&#x2F;home&#x2F;majiang&#x2F;hd&#x2F;opensource&#x2F;tvm&#x2F;build_arm64_new&#x2F;  -ltvm_runtime -ldl -Wl,-R&#x2F;home&#x2F;majiang&#x2F;hd&#x2F;opensource&#x2F;tvm&#x2F;build_arm64_new&#x2F; -Wl,-rpath-link&#x3D;&#x2F;home&#x2F;majiang&#x2F;hd&#x2F;opensource&#x2F;android_sdk&#x2F;android-ndk-r21&#x2F;toolchains&#x2F;llvm&#x2F;prebuilt&#x2F;linux-x86_64&#x2F;bin&#x2F;..&#x2F;sysroot&#x2F;usr&#x2F;lib&#x2F;aarch64-linux-android&#x2F;24&#x2F;</span><br></pre></td></tr></table></figure>
+
+<h2 id="更新本地的tvm使其支持opencl和vulkan代码生成"><a href="#更新本地的tvm使其支持opencl和vulkan代码生成" class="headerlink" title="更新本地的tvm使其支持opencl和vulkan代码生成"></a>更新本地的tvm使其支持opencl和vulkan代码生成</h2><p>修改本地tvm build目录下的config.cmake，确保USE_OPENCL/VULKAN是ON状态。<br>并且确保装好了opencl和vulkan 的sdk(可参考<a href="https://www.codenong.com/cs105410317/，直接去https://vulkan.lunarg.com/sdk/home" target="_blank" rel="noopener">https://www.codenong.com/cs105410317/，直接去https://vulkan.lunarg.com/sdk/home</a> 下载vulkan sdk)。</p>
+<h1 id="配置手机"><a href="#配置手机" class="headerlink" title="配置手机"></a>配置手机</h1><h2 id="打开USB调试"><a href="#打开USB调试" class="headerlink" title="打开USB调试"></a>打开USB调试</h2><p>在手机设置的“关于本机”页面中连续点击 “软件版本” 条目，可以打开开发者模式。然后在全局高级设置中会出现 “开发者选项”，进入其条目打开“USB调试”即可。</p>
+<h2 id="安装adb"><a href="#安装adb" class="headerlink" title="安装adb"></a>安装adb</h2><p>apt install adb -y</p>
+<h2 id="上传文件并设置权限"><a href="#上传文件并设置权限" class="headerlink" title="上传文件并设置权限"></a>上传文件并设置权限</h2><p>android高版本在没有root的情况下，不能直接给sd卡中的程序加上可执行权限，参考<a href="https://my.oschina.net/jerikc/blog/497090" target="_blank" rel="noopener">https://my.oschina.net/jerikc/blog/497090</a> ，可以拷贝到/data/local/tmp 的特殊路径下，并添加执行权限。<br>在tvm的目录下将两个必须的文件上传。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">adb push apps&#x2F;cpp_rpc&#x2F;tvm_rpc  &#x2F;data&#x2F;local&#x2F;tmp</span><br><span class="line">adb push build_arm64_new&#x2F;libtvm_runtime.so  &#x2F;data&#x2F;local&#x2F;tmp</span><br></pre></td></tr></table></figure>
+<p>另外，由于使用了c++，还需上传 libc++_shared.so(参考<a href="https://developer.android.com/ndk/guides/cpp-support#libc)。" target="_blank" rel="noopener">https://developer.android.com/ndk/guides/cpp-support#libc)。</a></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">adb push &#x2F;home&#x2F;majiang&#x2F;hd&#x2F;opensource&#x2F;android_sdk&#x2F;android-ndk-r21&#x2F;toolchains&#x2F;llvm&#x2F;prebuilt&#x2F;linux-x86_64&#x2F;bin&#x2F;..&#x2F;sysroot&#x2F;usr&#x2F;lib&#x2F;aarch64-linux-android&#x2F;libc++_shared.so  &#x2F;data&#x2F;local&#x2F;tmp</span><br></pre></td></tr></table></figure>
+
+<p>然后进入手机，为程序设置可执行权限。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">adb shell</span><br><span class="line">cd &#x2F;data&#x2F;local&#x2F;tmp</span><br><span class="line">chmod 777 *</span><br></pre></td></tr></table></figure>
+
+<h2 id="测试rpc程序"><a href="#测试rpc程序" class="headerlink" title="测试rpc程序"></a>测试rpc程序</h2><p>使用下面的命令，初步测试程序能否正常启动。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">adb shell</span><br><span class="line">cd &#x2F;data&#x2F;local&#x2F;tmp</span><br><span class="line">export LD_LIBRARY_PATH&#x3D;&#96;pwd&#96;</span><br><span class="line">.&#x2F;tvm_rpc</span><br></pre></td></tr></table></figure>
+<p>如果正常，应该能看到help信息，示例如下。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">[10:17:53] main.cc:289: Command line usage</span><br><span class="line"> server       - Start the server</span><br><span class="line">--host        - The hostname of the server, Default&#x3D;0.0.0.0</span><br><span class="line">--port        - The port of the RPC, Default&#x3D;9090</span><br><span class="line">--port-end    - The end search port of the RPC, Default&#x3D;9199</span><br><span class="line">--tracker     - The RPC tracker address in host:port format e.g. 10.1.1.2:9190 Default&#x3D;&quot;&quot;</span><br><span class="line">--key         - The key used to identify the device type in tracker. Default&#x3D;&quot;&quot;</span><br><span class="line">--custom-addr - Custom IP Address to Report to RPC Tracker. Default&#x3D;&quot;&quot;</span><br><span class="line">--silent      - Whether to run in silent mode. Default&#x3D;False</span><br></pre></td></tr></table></figure>
+
+
+<h1 id="启动rpc服务，进行测试"><a href="#启动rpc服务，进行测试" class="headerlink" title="启动rpc服务，进行测试"></a>启动rpc服务，进行测试</h1><p>启动cpp版本的rpc后，测试其功能是否正常。<br>首先在host主机上启动rpc tracker。使用如下命令。<br>应该会看到”INFO:RPCTracker:bind to 0.0.0.0:9190”这样的提示。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">export TVM_HOME&#x3D;&#x2F;home&#x2F;majiang&#x2F;hd&#x2F;opensource&#x2F;tvm</span><br><span class="line">export PYTHONPATH&#x3D;$TVM_HOME&#x2F;python:$TVM_HOME&#x2F;topi&#x2F;python:$&#123;PYTHONPATH&#125;</span><br><span class="line">python3 -m tvm.exec.rpc_tracker</span><br></pre></td></tr></table></figure>
+
+<p>然后在手机上启动cpp 版本的rpc server。注意tracker选项中的ip地址是电脑主机的ip，不是手机的ip，9190是前面启动tracker给出的port。–key一定写成android，否则后面的android_rpc_test.py会找不到设备（它写死了设备的key为android）。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">adb shell</span><br><span class="line">cd &#x2F;data&#x2F;local&#x2F;tmp</span><br><span class="line">export LD_LIBRARY_PATH&#x3D;&#96;pwd&#96;</span><br><span class="line">.&#x2F;tvm_rpc  server --tracker&#x3D;192.168.3.4:9190 --key&#x3D;android</span><br></pre></td></tr></table></figure>
+
+<p>此时，在电脑主机上可以查询到手机了。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"> python3 -m tvm.exec.query_rpc_tracker</span><br><span class="line">Tracker address 192.168.3.4:9190</span><br><span class="line"></span><br><span class="line">Server List</span><br><span class="line">----------------------------</span><br><span class="line">server-address	key</span><br><span class="line">----------------------------</span><br><span class="line">192.168.3.33:38151	server:android</span><br><span class="line">----------------------------</span><br><span class="line"></span><br><span class="line">Queue Status</span><br><span class="line">-------------------------------</span><br><span class="line">key       total  free  pending</span><br><span class="line">-------------------------------</span><br><span class="line">android   1      1     0      </span><br><span class="line">-------------------------------</span><br></pre></td></tr></table></figure>
+
+<p>最后，进入tvm/apps/android_rpc目录，启动android_rpc的测试。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">export TVM_HOME&#x3D;&#x2F;home&#x2F;majiang&#x2F;hd&#x2F;opensource&#x2F;tvm</span><br><span class="line">export PYTHONPATH&#x3D;$TVM_HOME&#x2F;python:$TVM_HOME&#x2F;topi&#x2F;python:$&#123;PYTHONPATH&#125;</span><br><span class="line">export TVM_TRACKER_HOST&#x3D;192.168.3.4</span><br><span class="line">export TVM_TRACKER_PORT&#x3D;9190</span><br><span class="line">export TVM_NDK_CC&#x3D;&#x2F;home&#x2F;majiang&#x2F;&#x2F;hd&#x2F;opensource&#x2F;android_sdk&#x2F;android-ndk-r21&#x2F;toolchains&#x2F;llvm&#x2F;prebuilt&#x2F;linux-x86_64&#x2F;bin&#x2F;aarch64-linux-android24-clang++</span><br><span class="line">python3 tests&#x2F;android_rpc_test.py</span><br></pre></td></tr></table></figure>
+
+<p>正常时可以看到如下的提示(打开GPU测试需要修改android_rpc_test.py，设置test_vulkan = True)。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">Run CPU test ...</span><br><span class="line">0.000340646 secs&#x2F;op</span><br><span class="line"></span><br><span class="line">Run GPU(Vulkan Flavor) test ...</span><br><span class="line">4.40886e-05 secs&#x2F;op</span><br></pre></td></tr></table></figure>
+
+<h1 id="android端json解析报错问题分析"><a href="#android端json解析报错问题分析" class="headerlink" title="android端json解析报错问题分析"></a>android端json解析报错问题分析</h1><p>使用简单的rpc测试正常，但是使用apps/benchmark/mobile_gpu_imagenet_bench.py ( python3 ./mobile_gpu_imagenet_bench.py –model rk3399   –network mobilenet   –rpc-key android)等复杂测试，会出现手机端报json格式错误。具体的表现是运行到runtime.create时，手机端的runtime解析json格式assert报错，形式不固定(JSONReader::BeginObject等期望的字符没有读到)。</p>
+<h2 id="使用gdb进行初步调试定位"><a href="#使用gdb进行初步调试定位" class="headerlink" title="使用gdb进行初步调试定位"></a>使用gdb进行初步调试定位</h2><p>在没有任何背景信息的情况下，可以先行利用gdb继续初步查看。<br>android-ndk提供了arm64版本的gdb-server和x86版本的gdb。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">在ndk目录下</span><br><span class="line">adb push .&#x2F;prebuilt&#x2F;android-arm64&#x2F;gdbserver&#x2F;gdbserver  &#x2F;data&#x2F;local&#x2F;tmp</span><br></pre></td></tr></table></figure>
+<p>然后。<br>android端<br>cd  /data/local/tmp<br> ./gdbserver 192.168.3.33:8888(手机ip和希望使用的端口) –attach 2126 (使用ps |grep tvm_rpc看到的rpc进程)</p>
+<p>host端<br>./android-ndk-r21/prebuilt/linux-x86_64/bin/gdb  ../tvm/apps/cpp_rpc/tvm_rpc</p>
+<h2 id="使用asan排查可疑内存问题"><a href="#使用asan排查可疑内存问题" class="headerlink" title="使用asan排查可疑内存问题"></a>使用asan排查可疑内存问题</h2><h3 id="编译"><a href="#编译" class="headerlink" title="编译"></a>编译</h3><p>需要将libtvm_runtime.so和tvm_rpc都加上asan重新编译(注意如果不重新编译tvm_rpc，asan的检查可能无法准确输出信息)。<br>对于前者，需要修改config.make，在其尾部加上如下语句，然后重新cmake一次(如果是干净的环境下cmake，可能会出现找不到pthread.h的错误。去掉下面语句成功cmake一次，再重新加上后cmake一次，就可以了，原因暂未调查。)。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">set(CMAKE_C_FLAGS &quot;$&#123;CMAKE_C_FLAGS&#125; -fsanitize&#x3D;address&quot;)</span><br><span class="line">set(CMAKE_CXX_FLAGS &quot;$&#123;CMAKE_CXX_FLAGS&#125; -fsanitize&#x3D;address&quot;)</span><br></pre></td></tr></table></figure>
+<p>对于后者，可以在make的时候添加CXXFLAGS，也可以直接手动加编译参数（因为编译tvm_rpc只需要单条命令）。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&#x2F;home&#x2F;majiang&#x2F;hd&#x2F;opensource&#x2F;android_sdk&#x2F;android-ndk-r21&#x2F;toolchains&#x2F;llvm&#x2F;prebuilt&#x2F;linux-x86_64&#x2F;bin&#x2F;aarch64-linux-android24-clang++ -std&#x3D;c++14 -O2 -fPIC -Wall -I&#x2F;media&#x2F;majiang&#x2F;c6b38ac3-8b8a-4613-8259-dddbffe2f4cb&#x2F;majiang&#x2F;opensource&#x2F;tvm&#x2F;include -I&#x2F;media&#x2F;majiang&#x2F;c6b38ac3-8b8a-4613-8259-dddbffe2f4cb&#x2F;majiang&#x2F;opensource&#x2F;tvm&#x2F;3rdparty&#x2F;dmlc-core&#x2F;include -I&#x2F;media&#x2F;majiang&#x2F;c6b38ac3-8b8a-4613-8259-dddbffe2f4cb&#x2F;majiang&#x2F;opensource&#x2F;tvm&#x2F;3rdparty&#x2F;dlpack&#x2F;include -o tvm_rpc main.cc rpc_env.cc rpc_server.cc -L&#x2F;home&#x2F;majiang&#x2F;hd&#x2F;opensource&#x2F;tvm&#x2F;build_arm64&#x2F;  -ltvm_runtime -ldl -Wl,-R&#x2F;home&#x2F;majiang&#x2F;hd&#x2F;opensource&#x2F;tvm&#x2F;build_arm64&#x2F; -Wl,-rpath-link&#x3D;&#x2F;home&#x2F;majiang&#x2F;hd&#x2F;opensource&#x2F;android_sdk&#x2F;android-ndk-r21&#x2F;platforms&#x2F;android-24&#x2F;arch-arm64&#x2F;usr&#x2F;lib&#x2F; -fsanitize&#x3D;address</span><br></pre></td></tr></table></figure>
+<h3 id="运行"><a href="#运行" class="headerlink" title="运行"></a>运行</h3><p>使用adb push将新的rumtime和tvm_rpc上传。<br>然后使用下面命令上传asan需要的动态库。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">adb push &#x2F;home&#x2F;majiang&#x2F;hd&#x2F;opensource&#x2F;android_sdk&#x2F;android-ndk-r21&#x2F;toolchains&#x2F;llvm&#x2F;prebuilt&#x2F;linux-x86_64&#x2F;lib64&#x2F;clang&#x2F;9.0.8&#x2F;lib&#x2F;linux&#x2F;libclang_rt.asan-aarch64-android.so &#x2F;data&#x2F;local&#x2F;tmp</span><br></pre></td></tr></table></figure>
+<p>然后使用正常方式启动tvm_rpc即可。</p>
+<p>再次运行触发json解析错误的测试用例，这次asan给出了准确的输出，确实有堆内存越界。在启动tvm_rpc的终端上可以看到如下输出。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br></pre></td><td class="code"><pre><span class="line">&#x3D;&#x3D;5713&#x3D;&#x3D;ERROR: AddressSanitizer: heap-buffer-overflow on address 0x0076a6ec7100 at pc 0x007fa7f66f50 bp 0x005fa41fc130 sp 0x005fa41fb8d8</span><br><span class="line">WRITE of size 20942 at 0x0076a6ec7100 thread T1</span><br><span class="line">    #0 0x7fa7f66f4c  (&#x2F;data&#x2F;local&#x2F;tmp&#x2F;libclang_rt.asan-aarch64-android.so+0x85f4c)</span><br><span class="line">    #1 0x7fa7f66c64  (&#x2F;data&#x2F;local&#x2F;tmp&#x2F;libclang_rt.asan-aarch64-android.so+0x85c64)</span><br><span class="line">    #2 0x7fa7757a68  (&#x2F;data&#x2F;local&#x2F;tmp&#x2F;libtvm_runtime.so+0x55ba68)</span><br><span class="line">    #3 0x7fa7757458  (&#x2F;data&#x2F;local&#x2F;tmp&#x2F;libtvm_runtime.so+0x55b458)</span><br><span class="line">    #4 0x7fa770a0cc  (&#x2F;data&#x2F;local&#x2F;tmp&#x2F;libtvm_runtime.so+0x50e0cc)</span><br><span class="line">    #5 0x7fa76faf00  (&#x2F;data&#x2F;local&#x2F;tmp&#x2F;libtvm_runtime.so+0x4fef00)</span><br><span class="line">    #6 0x7fa76f9ce0  (&#x2F;data&#x2F;local&#x2F;tmp&#x2F;libtvm_runtime.so+0x4fdce0)</span><br><span class="line">    #7 0x7fa76fcb3c  (&#x2F;data&#x2F;local&#x2F;tmp&#x2F;libtvm_runtime.so+0x500b3c)</span><br><span class="line">    #8 0x7fa774d3c8  (&#x2F;data&#x2F;local&#x2F;tmp&#x2F;libtvm_runtime.so+0x5513c8)</span><br><span class="line">    #9 0x555558b444  (&#x2F;data&#x2F;local&#x2F;tmp&#x2F;tvm_rpc+0x36444)</span><br><span class="line">    #10 0x5555583db0  (&#x2F;data&#x2F;local&#x2F;tmp&#x2F;tvm_rpc+0x2edb0)</span><br><span class="line">    #11 0x5555585180  (&#x2F;data&#x2F;local&#x2F;tmp&#x2F;tvm_rpc+0x30180)</span><br><span class="line">    #12 0x5555585354  (&#x2F;data&#x2F;local&#x2F;tmp&#x2F;tvm_rpc+0x30354)</span><br><span class="line">    #13 0x7fa7e6a41c  (&#x2F;system&#x2F;lib64&#x2F;libc.so+0x6841c)</span><br><span class="line">    #14 0x7fa7e1fe00  (&#x2F;system&#x2F;lib64&#x2F;libc.so+0x1de00)</span><br><span class="line"></span><br><span class="line">0x0076a6ec7100 is located 0 bytes to the right of 4096-byte region [0x0076a6ec6100,0x0076a6ec7100)</span><br><span class="line">allocated by thread T1 here:</span><br><span class="line">    #0 0x7fa7f8b374  (&#x2F;data&#x2F;local&#x2F;tmp&#x2F;libclang_rt.asan-aarch64-android.so+0xaa374)</span><br><span class="line">    #1 0x7fa73a3460  (&#x2F;data&#x2F;local&#x2F;tmp&#x2F;libtvm_runtime.so+0x1a7460)</span><br><span class="line">    #2 0x7fa73a3438  (&#x2F;data&#x2F;local&#x2F;tmp&#x2F;libtvm_runtime.so+0x1a7438)</span><br><span class="line">    #3 0x7fa73a2bf0  (&#x2F;data&#x2F;local&#x2F;tmp&#x2F;libtvm_runtime.so+0x1a6bf0)</span><br><span class="line">    #4 0x7fa7683008  (&#x2F;data&#x2F;local&#x2F;tmp&#x2F;libtvm_runtime.so+0x487008)</span><br><span class="line">    #5 0x7fa7682240  (&#x2F;data&#x2F;local&#x2F;tmp&#x2F;libtvm_runtime.so+0x486240)</span><br><span class="line">    #6 0x7fa7681448  (&#x2F;data&#x2F;local&#x2F;tmp&#x2F;libtvm_runtime.so+0x485448)</span><br><span class="line">    #7 0x7fa76fab4c  (&#x2F;data&#x2F;local&#x2F;tmp&#x2F;libtvm_runtime.so+0x4feb4c)</span><br><span class="line">    #8 0x7fa76f9ce0  (&#x2F;data&#x2F;local&#x2F;tmp&#x2F;libtvm_runtime.so+0x4fdce0)</span><br><span class="line">    #9 0x7fa76fcb3c  (&#x2F;data&#x2F;local&#x2F;tmp&#x2F;libtvm_runtime.so+0x500b3c)</span><br><span class="line">    #10 0x7fa774d3c8  (&#x2F;data&#x2F;local&#x2F;tmp&#x2F;libtvm_runtime.so+0x5513c8)</span><br><span class="line">    #11 0x555558b444  (&#x2F;data&#x2F;local&#x2F;tmp&#x2F;tvm_rpc+0x36444)</span><br><span class="line">    #12 0x5555583db0  (&#x2F;data&#x2F;local&#x2F;tmp&#x2F;tvm_rpc+0x2edb0)</span><br><span class="line">    #13 0x5555585180  (&#x2F;data&#x2F;local&#x2F;tmp&#x2F;tvm_rpc+0x30180)</span><br><span class="line">    #14 0x5555585354  (&#x2F;data&#x2F;local&#x2F;tmp&#x2F;tvm_rpc+0x30354)</span><br><span class="line">    #15 0x7fa7e6a41c  (&#x2F;system&#x2F;lib64&#x2F;libc.so+0x6841c)</span><br><span class="line">    #16 0x7fa7e1fe00  (&#x2F;system&#x2F;lib64&#x2F;libc.so+0x1de00)</span><br><span class="line"></span><br><span class="line">Thread T1 created by T0 here:</span><br><span class="line">    #0 0x7fa7f725a0  (&#x2F;data&#x2F;local&#x2F;tmp&#x2F;libclang_rt.asan-aarch64-android.so+0x915a0)</span><br><span class="line">    #1 0x5555584ebc  (&#x2F;data&#x2F;local&#x2F;tmp&#x2F;tvm_rpc+0x2febc)</span><br><span class="line">    #2 0x5555584c20  (&#x2F;data&#x2F;local&#x2F;tmp&#x2F;tvm_rpc+0x2fc20)</span><br><span class="line">    #3 0x5555582608  (&#x2F;data&#x2F;local&#x2F;tmp&#x2F;tvm_rpc+0x2d608)</span><br><span class="line">    #4 0x5555581224  (&#x2F;data&#x2F;local&#x2F;tmp&#x2F;tvm_rpc+0x2c224)</span><br><span class="line">    #5 0x555556cdd4  (&#x2F;data&#x2F;local&#x2F;tmp&#x2F;tvm_rpc+0x17dd4)</span><br><span class="line">    #6 0x555556d8ac  (&#x2F;data&#x2F;local&#x2F;tmp&#x2F;tvm_rpc+0x188ac)</span><br><span class="line">    #7 0x7fa7e1c7d8  (&#x2F;system&#x2F;lib64&#x2F;libc.so+0x1a7d8)</span><br><span class="line">    #8 0x5555566b10  (&#x2F;data&#x2F;local&#x2F;tmp&#x2F;tvm_rpc+0x11b10)</span><br><span class="line">    #9 0x7fa8460d54  (&#x2F;system&#x2F;bin&#x2F;linker64+0x6d54)</span><br><span class="line"></span><br><span class="line">SUMMARY: AddressSanitizer: heap-buffer-overflow (&#x2F;data&#x2F;local&#x2F;tmp&#x2F;libclang_rt.asan-aarch64-android.so+0x85f4c) </span><br><span class="line">Shadow bytes around the buggy address:</span><br><span class="line">  0x001ed4dd8dd0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00</span><br><span class="line">  0x001ed4dd8de0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00</span><br><span class="line">  0x001ed4dd8df0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00</span><br><span class="line">  0x001ed4dd8e00: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00</span><br><span class="line">  0x001ed4dd8e10: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00</span><br><span class="line">&#x3D;&gt;0x001ed4dd8e20:[fa]fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa</span><br><span class="line">  0x001ed4dd8e30: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa</span><br><span class="line">  0x001ed4dd8e40: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa</span><br><span class="line">  0x001ed4dd8e50: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa</span><br><span class="line">  0x001ed4dd8e60: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa</span><br><span class="line">  0x001ed4dd8e70: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa</span><br><span class="line">Shadow byte legend (one shadow byte represents 8 application bytes):</span><br><span class="line">  Addressable:           00</span><br><span class="line">  Partially addressable: 01 02 03 04 05 06 07 </span><br><span class="line">  Heap left redzone:       fa</span><br><span class="line">  Freed heap region:       fd</span><br><span class="line">  Stack left redzone:      f1</span><br><span class="line">  Stack mid redzone:       f2</span><br><span class="line">  Stack right redzone:     f3</span><br><span class="line">  Stack after return:      f5</span><br><span class="line">  Stack use after scope:   f8</span><br><span class="line">  Global redzone:          f9</span><br><span class="line">  Global init order:       f6</span><br><span class="line">  Poisoned by user:        f7</span><br><span class="line">  Container overflow:      fc</span><br><span class="line">  Array cookie:            ac</span><br><span class="line">  Intra object redzone:    bb</span><br><span class="line">  ASan internal:           fe</span><br><span class="line">  Left alloca redzone:     ca</span><br><span class="line">  Right alloca redzone:    cb</span><br><span class="line">  Shadow gap:              cc</span><br><span class="line">&#x3D;&#x3D;5713&#x3D;&#x3D;ABORTING</span><br></pre></td></tr></table></figure>
+<p>由于是交叉编译运行，asan无法直接给出了文件和行号信息。<br>为了便于理解日志，可以将上面的日志信息复制并保存到host机器的文件中，再使用asan提供的专用symbolize工具获得文件和行号。</p>
+<h3 id="日志解析"><a href="#日志解析" class="headerlink" title="日志解析"></a>日志解析</h3><p>为了解析交叉编译的日志，asan提供了专门的symbolizer工具。<br>该工具的核心任务就是将  “binary文件+offset” 翻译为 “文件:函数：行号”。<br>llvm的asan提供的工具在， <a href="https://llvm.org/svn/llvm-project/compiler-rt/trunk/lib/asan/scripts/asan_symbolize.py。它对翻译工作做了封装，可以使用llvm-symbolizer/address2line等多种底层工具完成翻译。" target="_blank" rel="noopener">https://llvm.org/svn/llvm-project/compiler-rt/trunk/lib/asan/scripts/asan_symbolize.py。它对翻译工作做了封装，可以使用llvm-symbolizer/address2line等多种底层工具完成翻译。</a></p>
+<p>其使用也非常简单，如下一条命令即可完成翻译。<br>error.log是含有错误信息的文件。<br>-c 是交叉编译的prefix<br>-s 是sysroot，该路径下需要含有带调试信息的binary文件</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">.&#x2F;asan_symbolize.py  -d -c &quot;&#x2F;home&#x2F;majiang&#x2F;hd&#x2F;opensource&#x2F;android_sdk&#x2F;android-ndk-r21&#x2F;toolchains&#x2F;llvm&#x2F;prebuilt&#x2F;linux-x86_64&#x2F;bin&#x2F;aarch64-linux-android24-&quot;  -s &quot;&#x2F;home&#x2F;majiang&#x2F;hd&#x2F;opensource&#x2F;tvm&#x2F;debug_arm64&#x2F;&quot; &lt; error.log</span><br></pre></td></tr></table></figure>
+<p>这个脚本错误信息不是非常友好，需要先行确认底层的symbolizer能正常工作，sysroot中含有正确的binary文件。<br>例如，如果系统PATH中没有llvm-symbolizer，只有llvm-symbolizer-9(没有安装默认的llvm版本，而是安装了新的9版本)，需要先export ASAN_SYMBOLIZER_PATH=llvm-symbolizer-9，再运行脚本。<br>sysroot中的路径布置必须与log中的日志完全一致，否则脚本报错信息也比较难以理解。</p>
+<h3 id="故障修复"><a href="#故障修复" class="headerlink" title="故障修复"></a>故障修复</h3><p>使用asan，可以获得如下的故障日志。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br></pre></td><td class="code"><pre><span class="line">&#x3D;&#x3D;5713&#x3D;&#x3D;ERROR: AddressSanitizer: heap-buffer-overflow on address 0x0076a6ec7100 at pc 0x007fa7f66f50 bp 0x005fa41fc130 sp 0x005fa41fb8d8</span><br><span class="line">WRITE of size 20942 at 0x0076a6ec7100 thread T1</span><br><span class="line">    #0 0x7fa7f66f4c in recvfrom &#x2F;toolchain&#x2F;llvm-project&#x2F;compiler-rt&#x2F;lib&#x2F;asan&#x2F;..&#x2F;sanitizer_common&#x2F;sanitizer_common_interceptors.inc:6404:5</span><br><span class="line">    #1 0x7fa7f66c64 in recv &#x2F;toolchain&#x2F;llvm-project&#x2F;compiler-rt&#x2F;lib&#x2F;asan&#x2F;..&#x2F;sanitizer_common&#x2F;sanitizer_common_interceptors.inc:6385:17</span><br><span class="line">    #2 0x7fa7757a68 in tvm::support::TCPSocket::Recv(void*, unsigned long, int) &#x2F;home&#x2F;majiang&#x2F;hd&#x2F;opensource&#x2F;tvm&#x2F;src&#x2F;runtime&#x2F;rpc&#x2F;..&#x2F;..&#x2F;support&#x2F;socket.h:483:12</span><br><span class="line">    #3 0x7fa7757458 in tvm::runtime::SockChannel::Recv(void*, unsigned long) &#x2F;home&#x2F;majiang&#x2F;hd&#x2F;opensource&#x2F;tvm&#x2F;src&#x2F;runtime&#x2F;rpc&#x2F;rpc_socket_impl.cc:53:23</span><br><span class="line">    #4 0x7fa770a0cc in tvm::runtime::RPCSession::HandleUntilReturnEvent(tvm::runtime::TVMRetValue*, bool, tvm::runtime::PackedFunc const*)::$_1::operator()(void*, unsigned long) const &#x2F;home&#x2F;majiang&#x2F;hd&#x2F;opensource&#x2F;tvm&#x2F;src&#x2F;runtime&#x2F;rpc&#x2F;rpc_session.cc:880:28</span><br><span class="line">    #5 0x7fa76faf00 in unsigned long tvm::support::RingBuffer::WriteWithCallback&lt;tvm::runtime::RPCSession::HandleUntilReturnEvent(tvm::runtime::TVMRetValue*, bool, tvm::runtime::PackedFunc const*)::$_1&gt;(tvm::runtime::RPCSession::HandleUntilReturnEvent(tvm::runtime::TVMRetValue*, bool, tvm::runtime::PackedFunc const*)::$_1, unsigned long) &#x2F;home&#x2F;majiang&#x2F;hd&#x2F;opensource&#x2F;tvm&#x2F;src&#x2F;runtime&#x2F;rpc&#x2F;..&#x2F;..&#x2F;support&#x2F;ring_buffer.h:160:25</span><br><span class="line">    #6 0x7fa76f9ce0 in tvm::runtime::RPCSession::HandleUntilReturnEvent(tvm::runtime::TVMRetValue*, bool, tvm::runtime::PackedFunc const*) &#x2F;home&#x2F;majiang&#x2F;hd&#x2F;opensource&#x2F;tvm&#x2F;src&#x2F;runtime&#x2F;rpc&#x2F;rpc_session.cc:879:26</span><br><span class="line">    #7 0x7fa76fcb3c in tvm::runtime::RPCSession::ServerLoop() &#x2F;home&#x2F;majiang&#x2F;hd&#x2F;opensource&#x2F;tvm&#x2F;src&#x2F;runtime&#x2F;rpc&#x2F;rpc_session.cc:952:3</span><br><span class="line">    #8 0x7fa774d3c8 in tvm::runtime::RPCServerLoop(int) &#x2F;home&#x2F;majiang&#x2F;hd&#x2F;opensource&#x2F;tvm&#x2F;src&#x2F;runtime&#x2F;rpc&#x2F;rpc_socket_impl.cc:113:30</span><br><span class="line">    #9 0x555558b444 in tvm::runtime::RPCServer::ServerLoopProc(tvm::support::TCPSocket, tvm::support::SockAddr) ??:0:0</span><br><span class="line">    #10 0x5555583db0 in tvm::runtime::RPCServer::ListenLoopProc() ??:0:0</span><br><span class="line">    #11 0x5555585180 in std::__ndk1::__async_assoc_state&lt;void, std::__ndk1::__async_func&lt;void (tvm::runtime::RPCServer::*)(), tvm::runtime::RPCServer*&gt; &gt;::__execute() ??:0:0</span><br><span class="line">    #12 0x5555585354 in void* std::__ndk1::__thread_proxy&lt;std::__ndk1::tuple&lt;std::__ndk1::unique_ptr&lt;std::__ndk1::__thread_struct, std::__ndk1::default_delete&lt;std::__ndk1::__thread_struct&gt; &gt;, void (std::__ndk1::__async_assoc_state&lt;void, std::__ndk1::__async_func&lt;void (tvm::runtime::RPCServer::*)(), tvm::runtime::RPCServer*&gt; &gt;::*)(), std::__ndk1::__async_assoc_state&lt;void, std::__ndk1::__async_func&lt;void (tvm::runtime::RPCServer::*)(), tvm::runtime::RPCServer*&gt; &gt;*&gt; &gt;(void*) ??:0:0</span><br><span class="line">    #13 0x7fa7e6a41c in __pthread_start(void*) ??:0:0</span><br><span class="line">    #14 0x7fa7e1fe00 in __start_thread ??:0:0</span><br><span class="line"></span><br><span class="line">0x0076a6ec7100 is located 0 bytes to the right of 4096-byte region [0x0076a6ec6100,0x0076a6ec7100)</span><br><span class="line">allocated by thread T1 here:</span><br><span class="line">    #0 0x7fa7f8b374 in operator new(unsigned long) _asan_rtl_:3</span><br><span class="line">    #1 0x7fa73a3460 in std::__ndk1::__libcpp_allocate(unsigned long, unsigned long) &#x2F;home&#x2F;majiang&#x2F;hd&#x2F;opensource&#x2F;android_sdk&#x2F;android-ndk-r21&#x2F;toolchains&#x2F;llvm&#x2F;prebuilt&#x2F;linux-x86_64&#x2F;bin&#x2F;..&#x2F;sysroot&#x2F;usr&#x2F;include&#x2F;c++&#x2F;v1&#x2F;new:253:10</span><br><span class="line">    #2 0x7fa73a3438 in std::__ndk1::allocator&lt;char&gt;::allocate(unsigned long, void const*) &#x2F;home&#x2F;majiang&#x2F;hd&#x2F;opensource&#x2F;android_sdk&#x2F;android-ndk-r21&#x2F;toolchains&#x2F;llvm&#x2F;prebuilt&#x2F;linux-x86_64&#x2F;bin&#x2F;..&#x2F;sysroot&#x2F;usr&#x2F;include&#x2F;c++&#x2F;v1&#x2F;memory:1813:37</span><br><span class="line">    #3 0x7fa73a2bf0 in std::__ndk1::allocator_traits&lt;std::__ndk1::allocator&lt;char&gt; &gt;::allocate(std::__ndk1::allocator&lt;char&gt;&amp;, unsigned long) &#x2F;home&#x2F;majiang&#x2F;hd&#x2F;opensource&#x2F;android_sdk&#x2F;android-ndk-r21&#x2F;toolchains&#x2F;llvm&#x2F;prebuilt&#x2F;linux-x86_64&#x2F;bin&#x2F;..&#x2F;sysroot&#x2F;usr&#x2F;include&#x2F;c++&#x2F;v1&#x2F;memory:1546:21</span><br><span class="line">    #4 0x7fa7683008 in std::__ndk1::__split_buffer&lt;char, std::__ndk1::allocator&lt;char&gt;&amp;&gt;::__split_buffer(unsigned long, unsigned long, std::__ndk1::allocator&lt;char&gt;&amp;) &#x2F;home&#x2F;majiang&#x2F;hd&#x2F;opensource&#x2F;android_sdk&#x2F;android-ndk-r21&#x2F;toolchains&#x2F;llvm&#x2F;prebuilt&#x2F;linux-x86_64&#x2F;bin&#x2F;..&#x2F;sysroot&#x2F;usr&#x2F;include&#x2F;c++&#x2F;v1&#x2F;__split_buffer:318:29</span><br><span class="line">    #5 0x7fa7682240 in std::__ndk1::vector&lt;char, std::__ndk1::allocator&lt;char&gt; &gt;::shrink_to_fit() &#x2F;home&#x2F;majiang&#x2F;hd&#x2F;opensource&#x2F;android_sdk&#x2F;android-ndk-r21&#x2F;toolchains&#x2F;llvm&#x2F;prebuilt&#x2F;linux-x86_64&#x2F;bin&#x2F;..&#x2F;sysroot&#x2F;usr&#x2F;include&#x2F;c++&#x2F;v1&#x2F;vector:1598:57</span><br><span class="line">    #6 0x7fa7681448 in tvm::support::RingBuffer::Reserve(unsigned long) &#x2F;home&#x2F;majiang&#x2F;hd&#x2F;opensource&#x2F;tvm&#x2F;src&#x2F;runtime&#x2F;rpc&#x2F;..&#x2F;..&#x2F;support&#x2F;ring_buffer.h:74:15</span><br><span class="line">    #7 0x7fa76fab4c in unsigned long tvm::support::RingBuffer::WriteWithCallback&lt;tvm::runtime::RPCSession::HandleUntilReturnEvent(tvm::runtime::TVMRetValue*, bool, tvm::runtime::PackedFunc const*)::$_1&gt;(tvm::runtime::RPCSession::HandleUntilReturnEvent(tvm::runtime::TVMRetValue*, bool, tvm::runtime::PackedFunc const*)::$_1, unsigned long) &#x2F;home&#x2F;majiang&#x2F;hd&#x2F;opensource&#x2F;tvm&#x2F;src&#x2F;runtime&#x2F;rpc&#x2F;..&#x2F;..&#x2F;support&#x2F;ring_buffer.h:148:11</span><br><span class="line">    #8 0x7fa76f9ce0 in tvm::runtime::RPCSession::HandleUntilReturnEvent(tvm::runtime::TVMRetValue*, bool, tvm::runtime::PackedFunc const*) &#x2F;home&#x2F;majiang&#x2F;hd&#x2F;opensource&#x2F;tvm&#x2F;src&#x2F;runtime&#x2F;rpc&#x2F;rpc_session.cc:879:26</span><br><span class="line">    #9 0x7fa76fcb3c in tvm::runtime::RPCSession::ServerLoop() &#x2F;home&#x2F;majiang&#x2F;hd&#x2F;opensource&#x2F;tvm&#x2F;src&#x2F;runtime&#x2F;rpc&#x2F;rpc_session.cc:952:3</span><br><span class="line">    #10 0x7fa774d3c8 in tvm::runtime::RPCServerLoop(int) &#x2F;home&#x2F;majiang&#x2F;hd&#x2F;opensource&#x2F;tvm&#x2F;src&#x2F;runtime&#x2F;rpc&#x2F;rpc_socket_impl.cc:113:30</span><br><span class="line">    #11 0x555558b444 in tvm::runtime::RPCServer::ServerLoopProc(tvm::support::TCPSocket, tvm::support::SockAddr) ??:0:0</span><br><span class="line">    #12 0x5555583db0 in tvm::runtime::RPCServer::ListenLoopProc() ??:0:0</span><br><span class="line">    #13 0x5555585180 in std::__ndk1::__async_assoc_state&lt;void, std::__ndk1::__async_func&lt;void (tvm::runtime::RPCServer::*)(), tvm::runtime::RPCServer*&gt; &gt;::__execute() ??:0:0</span><br><span class="line">    #14 0x5555585354 in void* std::__ndk1::__thread_proxy&lt;std::__ndk1::tuple&lt;std::__ndk1::unique_ptr&lt;std::__ndk1::__thread_struct, std::__ndk1::default_delete&lt;std::__ndk1::__thread_struct&gt; &gt;, void (std::__ndk1::__async_assoc_state&lt;void, std::__ndk1::__async_func&lt;void (tvm::runtime::RPCServer::*)(), tvm::runtime::RPCServer*&gt; &gt;::*)(), std::__ndk1::__async_assoc_state&lt;void, std::__ndk1::__async_func&lt;void (tvm::runtime::RPCServer::*)(), tvm::runtime::RPCServer*&gt; &gt;*&gt; &gt;(void*) ??:0:0</span><br><span class="line">    #15 0x7fa7e6a41c in __pthread_start(void*) ??:0:0</span><br><span class="line">    #16 0x7fa7e1fe00 in __start_thread ??:0:0</span><br><span class="line"></span><br><span class="line">Thread T1 created by T0 here:</span><br><span class="line">    #0 0x7fa7f725a0 in pthread_create _asan_rtl_:3</span><br><span class="line">    #1 0x5555584ebc in std::__ndk1::thread::thread&lt;void (std::__ndk1::__async_assoc_state&lt;void, std::__ndk1::__async_func&lt;void (tvm::runtime::RPCServer::*)(), tvm::runtime::RPCServer*&gt; &gt;::*)(), std::__ndk1::__async_assoc_state&lt;void, std::__ndk1::__async_func&lt;void (tvm::runtime::RPCServer::*)(), tvm::runtime::RPCServer*&gt; &gt;*, void&gt;(void (std::__ndk1::__async_assoc_state&lt;void, std::__ndk1::__async_func&lt;void (tvm::runtime::RPCServer::*)(), tvm::runtime::RPCServer*&gt; &gt;::*&amp;&amp;)(), std::__ndk1::__async_assoc_state&lt;void, std::__ndk1::__async_func&lt;void (tvm::runtime::RPCServer::*)(), tvm::runtime::RPCServer*&gt; &gt;*&amp;&amp;) ??:0:0</span><br><span class="line">    #2 0x5555584c20 in std::__ndk1::future&lt;void&gt; std::__ndk1::__make_async_assoc_state&lt;void, std::__ndk1::__async_func&lt;void (tvm::runtime::RPCServer::*)(), tvm::runtime::RPCServer*&gt; &gt;(std::__ndk1::__async_func&lt;void (tvm::runtime::RPCServer::*)(), tvm::runtime::RPCServer*&gt;&amp;&amp;) ??:0:0</span><br><span class="line">    #3 0x5555582608 in tvm::runtime::RPCServer::Start() ??:0:0</span><br><span class="line">    #4 0x5555581224 in tvm::runtime::RPCServerCreate(std::__ndk1::basic_string&lt;char, std::__ndk1::char_traits&lt;char&gt;, std::__ndk1::allocator&lt;char&gt; &gt;, int, int, std::__ndk1::basic_string&lt;char, std::__ndk1::char_traits&lt;char&gt;, std::__ndk1::allocator&lt;char&gt; &gt;, std::__ndk1::basic_string&lt;char, std::__ndk1::char_traits&lt;char&gt;, std::__ndk1::allocator&lt;char&gt; &gt;, std::__ndk1::basic_string&lt;char, std::__ndk1::char_traits&lt;char&gt;, std::__ndk1::allocator&lt;char&gt; &gt;, bool) ??:0:0</span><br><span class="line">    #5 0x555556cdd4 in RpcServer(int, char**) ??:0:0</span><br><span class="line">    #6 0x555556d8ac in main ??:0:0</span><br><span class="line">    #7 0x7fa7e1c7d8 in __libc_init ??:0:0</span><br><span class="line">    #8 0x5555566b10 in _start_main ??:0:0</span><br></pre></td></tr></table></figure>
+<p>从这个日志可以很快定位到核心的错误逻辑。<br>ring_buffer.h 中的Reserve函数实现逻辑有问题，没有为数据预留足够的空间，后续直接recv到buffer中的数据会导致overflow。<br>如下逻辑所示，当请求reserver的size n小于当前buffer的size<br>时，reserve函数会减小buffer保有的内存，节约资源。<br>但是其减小内存后，只保留kInitCapacity个byte，忽略了输入请求n可能大于kInitCapacity的情况。<br>发生错误时，输入的n为25038 (graph json的string长度)kInitCapacity 只有 4096。recv到的json字符串破坏了buffer，导致后续逻辑混乱。<br>修复的逻辑也简单，只需要保证收缩后的尺寸不小于n就可以了。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">Reserve</span><span class="params">(<span class="keyword">size_t</span> n)</span> </span>&#123;</span><br><span class="line">  <span class="keyword">if</span> (ring_.<span class="built_in">size</span>() &lt; n) &#123;</span><br><span class="line">      <span class="comment">//扩大ring buffer的size</span></span><br><span class="line">      &#125;</span><br><span class="line">  &#125; <span class="keyword">else</span> <span class="keyword">if</span> (ring_.<span class="built_in">size</span>() &gt; n * <span class="number">8</span> &amp;&amp; ring_.<span class="built_in">size</span>() &gt; kInitCapacity &amp;&amp; bytes_available_ &gt; <span class="number">0</span>) &#123;</span><br><span class="line">      <span class="comment">// shrink too large temporary buffer to avoid out of memory on some embedded devices</span></span><br><span class="line">      <span class="keyword">size_t</span> old_bytes = bytes_available_;</span><br><span class="line"></span><br><span class="line">      <span class="function"><span class="built_in">std</span>::<span class="built_in">vector</span>&lt;<span class="keyword">char</span>&gt; <span class="title">tmp</span><span class="params">(old_bytes)</span></span>;</span><br><span class="line"></span><br><span class="line">      Read(&amp;tmp[<span class="number">0</span>], old_bytes);</span><br><span class="line">      <span class="comment">//ring_.resize(kInitCapacity); this may cause overflow when n&gt;kInitCapacity</span></span><br><span class="line">      ring_.resize(kInitCapacity &gt; n? kInitCapacity : n);</span><br><span class="line">      ring_.shrink_to_fit();</span><br><span class="line"></span><br><span class="line">      <span class="built_in">memcpy</span>(&amp;ring_[<span class="number">0</span>], &amp;tmp[<span class="number">0</span>], old_bytes);</span><br><span class="line">      head_ptr_ = <span class="number">0</span>;</span><br><span class="line">      bytes_available_ = old_bytes;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h1 id="查看错误输出"><a href="#查看错误输出" class="headerlink" title="查看错误输出"></a>查看错误输出</h1><p>rpc时看不到错误信息。查看apps/android_camera/app/src/main/jni/tvm_runtime.h　可以发现，原因是android上需要特殊的打印指令，但是编译时我们没有打开对应的宏，也没有添加对应的打印函数，如下代码所示。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">&#x2F;* Enable custom logging - this will cause TVM to pass every log message</span><br><span class="line"> * through CustomLogMessage instead of LogMessage. By enabling this, we must</span><br><span class="line"> * implement dmlc::CustomLogMessage::Log. We use this to pass TVM log</span><br><span class="line"> * messages to Android logcat.</span><br><span class="line"> *&#x2F;</span><br><span class="line">#define DMLC_LOG_CUSTOMIZE 1</span><br><span class="line"></span><br><span class="line">&#x2F;* Ensure that fatal errors are passed to the logger before throwing</span><br><span class="line"> * in LogMessageFatal</span><br><span class="line"> *&#x2F;</span><br><span class="line">#define DMLC_LOG_BEFORE_THROW 1</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">#include &lt;android&#x2F;log.h&gt;</span><br><span class="line"></span><br><span class="line">void dmlc::CustomLogMessage::Log(const std::string&amp; msg) &#123;</span><br><span class="line">  &#x2F;&#x2F; This is called for every message logged by TVM.</span><br><span class="line">  &#x2F;&#x2F; We pass the message to logcat.</span><br><span class="line">  __android_log_write(ANDROID_LOG_DEBUG, &quot;TVM_RUNTIME&quot;, msg.c_str());</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h1 id="添加adreon-opencl支持"><a href="#添加adreon-opencl支持" class="headerlink" title="添加adreon opencl支持"></a>添加adreon opencl支持</h1><p>从手机中pull出libOpenCL_system.so  libion.so放入dep_libs_from_phone<br>从高通网站下载opencl sdk<br>同样在build_arm64中<br>cmake ./. -DCMAKE_CXX_COMPILER=”/mnt/d/opensource/android_ndk/android-ndk-r21b/toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android28-clang++” -DCMAKE_C_COMPILER=”/mnt/d/opensource/android_ndk/android-ndk-r21b/toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android28-clang”   -DOpenCL_INCLUDE_DIR=/mnt/d/opensource/opencl-sdk-1.2.2/inc   -DOpenCL_LIBRARY=/mnt/d/opensource/opencl-sdk-1.2.2/dep_libs_from_phone</p>
+<p>make -j 32 runtime</p>
+<p> make -C ../apps/cpp_rpc CXX=/mnt/d/opensource/android_ndk/android-ndk-r21b/toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android28-clang++  TVM_RUNTIME_DIR=/mnt/d/opensource/opensrc_tvm/tvm/build_arm64</p>
+<p> 链接cpp_rpc仍然有错，手动添加 -lOpenCL_system  -Wl,-rpath-link=xx 通过(需要把android 的system/lib64下的库全拉过来)<br>  /mnt/d/opensource/android_ndk/android-ndk-r21b/toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android28-clang++ -std=c++14 -O2 -fPIC -Wall -I/mnt/d/opensource/opensrc_tvm/tvm/include -I/mnt/d/opensource/opensrc_tvm/tvm/3rdparty/dmlc-core/include -I/mnt/d/opensource/opensrc_tvm/tvm/3rdparty/dlpack/include -o tvm_rpc main.cc rpc_env.cc rpc_server.cc -L/mnt/d/opensource/opensrc_tvm/tvm/build_arm64  -ltvm_runtime -ldl -Wl,-R/mnt/d/opensource/opensrc_tvm/tvm/build_arm64 -L /mnt/d/opensource/opencl-sdk-1.2.2/dep_libs_from_phone -lOpenCL_system -Wl,-rpath-link=/mnt/d/opensource/opencl-sdk-1.2.2/dep_libs_from_phone/lib64 -Wl,-v -v -Wl,-t</p>
+<h1 id="启动-apps-android-rpc-tests-android-rpc-test-py-段错误"><a href="#启动-apps-android-rpc-tests-android-rpc-test-py-段错误" class="headerlink" title="启动 apps/android_rpc//tests/android_rpc_test.py 段错误"></a>启动 apps/android_rpc//tests/android_rpc_test.py 段错误</h1><p>同时支持opencl和vulkan后，启动android_rpc_test.py 出现段错误。<br>使用pdb启动，可以看到打印出的错误信息。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">  File &quot;&#x2F;usr&#x2F;lib&#x2F;python3.6&#x2F;ctypes&#x2F;__init__.py&quot;, line 348, in __init__</span><br><span class="line">    self._handle &#x3D; _dlopen(self._name, mode)</span><br><span class="line">OSError: &#x2F;home&#x2F;majiang&#x2F;opensrc&#x2F;tvm&#x2F;build&#x2F;libtvm.so: undefined symbol: spvContextDestroy</span><br><span class="line">Uncaught exception. Entering post mortem debugging</span><br><span class="line">Running &#39;cont&#39; or &#39;step&#39; will restart the program</span><br></pre></td></tr></table></figure>
+<p>google了这个错误，找到了<a href="https://github.com/google/shaderc/issues/470，原因应该是少链接了一个库。" target="_blank" rel="noopener">https://github.com/google/shaderc/issues/470，原因应该是少链接了一个库。</a><br>删除libtvm.so后，make VERBOSE=1拷贝出链接命令，在尾部添加-lSPIRV-Tools后重新链接。<br>链接完成后，故障消失。<br>怀疑与cmake版本有关系，缺失了库的依赖，暂不进一步分析。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://mjblog.github.io/2020/05/18/tvm_android_deploy/" data-id="ckg246lr4001j52fa0vxv7pys" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/AI/" rel="tag">AI</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2020/05/20/phoronix-2020-05/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          phoronix 扫描2020-05
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2020/05/09/tvm-runtime/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">tvm graph_runtime 分析</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">标签</h3>
+    <div class="widget">
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/AI/" rel="tag">AI</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/GRAALVM/" rel="tag">GRAALVM</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/IDE/" rel="tag">IDE</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/LLVM-STUDY/" rel="tag">LLVM_STUDY</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/env/" rel="tag">env</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">标签云</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/AI/" style="font-size: 20px;">AI</a> <a href="/tags/GRAALVM/" style="font-size: 10px;">GRAALVM</a> <a href="/tags/IDE/" style="font-size: 10px;">IDE</a> <a href="/tags/LLVM-STUDY/" style="font-size: 20px;">LLVM_STUDY</a> <a href="/tags/env/" style="font-size: 10px;">env</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">归档</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/09/">九月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/07/">七月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/06/">六月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/05/">五月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/04/">四月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/03/">三月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/02/">二月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/01/">一月 2020</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">最新文章</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2020/09/25/graal_license/">graalvm license分析</a>
+          </li>
+        
+          <li>
+            <a href="/2020/09/18/eclipse_theia/">eclipse theia 研究</a>
+          </li>
+        
+          <li>
+            <a href="/2020/07/28/first-test/">ubuntu 16.04下驱动TP-LINK TL-WDN6200H免驱版无线网卡</a>
+          </li>
+        
+          <li>
+            <a href="/2020/07/09/tvm_ir_debug/">tvm 构建结果调试</a>
+          </li>
+        
+          <li>
+            <a href="/2020/06/05/arduino_dev/">arduino开发体验</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2020 Ma Jiang<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+
+  
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+
+
+<script src="/js/script.js"></script>
+
+
+  </div>
+</body>
+</html>

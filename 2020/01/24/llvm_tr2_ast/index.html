@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>Kaleidoscope ast | mjblog</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="学习内容完成对https:&#x2F;&#x2F;github.com&#x2F;zy445566&#x2F;llvm-guide-zh&#x2F;tree&#x2F;master&#x2F;Chapter02和https:&#x2F;&#x2F;llvm.org&#x2F;docs&#x2F;tutorial&#x2F;MyFirstLanguageFrontend&#x2F;LangImpl02.html的学习。 练习看懂原网页后，实现同样的功能，补充测试。实现时需要做如下改进：1 作为纯粹的前端，至少在生成LLVM-I">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Kaleidoscope ast">
+<meta property="og:url" content="http://mjblog.github.io/2020/01/24/llvm_tr2_ast/index.html">
+<meta property="og:site_name" content="mjblog">
+<meta property="og:description" content="学习内容完成对https:&#x2F;&#x2F;github.com&#x2F;zy445566&#x2F;llvm-guide-zh&#x2F;tree&#x2F;master&#x2F;Chapter02和https:&#x2F;&#x2F;llvm.org&#x2F;docs&#x2F;tutorial&#x2F;MyFirstLanguageFrontend&#x2F;LangImpl02.html的学习。 练习看懂原网页后，实现同样的功能，补充测试。实现时需要做如下改进：1 作为纯粹的前端，至少在生成LLVM-I">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2020-01-23T16:36:05.000Z">
+<meta property="article:modified_time" content="2020-07-28T02:15:27.729Z">
+<meta property="article:author" content="Ma Jiang">
+<meta property="article:tag" content="LLVM_STUDY">
+<meta name="twitter:card" content="summary">
+  
+    <link rel="alternate" href="/atom.xml" title="mjblog" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+  
+
+<meta name="generator" content="Hexo 4.2.1"></head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">mjblog</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="搜索"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://mjblog.github.io"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-llvm_tr2_ast" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2020/01/24/llvm_tr2_ast/" class="article-date">
+  <time datetime="2020-01-23T16:36:05.000Z" itemprop="datePublished">2020-01-24</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      Kaleidoscope ast
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="学习内容"><a href="#学习内容" class="headerlink" title="学习内容"></a>学习内容</h2><p>完成对<a href="https://github.com/zy445566/llvm-guide-zh/tree/master/Chapter02" target="_blank" rel="noopener">https://github.com/zy445566/llvm-guide-zh/tree/master/Chapter02</a><br>和<br><a href="https://llvm.org/docs/tutorial/MyFirstLanguageFrontend/LangImpl02.html" target="_blank" rel="noopener">https://llvm.org/docs/tutorial/MyFirstLanguageFrontend/LangImpl02.html</a><br>的学习。</p>
+<h2 id="练习"><a href="#练习" class="headerlink" title="练习"></a>练习</h2><p>看懂原网页后，实现同样的功能，补充测试。<br>实现时需要做如下改进：<br>1 作为纯粹的前端，至少在生成LLVM-IR前不应该依赖llvm的任何代码。将所有的llvm::make_unique 改为 std::make_unique(C++11中没有这个接口所以llvm自己实现了，C++14已经有了；最新的LLVM代码也已经完成了向std的切换)<br>2 将parser作为class封装起来<br>3 日志输出的封装<br>4 基本功能测试</p>
+<h2 id="扩展"><a href="#扩展" class="headerlink" title="扩展"></a>扩展</h2><p>clang 是如何实现AST的构建<br>玩具实现和clang的实现之间有没有实质性的区别</p>
+<h2 id="进展"><a href="#进展" class="headerlink" title="进展"></a>进展</h2><p>完成了示例parser的实现，并添加了对应的测试用例</p>
+<h3 id="实现"><a href="#实现" class="headerlink" title="实现"></a>实现</h3><p>除了完成了原示例外和前面计划的改进外，实现过程中还新增了一些改进，包括：<br>1 为每一个ast添加了type类型，便于管理ast指针<br>2 将每一个全局ast存入了统一的vector中，便于后续读取处理<br>3 为各个ast的内部接口添加了访问接口，以便读出数据进行测试<br>4 为所有的prototype提供了全局hash表，为后续call的一致性检查提供了便利<br>5 改进了原示例对toplevel expr的处理逻辑，将这些expr推入2步提供的vector中管理，不再放入一个匿名函数中（以避免重名等问题）<br>6 严格分层，parser不直接读取原始的char，其全部输入都来自lexer给出的token<br>7 小幅改进binary_op的相关解析流程，将原有流程中 op优先级和binary表达式结束 混合判断的情况做了拆分，逻辑上更易理解</p>
+<h3 id="clang对比"><a href="#clang对比" class="headerlink" title="clang对比"></a>clang对比</h3><p>实现后，查看了clang的代码。<br>clang的parser基本解析流程和玩具示例的没有实质上的区别(注意到clang的parser也是处理token，不直接读取char)，尤其是binary_op的解析。<br>clang的lib/Parse/ParseExpr.cpp的ParseRHSOfBinaryExpression和示例中的parse_binary_expr基本逻辑是完全一样的。<br>阅读clang代码，发现了一些clang实现可借鉴的地方：<br>1 使用  using定义专有类型，可以使得代码更简洁</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">using</span> ExprResult = ActionResult&lt;Expr *&gt;;</span><br></pre></td></tr></table></figure>
+<p>2 使用class内的模板函数自动完成指针类型的转换，可以使代码更简洁</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">template</span> &lt;<span class="keyword">typename</span> PtrT&gt; <span class="function">PtrT <span class="title">getPtrAs</span><span class="params">()</span> <span class="keyword">const</span> </span>&#123;</span><br><span class="line">  <span class="keyword">return</span> <span class="built_in">get</span>();</span><br></pre></td></tr></table></figure>
+<p>3 定制测试框架设计（dump出文本+模式匹配），测试用例开发效率确实远高于直接使用gtest等通用单元测试框架</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://mjblog.github.io/2020/01/24/llvm_tr2_ast/" data-id="ckg246lq3000h52fa060u16zx" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/LLVM-STUDY/" rel="tag">LLVM_STUDY</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2020/02/12/llvm_tr3_codegen/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          Kaleidoscope LLVM-IR codegen
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2020/01/19/deep_learning/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">python深度学习</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">标签</h3>
+    <div class="widget">
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/AI/" rel="tag">AI</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/GRAALVM/" rel="tag">GRAALVM</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/IDE/" rel="tag">IDE</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/LLVM-STUDY/" rel="tag">LLVM_STUDY</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/env/" rel="tag">env</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">标签云</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/AI/" style="font-size: 20px;">AI</a> <a href="/tags/GRAALVM/" style="font-size: 10px;">GRAALVM</a> <a href="/tags/IDE/" style="font-size: 10px;">IDE</a> <a href="/tags/LLVM-STUDY/" style="font-size: 20px;">LLVM_STUDY</a> <a href="/tags/env/" style="font-size: 10px;">env</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">归档</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/09/">九月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/07/">七月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/06/">六月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/05/">五月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/04/">四月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/03/">三月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/02/">二月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/01/">一月 2020</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">最新文章</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2020/09/25/graal_license/">graalvm license分析</a>
+          </li>
+        
+          <li>
+            <a href="/2020/09/18/eclipse_theia/">eclipse theia 研究</a>
+          </li>
+        
+          <li>
+            <a href="/2020/07/28/first-test/">ubuntu 16.04下驱动TP-LINK TL-WDN6200H免驱版无线网卡</a>
+          </li>
+        
+          <li>
+            <a href="/2020/07/09/tvm_ir_debug/">tvm 构建结果调试</a>
+          </li>
+        
+          <li>
+            <a href="/2020/06/05/arduino_dev/">arduino开发体验</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2020 Ma Jiang<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+
+  
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+
+
+<script src="/js/script.js"></script>
+
+
+  </div>
+</body>
+</html>

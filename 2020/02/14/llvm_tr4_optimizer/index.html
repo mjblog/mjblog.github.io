@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>Kaleidoscope optmizer | mjblog</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="学习内容完成对 https:&#x2F;&#x2F;llvm.org&#x2F;docs&#x2F;tutorial&#x2F;MyFirstLanguageFrontend&#x2F;LangImpl04.html 的学习。 练习看懂原网页后，实现同样的功能（但将原示例的JIT方式改为传统编译流程）。 扩展1 在dump出LLVMIR后，能否使用编译好的llvm组件实现编译运行等功能？应该如何做？2 编写一个driver封装(可以使用shell)，把ma">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Kaleidoscope optmizer">
+<meta property="og:url" content="http://mjblog.github.io/2020/02/14/llvm_tr4_optimizer/index.html">
+<meta property="og:site_name" content="mjblog">
+<meta property="og:description" content="学习内容完成对 https:&#x2F;&#x2F;llvm.org&#x2F;docs&#x2F;tutorial&#x2F;MyFirstLanguageFrontend&#x2F;LangImpl04.html 的学习。 练习看懂原网页后，实现同样的功能（但将原示例的JIT方式改为传统编译流程）。 扩展1 在dump出LLVMIR后，能否使用编译好的llvm组件实现编译运行等功能？应该如何做？2 编写一个driver封装(可以使用shell)，把ma">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2020-02-14T09:33:23.000Z">
+<meta property="article:modified_time" content="2020-07-28T02:15:27.730Z">
+<meta property="article:author" content="Ma Jiang">
+<meta property="article:tag" content="LLVM_STUDY">
+<meta name="twitter:card" content="summary">
+  
+    <link rel="alternate" href="/atom.xml" title="mjblog" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+  
+
+<meta name="generator" content="Hexo 4.2.1"></head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">mjblog</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="搜索"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://mjblog.github.io"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-llvm_tr4_optimizer" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2020/02/14/llvm_tr4_optimizer/" class="article-date">
+  <time datetime="2020-02-14T09:33:23.000Z" itemprop="datePublished">2020-02-14</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      Kaleidoscope optmizer
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="学习内容"><a href="#学习内容" class="headerlink" title="学习内容"></a>学习内容</h2><p>完成对 <a href="https://llvm.org/docs/tutorial/MyFirstLanguageFrontend/LangImpl04.html" target="_blank" rel="noopener">https://llvm.org/docs/tutorial/MyFirstLanguageFrontend/LangImpl04.html</a> 的学习。</p>
+<h2 id="练习"><a href="#练习" class="headerlink" title="练习"></a>练习</h2><p>看懂原网页后，实现同样的功能（但将原示例的JIT方式改为传统编译流程）。</p>
+<h2 id="扩展"><a href="#扩展" class="headerlink" title="扩展"></a>扩展</h2><p>1 在dump出LLVMIR后，能否使用编译好的llvm组件实现编译运行等功能？应该如何做？<br>2 编写一个driver封装(可以使用shell)，把main函数作为入口编译成可执行程序</p>
+<h2 id="进展"><a href="#进展" class="headerlink" title="进展"></a>进展</h2><p>完成了原示例中的优化部分，删掉了原示例中的JIT部分。</p>
+<h3 id="实现"><a href="#实现" class="headerlink" title="实现"></a>实现</h3><p>实现了如下的主要变更：<br>1 删掉了JIT功能，原实例中的扩展库函数没有实际意义也删掉了（有extern语法就肯定能扩展，与JIT功能无关）<br>2 新增了模块级别的优化功能，可以对单个源代码文件进行整体优化（如inline等）<br>3 将Passmanager的实现从示例的legacy切换到了新的实现上<br>4 实现了输入文件的编译</p>
+<h3 id="扩展问题"><a href="#扩展问题" class="headerlink" title="扩展问题"></a>扩展问题</h3><p>1 玩具前端codegen到出LLVM-IR后，可以使用LLVM提供的独立opt工具进行优化，优化后的输出可以是LLVM-IR的文本形式(-S参数)也是可以bitcode。然后再使用clang编译成二进制文件，就可以进行通常的链接了。也就是说，如果不介意多一次IR导出和IR导入的性能损耗，其实优化是完全可以不必在toy_compiler中实现的。</p>
+<p>2 编写了一个compiler.sh，可以把入参文件编译为可执行文件（需要提供main函数）。添加了一个kout函数专门用于打印函数返回值。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://mjblog.github.io/2020/02/14/llvm_tr4_optimizer/" data-id="ckg246lq5000k52fa12hrdk51" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/LLVM-STUDY/" rel="tag">LLVM_STUDY</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2020/02/18/llvm_tr5_control_flow/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          Kaleidoscope control flow
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2020/02/12/llvm_tr3_codegen/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">Kaleidoscope LLVM-IR codegen</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">标签</h3>
+    <div class="widget">
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/AI/" rel="tag">AI</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/GRAALVM/" rel="tag">GRAALVM</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/IDE/" rel="tag">IDE</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/LLVM-STUDY/" rel="tag">LLVM_STUDY</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/env/" rel="tag">env</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">标签云</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/AI/" style="font-size: 20px;">AI</a> <a href="/tags/GRAALVM/" style="font-size: 10px;">GRAALVM</a> <a href="/tags/IDE/" style="font-size: 10px;">IDE</a> <a href="/tags/LLVM-STUDY/" style="font-size: 20px;">LLVM_STUDY</a> <a href="/tags/env/" style="font-size: 10px;">env</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">归档</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/09/">九月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/07/">七月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/06/">六月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/05/">五月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/04/">四月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/03/">三月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/02/">二月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/01/">一月 2020</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">最新文章</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2020/09/25/graal_license/">graalvm license分析</a>
+          </li>
+        
+          <li>
+            <a href="/2020/09/18/eclipse_theia/">eclipse theia 研究</a>
+          </li>
+        
+          <li>
+            <a href="/2020/07/28/first-test/">ubuntu 16.04下驱动TP-LINK TL-WDN6200H免驱版无线网卡</a>
+          </li>
+        
+          <li>
+            <a href="/2020/07/09/tvm_ir_debug/">tvm 构建结果调试</a>
+          </li>
+        
+          <li>
+            <a href="/2020/06/05/arduino_dev/">arduino开发体验</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2020 Ma Jiang<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+
+  
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+
+
+<script src="/js/script.js"></script>
+
+
+  </div>
+</body>
+</html>

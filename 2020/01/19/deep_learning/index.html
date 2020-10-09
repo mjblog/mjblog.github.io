@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>python深度学习 | mjblog</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="环境问题总结启动keras示例，python3 examples&#x2F;mnist_cnn.py找不到cuda相关的库。原因是tensorflow不支持10.2版本的cuda，安装10.0版本的cuda并添加库的搜索目录后解决（修改ld.conf后运行ldconfig）。NVIDIA的驱动仍然可以使用最新的版本。 启动keras示例，python3 examples&#x2F;mnist_cnn.py遇到显卡无法">
+<meta property="og:type" content="article">
+<meta property="og:title" content="python深度学习">
+<meta property="og:url" content="http://mjblog.github.io/2020/01/19/deep_learning/index.html">
+<meta property="og:site_name" content="mjblog">
+<meta property="og:description" content="环境问题总结启动keras示例，python3 examples&#x2F;mnist_cnn.py找不到cuda相关的库。原因是tensorflow不支持10.2版本的cuda，安装10.0版本的cuda并添加库的搜索目录后解决（修改ld.conf后运行ldconfig）。NVIDIA的驱动仍然可以使用最新的版本。 启动keras示例，python3 examples&#x2F;mnist_cnn.py遇到显卡无法">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2020-01-19T03:13:37.000Z">
+<meta property="article:modified_time" content="2020-07-28T02:15:27.725Z">
+<meta property="article:author" content="Ma Jiang">
+<meta property="article:tag" content="AI">
+<meta name="twitter:card" content="summary">
+  
+    <link rel="alternate" href="/atom.xml" title="mjblog" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+  
+
+<meta name="generator" content="Hexo 4.2.1"></head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">mjblog</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="搜索"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://mjblog.github.io"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-deep_learning" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2020/01/19/deep_learning/" class="article-date">
+  <time datetime="2020-01-19T03:13:37.000Z" itemprop="datePublished">2020-01-19</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      python深度学习
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="环境问题总结"><a href="#环境问题总结" class="headerlink" title="环境问题总结"></a>环境问题总结</h2><h3 id="启动keras示例，python3-examples-mnist-cnn-py"><a href="#启动keras示例，python3-examples-mnist-cnn-py" class="headerlink" title="启动keras示例，python3 examples/mnist_cnn.py"></a>启动keras示例，python3 examples/mnist_cnn.py</h3><p>找不到cuda相关的库。原因是tensorflow不支持10.2版本的cuda，安装10.0版本的cuda并添加库的搜索目录后解决（修改ld.conf后运行ldconfig）。<br>NVIDIA的驱动仍然可以使用最新的版本。</p>
+<h3 id="启动keras示例，python3-examples-mnist-cnn-py-1"><a href="#启动keras示例，python3-examples-mnist-cnn-py-1" class="headerlink" title="启动keras示例，python3 examples/mnist_cnn.py"></a>启动keras示例，python3 examples/mnist_cnn.py</h3><p>遇到显卡无法正确使用的问题(无法分配内存)，可以在代码的头部使用添加如下片段解决。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> tensorflow.compat.v1 <span class="keyword">import</span> ConfigProto</span><br><span class="line"><span class="keyword">from</span> tensorflow.compat.v1 <span class="keyword">import</span> InteractiveSession</span><br><span class="line"></span><br><span class="line">config = ConfigProto()</span><br><span class="line">config.gpu_options.allow_growth = <span class="literal">True</span></span><br><span class="line">session = InteractiveSession(config=config)</span><br></pre></td></tr></table></figure>
+
+<h3 id="遇到tensorflow报错Unknown-Failed-to-get-convolution-algorithm-This-is-probably-because-cuDNN-failed-to-initialize"><a href="#遇到tensorflow报错Unknown-Failed-to-get-convolution-algorithm-This-is-probably-because-cuDNN-failed-to-initialize" class="headerlink" title="遇到tensorflow报错Unknown: Failed to get convolution algorithm. This is probably because cuDNN failed to initialize"></a>遇到tensorflow报错Unknown: Failed to get convolution algorithm. This is probably because cuDNN failed to initialize</h3><p>重启后解决，可能和休眠的处理不好有关系。<br>使用notebook的时候睡眠，遇到了两次休眠后无法唤醒的问题。</p>
+<h2 id="实验问题"><a href="#实验问题" class="headerlink" title="实验问题"></a>实验问题</h2><h3 id="5-3-1无法复现书中的96-精度"><a href="#5-3-1无法复现书中的96-精度" class="headerlink" title="5.3.1无法复现书中的96%精度"></a>5.3.1无法复现书中的96%精度</h3><h4 id="问题现象"><a href="#问题现象" class="headerlink" title="问题现象"></a>问题现象</h4><p>使用书中附带的notebook，在执行快速特征提取时，可以获得预期的90%精度。<br>但是使用数据增强后的程序，仍然也只能达到90%的精度。</p>
+<h4 id="问题分析"><a href="#问题分析" class="headerlink" title="问题分析"></a>问题分析</h4><p>反复核对了代码，数据集，然后重新执行了多次仍然只有90%的精度。<br>使用goolge搜索using-a-pretrained-convnet，可以找到<a href="https://github.com/fchollet/deep-learning-with-python-notebooks/issues/21。" target="_blank" rel="noopener">https://github.com/fchollet/deep-learning-with-python-notebooks/issues/21。</a><br>阅读其中的讨论，最终可以在<a href="https://forums.manning.com/posts/list/42880.page" target="_blank" rel="noopener">https://forums.manning.com/posts/list/42880.page</a> 中找到较为完整的解释。<br>When I run the code given in the book, my validation accuracy plateaus around 0.90, exactly like the original poster described. I think the problem is that in the book’s code, the images are being read in from disk as numpy arrays of float32 values in the range [0.0, 1.0], due to the keyword argument [tt]rescale=1./255[/tt] in the ImageDataGenerator constructors. These images are then automatically fed directly to the VGG16 convolutional base when the model’s [tt]fit_generator[/tt] method is called.</p>
+<p>However, the original VGG16 network was trained on images that were preprocessed by zero-centering each color channel with respect to the ImageNet database. In Keras, there is a function available (in keras.applications.vgg16) that does this transformation, called [tt]preprocess_input[/tt]. In fact, if you test the full pretrained VGG16 network by itself, you will find that in order to get accurate classification results, you must call [tt]preprocess_input[/tt] first before calling the [tt]predict[/tt] method. Furthermore, [tt]preprocess_input[/tt] must be called on images of float32 values in the range [0., 255.], not [0., 1.].</p>
+<p>So to summarize, there are two problems with the book’s example: first, it uses images with values in the range [0., 1.], and second, it does not call [tt]preprocess_input[/tt] before feeding the images to the VGG16 base.<br>问题的本质是本书作者在这一节犯了一个低级错误，在使用VGG16这个预训练模型时，再次训练时送入的数据没有按照VGG16模型的要求进行预处理。同时，作者使用的keras老版本有一个bug，conv_base.trainable = False这句没有生效，所以作者实际上是对整个VGG16模型做了再次完整的训练，网络自动适配了新的值域，精度仍然达到了96%。</p>
+<p>按照上面的建议修改notebook中的代码如下，确实能获得预期的96%精度。<br>使用    preprocessing_function=keras.applications.vgg16.preprocess_input和preprocessing_function=preprocess_input 没有实质性的差异。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> keras.applications.imagenet_utils <span class="keyword">import</span> preprocess_input</span><br><span class="line"></span><br><span class="line"><span class="keyword">from</span> keras <span class="keyword">import</span> optimizers</span><br><span class="line"></span><br><span class="line">train_datagen = ImageDataGenerator(</span><br><span class="line">    <span class="comment">#rescale=1./255,</span></span><br><span class="line"> <span class="comment">#    preprocessing_function=preprocess_input,</span></span><br><span class="line">    preprocessing_function=keras.applications.vgg16.preprocess_input,</span><br><span class="line">    rotation_range=<span class="number">40</span>,</span><br><span class="line">    width_shift_range=<span class="number">0.2</span>,</span><br><span class="line">    height_shift_range=<span class="number">0.2</span>,</span><br><span class="line">    shear_range=<span class="number">0.2</span>,</span><br><span class="line">    zoom_range=<span class="number">0.2</span>,</span><br><span class="line">    horizontal_flip=<span class="literal">True</span>,</span><br><span class="line">    fill_mode=<span class="string">'nearest'</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="comment">#test_datagen = ImageDataGenerator(rescale=1./255)</span></span><br><span class="line">test_datagen = ImageDataGenerator(preprocessing_function=preprocess_input)</span><br></pre></td></tr></table></figure>
+<p>并且，按照后续讨论的结果，对使用快速特征提取的代码也做正确的预处理，确实也能很快达到96%的精度。后面网友的讨论应该是正确的，对于这个问题来说，数据增强并不是必要的。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> keras.applications.imagenet_utils <span class="keyword">import</span> preprocess_input</span><br><span class="line"></span><br><span class="line"><span class="comment">#datagen = ImageDataGenerator(rescale=1./255)</span></span><br><span class="line">datagen = ImageDataGenerator(preprocessing_function=preprocess_input)</span><br></pre></td></tr></table></figure>
+<h4 id="收获"><a href="#收获" class="headerlink" title="收获"></a>收获</h4><p>&emsp;<font color=red>输入数据的准备极端重要</font>（类型正确，数值范围正确，统一的预处理方法），可能严重影响模型的精度；<br>&emsp;<font color=red>深度网络自动学习特征表示的能力确实很强</font>，一个使用0<del>255输入值域预训练的网络，只要不冻结它的weight，即使使用0</del>1值域的输入样本重新训练，也仍然能保留其绝大部分的分类能力。<font color=red>网络自动适应了输入值域的失配问题</font>；<br>&emsp;<font color=red>深度学习确实是实践重于理论，大神也可能犯低级错误</font>。本文作者就犯了输入数据准备的错误。由于低版本keras的bug（froenzen不生效，实际上预训练的网络被完全重新训练）加上深度网络的强大自动学习能力，作者使用低版本的keras即使输入了错误的值域数据也仍然获得了96%的高精度。由于这一结果符合预期，作者忽略了这个错误。</p>
+<h3 id="第6章学习的问题记录"><a href="#第6章学习的问题记录" class="headerlink" title="第6章学习的问题记录"></a>第6章学习的问题记录</h3><p>6.1.3 冻结与不冻结词嵌入层的对比<br>作为练习，6.1.3节中提到冻结词嵌入层和不冻结词嵌入层，针对不同的训练样本数量进行性能比较。<br>实际操作时，因为操作错误没有对训练过的模型进行清零。多次训练时，发现冻结词嵌入层时，如果扩大过训练样本数量，然后再降低样本数量再训练，仍然能保持很高的精度。本次练习中，10000个样本，如果用数千个样本训练过，再用500个样本训练网络，仍然可以保持很高的精度95%。而不冻结词嵌入层，用小样本量再训练，无法维持高精度。应该是反向传播破坏了嵌入层的正确表示。</p>
+<p>LSTM训练速度问题<br>LSTM训练速度很慢，并且GPU的利用率只能到35%。后续应该看看这里的性能瓶颈。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://mjblog.github.io/2020/01/19/deep_learning/" data-id="ckg246lpz000552fa0h4987gw" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/AI/" rel="tag">AI</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2020/01/24/llvm_tr2_ast/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          Kaleidoscope ast
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2020/01/14/llvm_tr1_lexer/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">Kaleidoscope lexer</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">标签</h3>
+    <div class="widget">
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/AI/" rel="tag">AI</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/GRAALVM/" rel="tag">GRAALVM</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/IDE/" rel="tag">IDE</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/LLVM-STUDY/" rel="tag">LLVM_STUDY</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/env/" rel="tag">env</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">标签云</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/AI/" style="font-size: 20px;">AI</a> <a href="/tags/GRAALVM/" style="font-size: 10px;">GRAALVM</a> <a href="/tags/IDE/" style="font-size: 10px;">IDE</a> <a href="/tags/LLVM-STUDY/" style="font-size: 20px;">LLVM_STUDY</a> <a href="/tags/env/" style="font-size: 10px;">env</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">归档</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/09/">九月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/07/">七月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/06/">六月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/05/">五月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/04/">四月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/03/">三月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/02/">二月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/01/">一月 2020</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">最新文章</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2020/09/25/graal_license/">graalvm license分析</a>
+          </li>
+        
+          <li>
+            <a href="/2020/09/18/eclipse_theia/">eclipse theia 研究</a>
+          </li>
+        
+          <li>
+            <a href="/2020/07/28/first-test/">ubuntu 16.04下驱动TP-LINK TL-WDN6200H免驱版无线网卡</a>
+          </li>
+        
+          <li>
+            <a href="/2020/07/09/tvm_ir_debug/">tvm 构建结果调试</a>
+          </li>
+        
+          <li>
+            <a href="/2020/06/05/arduino_dev/">arduino开发体验</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2020 Ma Jiang<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+
+  
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+
+
+<script src="/js/script.js"></script>
+
+
+  </div>
+</body>
+</html>

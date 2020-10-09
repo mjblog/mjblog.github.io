@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>Kaleidoscope user defined operator | mjblog</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="学习内容完成对 https:&#x2F;&#x2F;llvm.org&#x2F;docs&#x2F;tutorial&#x2F;MyFirstLanguageFrontend&#x2F;LangImpl06.html 的学习。 练习看懂原网页后，实现同样的功能。 扩展1 命名时没有限制operator是否能是常规字符(如abc,123等)，会否产生静默的关键字冲突？2 考虑如何处理两个特殊字符组成的操作符，如&#x3D;&#x3D;　!&#x3D;等。3 示例中的自定义operator">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Kaleidoscope user defined operator">
+<meta property="og:url" content="http://mjblog.github.io/2020/02/21/llvm_tr6_user_defined_operator/index.html">
+<meta property="og:site_name" content="mjblog">
+<meta property="og:description" content="学习内容完成对 https:&#x2F;&#x2F;llvm.org&#x2F;docs&#x2F;tutorial&#x2F;MyFirstLanguageFrontend&#x2F;LangImpl06.html 的学习。 练习看懂原网页后，实现同样的功能。 扩展1 命名时没有限制operator是否能是常规字符(如abc,123等)，会否产生静默的关键字冲突？2 考虑如何处理两个特殊字符组成的操作符，如&#x3D;&#x3D;　!&#x3D;等。3 示例中的自定义operator">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2020-02-21T10:22:51.000Z">
+<meta property="article:modified_time" content="2020-07-28T02:15:27.732Z">
+<meta property="article:author" content="Ma Jiang">
+<meta property="article:tag" content="LLVM_STUDY">
+<meta name="twitter:card" content="summary">
+  
+    <link rel="alternate" href="/atom.xml" title="mjblog" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+  
+
+<meta name="generator" content="Hexo 4.2.1"></head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">mjblog</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="搜索"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://mjblog.github.io"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-llvm_tr6_user_defined_operator" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2020/02/21/llvm_tr6_user_defined_operator/" class="article-date">
+  <time datetime="2020-02-21T10:22:51.000Z" itemprop="datePublished">2020-02-21</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      Kaleidoscope user defined operator
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="学习内容"><a href="#学习内容" class="headerlink" title="学习内容"></a>学习内容</h2><p>完成对 <a href="https://llvm.org/docs/tutorial/MyFirstLanguageFrontend/LangImpl06.html" target="_blank" rel="noopener">https://llvm.org/docs/tutorial/MyFirstLanguageFrontend/LangImpl06.html</a> 的学习。</p>
+<h2 id="练习"><a href="#练习" class="headerlink" title="练习"></a>练习</h2><p>看懂原网页后，实现同样的功能。</p>
+<h2 id="扩展"><a href="#扩展" class="headerlink" title="扩展"></a>扩展</h2><p>1 命名时没有限制operator是否能是常规字符(如abc,123等)，会否产生静默的关键字冲突？<br>2 考虑如何处理两个特殊字符组成的操作符，如==　!=等。<br>3 示例中的自定义operator是否能作为库使用？如果不能应该如何改进？</p>
+<h2 id="进展"><a href="#进展" class="headerlink" title="进展"></a>进展</h2><p>完成了原示例自定义binary和unary operator的功能，但是未支持用户定义”unary-“。<br>尚未支持unary-的原因是为了阻止用户犯错，我们禁止了用户定义使用保护字符（包括内置运算符、分隔符等）的operator。这里的检查规则比较简单，仅仅实现了基于char的比较，实际上过于严格，以至于阻止了用户定义unary-这样的合法要求。后续细化保护规则后(拆分运算符和受保护的字符两种类型，对运算符区分binary和uary类型)，即可支持unary-。</p>
+<h3 id="实现"><a href="#实现" class="headerlink" title="实现"></a>实现</h3><p>实现过程中发现原示例确实精炼，仅用很少的代码便实现了用户自定义operator的功能。但是，其精炼的代价是该功能仅仅具有演示价值而几乎没有实用价值。<br>例如，原示例没有在lexer做token分层，parser会直接读取输入的char。这样一来lexer可以非常非常简单。并且，在新增语法功能时，parser由于可以直接穿透处理char，需要新增的配合代码也很少。<br>但是这样的设计导致代码维护困难，parser中要直接处理token拆分逻辑，一旦语法变复杂，新增功能或更改已有逻辑(直接操作char的地方会很多)就会很困难。<br>另外，原示例没有错误防护的逻辑，这会导致用户犯错很难定位原因。</p>
+<p>实现过程中针对前面扩展中提出的问题，一一进行了改进。详细情况可参考扩展问题一节中的描述。<br>从实现后的实际情况看，改进引入了相当多的额外代码，工作量较大。作为示例，相较于引入大量的细节流程，原作者使用精简的方案确实是更好的权衡（示例丧失了扩展为真正可实用编译器的潜力，但仍然展现了主要的原理，解决了核心问题）。</p>
+<h3 id="扩展问题"><a href="#扩展问题" class="headerlink" title="扩展问题"></a>扩展问题</h3><p>1 命名时没有限制operator是否能是常规字符(如abc,123等)，会否产生静默的关键字冲突？<br>原示例几乎没有对自定义operator做错误防护。这将导致用户错误定义operator，很难察觉和定位到根因。<br>如下所示，覆盖内置操作符的优先级和语义将导致二义性和混乱。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">ready&gt; def binary + 80 (a b) a+b; </span><br><span class="line">ready&gt; Read function definition:define double @&quot;binary+&quot;(double %a, double %b) &#123;</span><br><span class="line">entry:</span><br><span class="line">  %addtmp &#x3D; fadd double %a, %b</span><br><span class="line">  ret double %addtmp</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">ready&gt; 1+2*3;</span><br><span class="line">ready&gt; Evaluated to 9.000000</span><br></pre></td></tr></table></figure>
+
+<p>定义保留字符’,’，parser无法理解。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">ready&gt; def unary , (a) a+1;</span><br><span class="line">ready&gt; Read function definition:define double @&quot;unary,&quot;(double %a) &#123;</span><br><span class="line">entry:</span><br><span class="line">  %addtmp &#x3D; fadd double %a, 1.000000e+00</span><br><span class="line">  ret double %addtmp</span><br><span class="line">&#125;</span><br><span class="line">ready&gt; def xy3(a) a+,a;</span><br><span class="line">ready&gt; Error: unknown token when expecting an expression</span><br><span class="line">ready&gt; Error: Unknown variable name</span><br></pre></td></tr></table></figure>
+
+<p>定义保留字符’(‘，parser无法理解。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">ready&gt; def unary ( (a) a+1;</span><br><span class="line">ready&gt; Read function definition:define double @&quot;unary(&quot;(double %a) &#123;</span><br><span class="line">entry:</span><br><span class="line">  %addtmp &#x3D; fadd double %a, 1.000000e+00</span><br><span class="line">  ret double %addtmp</span><br><span class="line">&#125;</span><br><span class="line">ready&gt; def xy4(a) a+(1  </span><br><span class="line">ready&gt; ;</span><br><span class="line">Error: expected &#39;)&#39;</span><br></pre></td></tr></table></figure>
+<p>为了避免这些错误，在实现时专门针对binary/unary的名称做了正确性校验(verify_operator_sym函数)。<br>在错误第一现场阻止错误，并给出清晰的提示。</p>
+<p>2 考虑如何处理两个特殊字符组成的操作符，如==　!=等。<br>原示例由于使用了char来作为operator的opcode，实际上就无法支持两字符操作符。但使用单char作为operator的opcode，大大简化了构建operator token的难度。因为只需要在parser中按需读出一个char就可以，无需考虑在lexer中如何正确切分的问题。<br>为了支持!= 和==等显然有意义的两字符operator，本次实现时在lexer中添加了一个map查找机制，如下所示。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (cur_token == TOKEN_BINARY || cur_token == TOKEN_UNARY)</span><br><span class="line">&#123;</span><br><span class="line">	<span class="keyword">if</span> (install_user_defined_operator(input_stream, cur_char))</span><br><span class="line">		<span class="keyword">return</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> (get_user_defined_operator(input_stream, cur_char))</span><br><span class="line">	<span class="keyword">return</span>;</span><br></pre></td></tr></table></figure>
+<p>install_user_defined_operator函数，在binary和unary关键字后识别并注册(就是插入到map中)用户自定义的operator token。<br>get_user_defined_operator中就可以查找已经注册的用户自定义operator，并给出正确的token类型（用户自定义unary或者binary）。</p>
+<p>3 示例中的自定义operator是否能作为库使用？如果不能应该如何改进？<br>从实现原理上来说，因为operator 也是在proto中解析的，与函数一样。<br>所以自定义的operator只要遵循先extern申明，再引用的规则，就可以以库的方式正常使用(定义在单独的库文件中，使用时链接二进制文件)。<br>但是，原示例没有考虑容错问题。<br>parser在工作时是按照extern声明的优先级工作。如果定义时的优先级和extern时的不一致，则程序的逻辑将静默改变。用户要发现这样的问题可能很困难（这个和C中没有正确包含头文件的情况类似）。<br>为了解决这个问题，参考C++的方法，把prio作为一个强制信息加入到binary/unary函数的名称中。这样一旦extern声明和def的定义不一致，链接时会找不到函数定义。用户将不能得到可工作（但逻辑错误）的二进制文件。</p>
+<h3 id="实现中遇到的问题"><a href="#实现中遇到的问题" class="headerlink" title="实现中遇到的问题"></a>实现中遇到的问题</h3><p>1 prototype_tab的key从string切换到string_view后，遇到了内存数据错误的问题。详细记录如下。<br>使用string_view作为map的key时，我们调用了tab.insert(make_pair(a_string, my_val));。原以为string会自动转为string_view，tab中的key(string_view)数据应该指向a_string。实际发现key的数据指向了一个insert所在的函数栈。<br>使用下面的小型测试用例即可复现出问题，pair中的key并不是指向我们希望的全局数据。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;string&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;string_view&gt;</span></span></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;</span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">test_view</span><span class="params">(pair&lt;string_view, <span class="keyword">int</span>&gt; p)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">        <span class="built_in">cout</span> &lt;&lt; <span class="string">"value:"</span>&lt;&lt; p.first.data() &lt;&lt; <span class="built_in">endl</span>;</span><br><span class="line">        <span class="built_in">cout</span> &lt;&lt; <span class="string">"address:"</span> &lt;&lt; (<span class="keyword">void</span>*)p.first.data() &lt;&lt; <span class="built_in">endl</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="built_in">string</span> <span class="title">global</span><span class="params">(<span class="string">"abc"</span>)</span></span>;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">        <span class="built_in">cout</span> &lt;&lt; <span class="string">"value_global:"</span> &lt;&lt; global.data() &lt;&lt; <span class="built_in">endl</span>;</span><br><span class="line">        <span class="built_in">cout</span> &lt;&lt; <span class="string">"address_global:"</span> &lt;&lt; (<span class="keyword">void</span>*)global.data() &lt;&lt; <span class="built_in">endl</span>;</span><br><span class="line">        test_view(make_pair(global,<span class="number">1</span>));</span><br><span class="line">        <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>使用g++ save-temps -fdump-tree-all-details -std=c++17编译上面的代码，可以比较清楚地看出问题。<br>这里的核心错误在于：<br>make_pair是一个模板函数，(为了提供泛型能力)它并不知道（或者提供这个约束）第一个参数应该是string_view。当我们提供一个string作为第一个参数时，test_view(make_pair(global,1));的调用并没有变成我们希望的test_view(make_pair((string_view)global,1))。而是变成了如下的序列。<br>tmp_pair = make_pair&lt;string, int&gt;(global, 1);<br>tmp_pair_to_call = pair&lt;string_view, int&gt; (tmp_pair);<br>test_view(tmp_pair_to_call);<br>这样传到test_view中pair中的string_view实际上指向栈上创建的临时变量。一旦tmp_pair所在的函数return，string_view中的key就乱掉了（use after free）。</p>
+<p>从这次经历看string_view确实是非常容易出错的点，使用时需要特别谨慎。参考 <a href="https://alexgaynor.net/2019/apr/21/modern-c++-wont-save-us/" target="_blank" rel="noopener">https://alexgaynor.net/2019/apr/21/modern-c++-wont-save-us/</a> 的如下示例，string_view允许指向临时对象，这确实很容易导致错误，并且很难发现。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">  <span class="built_in">std</span>::<span class="built_in">string</span> s = <span class="string">"Hellooooooooooooooo "</span>;</span><br><span class="line">  <span class="built_in">std</span>::string_view sv = s + <span class="string">"World\n"</span>;</span><br><span class="line">  <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; sv;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>2 切换到clang8编译器后，优化LLVM-IR时程序段错误。<br>google搜索到了下面的邮件，这是一个gcc/clang的abi兼容性问题。<br><a href="http://lists.llvm.org/pipermail/llvm-dev/2019-January/129567.html" target="_blank" rel="noopener">http://lists.llvm.org/pipermail/llvm-dev/2019-January/129567.html</a><br>需要将llvm库用clang重新编译（或者升级到最新的llvm）。<br>升级到最新的llvm代码后确实解决了该问题。</p>
+<p>3 升级到最新的llvm后，遇到了asan报大量indirect leak问题。<br>仔细检查代码后，发现llvm_optimizer::optimize_function等函数中，<br>使用了createTargetMachine创建的TargetMachine *。<br>添加了delete TargetMachine *的语句后，leak告警消失。<br>老版本为何没报leak，暂时没有进一步核查。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://mjblog.github.io/2020/02/21/llvm_tr6_user_defined_operator/" data-id="ckg246lql001852fa980q0zu5" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/LLVM-STUDY/" rel="tag">LLVM_STUDY</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2020/03/02/elf_go/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          ELFGO 编译和测试
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2020/02/18/llvm_tr5_control_flow/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">Kaleidoscope control flow</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">标签</h3>
+    <div class="widget">
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/AI/" rel="tag">AI</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/GRAALVM/" rel="tag">GRAALVM</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/IDE/" rel="tag">IDE</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/LLVM-STUDY/" rel="tag">LLVM_STUDY</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/env/" rel="tag">env</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">标签云</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/AI/" style="font-size: 20px;">AI</a> <a href="/tags/GRAALVM/" style="font-size: 10px;">GRAALVM</a> <a href="/tags/IDE/" style="font-size: 10px;">IDE</a> <a href="/tags/LLVM-STUDY/" style="font-size: 20px;">LLVM_STUDY</a> <a href="/tags/env/" style="font-size: 10px;">env</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">归档</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/09/">九月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/07/">七月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/06/">六月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/05/">五月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/04/">四月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/03/">三月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/02/">二月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/01/">一月 2020</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">最新文章</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2020/09/25/graal_license/">graalvm license分析</a>
+          </li>
+        
+          <li>
+            <a href="/2020/09/18/eclipse_theia/">eclipse theia 研究</a>
+          </li>
+        
+          <li>
+            <a href="/2020/07/28/first-test/">ubuntu 16.04下驱动TP-LINK TL-WDN6200H免驱版无线网卡</a>
+          </li>
+        
+          <li>
+            <a href="/2020/07/09/tvm_ir_debug/">tvm 构建结果调试</a>
+          </li>
+        
+          <li>
+            <a href="/2020/06/05/arduino_dev/">arduino开发体验</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2020 Ma Jiang<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+
+  
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+
+
+<script src="/js/script.js"></script>
+
+
+  </div>
+</body>
+</html>

@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>nvidia 性能分析工具 | mjblog</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="总体结构  nsight system是个系统级的工具，可以综合看系统的全貌。特别适合于查看那些负载卸载到了GPU上，哪些操作各自耗时多少，CPU是否在等待数据等等。如下图所示。  另外，只能启动程序并测量，不能attach进程，稍微有点不方便。可以选择手动start测量。 nsight compute介绍可参考https:&#x2F;&#x2F;devblogs.nvidia.com&#x2F;using-nsight-co">
+<meta property="og:type" content="article">
+<meta property="og:title" content="nvidia 性能分析工具">
+<meta property="og:url" content="http://mjblog.github.io/2020/03/26/nvida-nsight/index.html">
+<meta property="og:site_name" content="mjblog">
+<meta property="og:description" content="总体结构  nsight system是个系统级的工具，可以综合看系统的全貌。特别适合于查看那些负载卸载到了GPU上，哪些操作各自耗时多少，CPU是否在等待数据等等。如下图所示。  另外，只能启动程序并测量，不能attach进程，稍微有点不方便。可以选择手动start测量。 nsight compute介绍可参考https:&#x2F;&#x2F;devblogs.nvidia.com&#x2F;using-nsight-co">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://mjblog.github.io/2020/03/26/nvida-nsight/nvidia_profile.png">
+<meta property="og:image" content="http://mjblog.github.io/2020/03/26/nvida-nsight/nsight.png">
+<meta property="og:image" content="http://mjblog.github.io/2020/03/26/nvida-nsight/compute_profile.png">
+<meta property="og:image" content="http://mjblog.github.io/2020/03/26/nvida-nsight/compute_overview.png">
+<meta property="article:published_time" content="2020-03-26T11:24:06.000Z">
+<meta property="article:modified_time" content="2020-07-28T02:15:27.735Z">
+<meta property="article:author" content="Ma Jiang">
+<meta property="article:tag" content="AI">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://mjblog.github.io/2020/03/26/nvida-nsight/nvidia_profile.png">
+  
+    <link rel="alternate" href="/atom.xml" title="mjblog" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+  
+
+<meta name="generator" content="Hexo 4.2.1"></head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">mjblog</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="搜索"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://mjblog.github.io"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-nvida-nsight" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2020/03/26/nvida-nsight/" class="article-date">
+  <time datetime="2020-03-26T11:24:06.000Z" itemprop="datePublished">2020-03-26</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      nvidia 性能分析工具
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h1 id="总体结构"><a href="#总体结构" class="headerlink" title="总体结构"></a>总体结构</h1><img src="/2020/03/26/nvida-nsight/nvidia_profile.png" class="" title="NVIDIA 性能工具关系">
+
+<h1 id="nsight-system"><a href="#nsight-system" class="headerlink" title="nsight system"></a>nsight system</h1><p>是个系统级的工具，可以综合看系统的全貌。<br>特别适合于查看那些负载卸载到了GPU上，哪些操作各自耗时多少，CPU是否在等待数据等等。<br>如下图所示。</p>
+<img src="/2020/03/26/nvida-nsight/nsight.png" class="" title="nsight 核心功能示意图">
+<p>另外，只能启动程序并测量，不能attach进程，稍微有点不方便。<br>可以选择手动start测量。</p>
+<h1 id="nsight-compute"><a href="#nsight-compute" class="headerlink" title="nsight compute"></a>nsight compute</h1><h2 id="介绍"><a href="#介绍" class="headerlink" title="介绍"></a>介绍</h2><p>可参考<a href="https://devblogs.nvidia.com/using-nsight-compute-to-inspect-your-kernels/" target="_blank" rel="noopener">https://devblogs.nvidia.com/using-nsight-compute-to-inspect-your-kernels/</a></p>
+<p>Important Features<br>    Interactive kernel profiler and API debugger<br>    Graphical profile report<br>    Result comparison across one or multiple reports within the tool<br>    Fast Data Collection<br>    UI and Command Line interface<br>    Fully customizable reports and analysis rules</p>
+<h2 id="试用问题"><a href="#试用问题" class="headerlink" title="试用问题"></a>试用问题</h2><h3 id="图形界面直接启动程序始终无法连接上"><a href="#图形界面直接启动程序始终无法连接上" class="headerlink" title="图形界面直接启动程序始终无法连接上"></a>图形界面直接启动程序始终无法连接上</h3><p>问题现象：<br>试图使用该工具观察jupyter-notebook时，图形界面上使用launch启动后，始终报错连接不上(把程序改为/usr/bin/python3也一样)，而attach列表中也始终看不到任何进程(使用命令行工具/opt/nvidia/nsight-compute/2019.5.0/nv-nsight-cu-cli  –mode=launch 启动也一样)。</p>
+<p>问题解决：<br>nsight compute分析有几个先决条件：<br>1 必须由compute来启动程序<br>2 程序必须要走到调用cuda库的地方，compute才能看到并连接上<br>3 compute默认只监控其启动的主程序，如果是主程序的child启动cuda(jupyter-notebook就属于这类)，并且希望使用Interactive Profile模式，需要调用命令行工具nv-nsight-cu-cli  –mode=launch –target-processes all启动程序，然后再在图形界面上attach。<br>注：<br>Profile模式下有Target Process选项，选择all就无需使用cli了，如下图所示。</p>
+<img src="/2020/03/26/nvida-nsight/compute_profile.png" class="" title="nsight compute profile示意图">
+
+<p>问题分析过程：<br>由于图形界面上看不到任何有效的提示信息，转而考虑使用命令工具，看看有没有有用的提示。<br>使用如下方式启动nv-nsight-cu-cli  –mode=launch后再nv-nsight-cu-cli  –mode=attach  –hostname 127.0.0.1给出了一个有用的提示。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&#x3D;&#x3D;WARNING&#x3D;&#x3D; Profiling kernels launched by child processes requires the --target-processes all option</span><br></pre></td></tr></table></figure>
+<p>再看nv-nsight-cu-cli  的help信息，原来默认情况下compute只监控主进程不监控child。于是改为如下命令启动。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&#x2F;opt&#x2F;nvidia&#x2F;nsight-compute&#x2F;2019.5.0&#x2F;nv-nsight-cu-cli  --mode&#x3D;launch --target-processes all jupyter-notebook</span><br></pre></td></tr></table></figure>
+<p>在图形界面中attach仍然看不到任何进程。<br>考虑到compute需要连接cuda，可能是没有执行到cuda。<br>在浏览器中连接jupyter-notebook并启动一个工作脚本，<br>此时图形界面attach列表中就出现了进程。</p>
+<h3 id="采集性能时报没有权限，没有出现数据"><a href="#采集性能时报没有权限，没有出现数据" class="headerlink" title="采集性能时报没有权限，没有出现数据"></a>采集性能时报没有权限，没有出现数据</h3><p>参考<a href="https://developer.nvidia.com/nvidia-development-tools-solutions-ERR_NVGPUCTRPERM-permission-issue-performance-counters。" target="_blank" rel="noopener">https://developer.nvidia.com/nvidia-development-tools-solutions-ERR_NVGPUCTRPERM-permission-issue-performance-counters。</a><br>为了简单起见，在个人电脑上可以直接允许所有用户采集GPU 性能。<br>在/etc/modprobe.d新建一个文件，写入如下一行，并重启一下就可以了。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">options nvidia &quot;NVreg_RestrictProfilingToAdminUsers&#x3D;0&quot;</span><br></pre></td></tr></table></figure>
+<h2 id="试用感受"><a href="#试用感受" class="headerlink" title="试用感受"></a>试用感受</h2><p>compute是一个比较综合和强大的工具，与intel的vtune类似，它还提供了基本的优化建议。其示例界面如下图所示。</p>
+<img src="/2020/03/26/nvida-nsight/compute_overview.png" class="" title="nsight compute 功能示意图">
+<p>在nvidia gpu调优时应该会起到很好的辅助作用。</p>
+<h1 id="NVIDIA-Visual-Profiler"><a href="#NVIDIA-Visual-Profiler" class="headerlink" title="NVIDIA Visual Profiler"></a>NVIDIA Visual Profiler</h1><p>似乎无法处理较新的GPU，采集不到数据。<br>考虑到它似乎属于较为旧的工具，暂没有进一步分析不能使用的原因。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://mjblog.github.io/2020/03/26/nvida-nsight/" data-id="ckg246lq8000u52fa649ydqmf" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/AI/" rel="tag">AI</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2020/04/10/clang-tidy_in_vscode/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          vscode中使用clang-tidy
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2020/03/20/TVM/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">TVM</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">标签</h3>
+    <div class="widget">
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/AI/" rel="tag">AI</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/GRAALVM/" rel="tag">GRAALVM</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/IDE/" rel="tag">IDE</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/LLVM-STUDY/" rel="tag">LLVM_STUDY</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/env/" rel="tag">env</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">标签云</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/AI/" style="font-size: 20px;">AI</a> <a href="/tags/GRAALVM/" style="font-size: 10px;">GRAALVM</a> <a href="/tags/IDE/" style="font-size: 10px;">IDE</a> <a href="/tags/LLVM-STUDY/" style="font-size: 20px;">LLVM_STUDY</a> <a href="/tags/env/" style="font-size: 10px;">env</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">归档</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/09/">九月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/07/">七月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/06/">六月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/05/">五月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/04/">四月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/03/">三月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/02/">二月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/01/">一月 2020</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">最新文章</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2020/09/25/graal_license/">graalvm license分析</a>
+          </li>
+        
+          <li>
+            <a href="/2020/09/18/eclipse_theia/">eclipse theia 研究</a>
+          </li>
+        
+          <li>
+            <a href="/2020/07/28/first-test/">ubuntu 16.04下驱动TP-LINK TL-WDN6200H免驱版无线网卡</a>
+          </li>
+        
+          <li>
+            <a href="/2020/07/09/tvm_ir_debug/">tvm 构建结果调试</a>
+          </li>
+        
+          <li>
+            <a href="/2020/06/05/arduino_dev/">arduino开发体验</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2020 Ma Jiang<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+
+  
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+
+
+<script src="/js/script.js"></script>
+
+
+  </div>
+</body>
+</html>

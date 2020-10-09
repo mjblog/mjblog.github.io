@@ -1,0 +1,802 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>mjblog</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta property="og:type" content="website">
+<meta property="og:title" content="mjblog">
+<meta property="og:url" content="http://mjblog.github.io/index.html">
+<meta property="og:site_name" content="mjblog">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:author" content="Ma Jiang">
+<meta name="twitter:card" content="summary">
+  
+    <link rel="alternate" href="/atom.xml" title="mjblog" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+  
+
+<meta name="generator" content="Hexo 4.2.1"></head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">mjblog</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="搜索"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://mjblog.github.io"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main">
+  
+    <article id="post-graal_license" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2020/09/25/graal_license/" class="article-date">
+  <time datetime="2020-09-25T03:24:26.000Z" itemprop="datePublished">2020-09-25</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2020/09/25/graal_license/">graalvm license分析</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="1-背景"><a href="#1-背景" class="headerlink" title="1 背景"></a>1 背景</h2><p>由于graalvm的社区版本整体是作为GPLV2发布，希望了解graalvm的详细license情况，确定是否有开源风险。</p>
+<h2 id="2-入口资料"><a href="#2-入口资料" class="headerlink" title="2 入口资料"></a>2 入口资料</h2><h3 id="2-1-官网介绍"><a href="#2-1-官网介绍" class="headerlink" title="2.1 官网介绍"></a>2.1 官网介绍</h3><p><a href="https://www.graalvm.org/faq/" target="_blank" rel="noopener">https://www.graalvm.org/faq/</a> 有专门的说明。</p>
+<p>GraalVM Community Edition is open source software built from the sources available on GitHub and distributed under version 2 of the GNU General Public License with the “Classpath” Exception, which are the same terms as for Java. We also recommend checking the licenses of the individual GraalVM components (which are generally derivative of the license of a particular language). <font color=red size=5> GraalVM Community is free to use for any purpose and comes with no strings attached, but also no guarantees or support. </font></p>
+<p>这里有几个主要的信息点：<br>1 社区版本整体为GPLV2 with  “Classpath” Exception，与 JAVA的jdk一样；<br>2 社区版本不限制用途(可以商用)，也不会要求特殊的回报（当然也没有质量保证和技术支持保证）；<br>3 每一个componets有不同的license</p>
+<h3 id="2-2-发布包和代码中的LICENSE文件"><a href="#2-2-发布包和代码中的LICENSE文件" class="headerlink" title="2.2 发布包和代码中的LICENSE文件"></a>2.2 发布包和代码中的LICENSE文件</h3><p>oracle提供的graalvm社区版本下载包(20.1.0版本)中有LICENSE文件对各个组件做了粗略说明。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">          Product License  - GraalVM Community Edition</span><br><span class="line"></span><br><span class="line">GraalVM Community Edition consists of multiple modules. The software as a</span><br><span class="line">whole, is released under version 2 of the GNU General Public License with the</span><br><span class="line">“Classpath” Exception. Certain modules of GraalVM Community Edition are released</span><br><span class="line">under separate and&#x2F;or additional licenses, as follows: Graal.js and Graal</span><br><span class="line">Node.js are released under the Universal Permissive License (UPL) Version 1.0;</span><br><span class="line">Sulong – LLVM is released under a 3-clause BSD license.</span><br><span class="line"></span><br><span class="line">The text of the foregoing licenses is reproduced below.</span><br><span class="line"></span><br><span class="line">Copyright (c) 2015, 2019, Oracle and&#x2F;or its affiliates. All rights reserved.</span><br></pre></td></tr></table></figure>
+<p>其中有一些没有提及的组件，从<a href="https://github.com/oracle/graal" target="_blank" rel="noopener">https://github.com/oracle/graal</a> 下载源代码。<br>查看README.md文件，其中有如下说明。<br>Each GraalVM component is licensed:</p>
+<ul>
+<li><a href="/truffle/">Truffle Framework</a> and its dependency <a href="/sdk/">GraalVM SDK</a> are licensed under the <a href="truffle/LICENSE.md">Universal Permissive License</a>.</li>
+<li><a href="/tools/">Tools</a> project is licensed under the <a href="tools/LICENSE">GPL 2 with Classpath exception</a>.</li>
+<li><a href="/regex/">TRegex</a> project is licensed under the <a href="regex/LICENSE.md">Universal Permissive License</a>.</li>
+<li><a href="/compiler/">GraalVM compiler</a> is licensed under the <a href="compiler/LICENSE.md">GPL 2 with Classpath exception</a>.</li>
+<li><a href="/substratevm/">Substrate VM</a> is licensed under the <a href="substratevm/LICENSE">GPL 2 with Classpath exception</a>.</li>
+<li><a href="/sulong/">Sulong</a> is licensed under <a href="sulong/LICENSE">3-clause BSD</a>.</li>
+<li><a href="/wasm/">GraalWasm</a> is licensed under the <a href="wasm/LICENSE">Universal Permissive License</a>.</li>
+<li><a href="/vm/">VM</a> is licensed under the <a href="vm/LICENSE_GRAALVM_CE">GPL 2 with Classpath exception</a>.</li>
+<li><a href="/vscode/">VS Code</a> extensions are distributed under the <a href="/vscode/graalvm/LICENSE.txt">UPL 1.0 license</a>.</li>
+</ul>
+<p>进一步验证LICENSE整体说明，可以在代码仓库中用如下的脚本命令：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span> x <span class="keyword">in</span> `grep  <span class="string">"designates"</span> ./ -RI -L |grep <span class="string">'\.java'</span>| grep -v generated |grep -v /<span class="built_in">test</span>/ |grep -v \.class` ; <span class="keyword">do</span> grep <span class="string">'GENERATED CONTENT - DO NOT EDIT'</span> <span class="variable">$x</span> -L ; <span class="keyword">done</span></span><br></pre></td></tr></table></figure>
+<h2 id="3-license影响分析"><a href="#3-license影响分析" class="headerlink" title="3 license影响分析"></a>3 license影响分析</h2><p>graalvm社区版本使整体是GPLV2 with classpath exception， 本次分析开源license的主要目的是：识别代码被传染开源的风险 和 专利纠纷的风险。</p>
+<h3 id="3-1-传染性分析"><a href="#3-1-传染性分析" class="headerlink" title="3.1 传染性分析"></a>3.1 传染性分析</h3><h4 id="3-1-1-Graal架构分析"><a href="#3-1-1-Graal架构分析" class="headerlink" title="3.1.1 Graal架构分析"></a>3.1.1 Graal架构分析</h4><p>为了明确graal的license会对用户代码产生何种影响，需要对其架构进行基础的分析。从其官方介绍中摘抄架构并标注如下。</p>
+
+
+
+<h4 id="3-1-2-传染性分析结论"><a href="#3-1-2-传染性分析结论" class="headerlink" title="3.1.2 传染性分析结论"></a>3.1.2 传染性分析结论</h4><p>参考如上节的架构图，graalvm底层部分由于有多个GPLV2的组件，毫无疑问compiler/vm部分的改进代码肯定需要开源。<br>但是，由于compiler/vm与上层的js/java代码不直接链接，而是数据处理的关系，所以上层的代码无需开源。<br>我们需要保护的资产绝大部分在上层的js/java代码中，graalvm的GPL传染风险不大。</p>
+<h3 id="3-2-专利纠纷分析"><a href="#3-2-专利纠纷分析" class="headerlink" title="3.2 专利纠纷分析"></a>3.2 专利纠纷分析</h3><p>参考上一部分的架构图，目前关心的组件主要有GPLV2(compiler/vm)、UPL(truffle/js)和BSD(sulong)三种协议。下面逐一进行分析。</p>
+<h4 id="3-2-1-GPLV2协议分析"><a href="#3-2-1-GPLV2协议分析" class="headerlink" title="3.2.1 GPLV2协议分析"></a>3.2.1 GPLV2协议分析</h4><p>GPLV2没有针对patent做专门说明，但是提到了两点：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">6. Each time you redistribute the Program (or any work based on the Program), the recipient automatically receives a license from the original licensor to copy, distribute or modify the Program subject to these terms and conditions. You may not impose any further restrictions on the recipients&#39; exercise of the rights granted herein. You are not responsible for enforcing compliance by third parties to this License.</span><br><span class="line"></span><br><span class="line">7. If, as a consequence of a court judgment or allegation of patent infringement or for any other reason (not limited to patent issues), conditions are imposed on you (whether by court order, agreement or otherwise) that contradict the conditions of this License, they do not excuse you from the conditions of this License. If you cannot distribute so as to satisfy simultaneously your obligations under this License and any other pertinent obligations, then as a consequence you may not distribute the Program at all. For example, if a patent license would not permit royalty-free redistribution of the Program by all those who receive copies directly or indirectly through you, then the only way you could satisfy both it and this License would be to refrain entirely from distribution of the Program.</span><br></pre></td></tr></table></figure>
+<p>也即：分发代码的人已经将专利进行了授权；如果有专利问题，则不能进行gpl软件发布。<br>整体来说，这两条免除了我们与GPLV2软件所有者产生专利纠纷的风险。但是第三方专利纠纷的风险仍然存在，例如A发布了GPL软件X，我们使用了X，第三方声称X侵犯了其专利，则我们和A都需要承担专利侵权的损失。</p>
+<h4 id="3-2-2-UPL协议分析"><a href="#3-2-2-UPL协议分析" class="headerlink" title="3.2.2 UPL协议分析"></a>3.2.2 UPL协议分析</h4><p>参考<a href="https://oss.oracle.com/licenses/upl/，" target="_blank" rel="noopener">https://oss.oracle.com/licenses/upl/，</a> UPL是非常开放友好的开源协议。<br>The most important features and things to understand about the UPL are the following:</p>
+<ul>
+<li>Clear patent protection. The UPL is a broad permissive license including both a copyright license and an express patent license, covering at least a version licensed by someone under the license (for example a distributor) and/or a version someone contributed to even if they never distribute the whole. (The reason the latter is needed is discussed below.) By virtue of the unambiguous patent license, the UPL is materially clearer with respect to the rights licensed and likely broader than either the MIT or BSD licenses.</li>
+<li>Clear &amp; simplified relicensing. The UPL expressly permits sublicensing under either the UPL or under other terms, which clearly allows someone to relicense code received under the UPL either on copyleft terms, on proprietary terms, or otherwise, thus permitting maximum flexibility in reuse.</li>
+<li>Reduced overhead in source files. The UPL expressly permits use of the license without including a full copy of the text, which is useful for JavaScript or other cases where minimizing space consumed by licenses is desired - see below for our recommendation of how to apply the license or include proper attribution without the full text.</li>
+<li>It can be used as a contributor agreement. Finally, the UPL may be used as a contributor license agreement licensing both the software itself and also contributor patents for use in one or more “Larger Works.” The Larger Works licensed in this fashion are designated by the use of a separate file accompanying the license, akin to the NOTICE file that accompanies the Apache License, Version 2.0. The Larger Works file can be used to control for both contributions to other works (for example, we could specify MySQL in a Larger Works file for a work, which would then license contributor patents for MySQL as well as the contribution), to set patent license scope for specific versions (for example, we could specify the approved reference implementation of JSR-xxx including Maintenance Releases to ensure that all contributors to an RI are licensing both the final version of the RI and qualified updates under the JCP program), or both.<br>总结来说，UPL不仅允许任意重用代码(包括商业使用)，而且明确提供了专利授权和保护，法律风险非常低。</li>
+</ul>
+<h4 id="3-2-3-3-Clause-BSD协议分析"><a href="#3-2-3-3-Clause-BSD协议分析" class="headerlink" title="3.2.3 3-Clause BSD协议分析"></a>3.2.3 3-Clause BSD协议分析</h4><p>BSD协议非常简单和自由，基本上没有对使用者做用途上的约束。<br>但是BSD协议没有提供任何专利方面的保护，产生专利纠纷的可能性要远高于前面的UPL和GPL。<br>这部分只能依靠graal项目的所有者oracle提供保护（当然，原理上oracle也可以作为原告。。。）。</p>
+<h2 id="4-总结"><a href="#4-总结" class="headerlink" title="4 总结"></a>4 总结</h2><h3 id="4-1-协议分析结论"><a href="#4-1-协议分析结论" class="headerlink" title="4.1 协议分析结论"></a>4.1 协议分析结论</h3><p>总体来看graalvm的开源传染风险与openjdk项目类似，作为核心资产的上层代码不会被传染开源。<br>专利方面，如果不使用sulong项目(接入llvm-ir的前端，主要用于接入c/c++/rust等静态语言)，专利纠纷风险不大。</p>
+<h3 id="4-2-后续风险讨论"><a href="#4-2-后续风险讨论" class="headerlink" title="4.2 后续风险讨论"></a>4.2 后续风险讨论</h3><p>对开源软件来说，分析代码所有者和所有者的意图，其实要比开源协议本身更加重要，因为代码所有者随时有权调整协议。<br>从oralce当前的安排来看，graalvm将使用与openjdk类似的盈利策略。社区版使用GPL协议开放核心功能(并且通过classpath exception确保不传染用户的代码)，商业版本提供更高的性能和更好的支持获取利润(商业版本授权非常昂贵，以cpu数计费，每月单个cpu接近20美元，参考<a href="https://www.oracle.com/ng/a/ocom/docs/corporate/pricing/graalvm-price-list.pdf)。" target="_blank" rel="noopener">https://www.oracle.com/ng/a/ocom/docs/corporate/pricing/graalvm-price-list.pdf)。</a><br>这套运行策略在openjdk上已经运行较长时间，预期oracle会保护并支持graal项目基于该模式发展。<br>如果oracle 对该模式提供保护，事实上无论GPL传染风险(oralce不会故意去传染用户代码，破坏这种运作模式)和专利纠纷(oracle不会作为专利原告，并且会为bsd协议的组件提供保护)的风险都是非常小的。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://mjblog.github.io/2020/09/25/graal_license/" data-id="ckg248pvx001m52faevdsh534" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/GRAALVM/" rel="tag">GRAALVM</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-eclipse_theia" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2020/09/18/eclipse_theia/" class="article-date">
+  <time datetime="2020-09-18T03:24:26.000Z" itemprop="datePublished">2020-09-18</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2020/09/18/eclipse_theia/">eclipse theia 研究</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h1 id="安装试用"><a href="#安装试用" class="headerlink" title="安装试用"></a>安装试用</h1><p>参考<a href="https://github.com/eclipse-theia/theia/blob/master/doc/Developing.md" target="_blank" rel="noopener">https://github.com/eclipse-theia/theia/blob/master/doc/Developing.md</a><br>注意yarn一定要点击其中的链接到<a href="https://classic.yarnpkg.com/en/docs/install" target="_blank" rel="noopener">https://classic.yarnpkg.com/en/docs/install</a> 去安装，如果使用apt install 会出现莫名其妙的错误。<br>node的版本也需要使用页面的版本<a href="https://nodejs.org/download/release/v12.14.1/" target="_blank" rel="noopener">https://nodejs.org/download/release/v12.14.1/</a></p>
+<p>如果在wsl上测试可能会遇到<a href="https://github.com/microsoft/WSL/issues/5125" target="_blank" rel="noopener">https://github.com/microsoft/WSL/issues/5125</a> ，使用如下命令可解决</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">sudo apt remove gpg</span><br><span class="line">sudo apt install gnupg1</span><br></pre></td></tr></table></figure>
+<p>遇到ssl验证的问题可以用如下两个命令关掉校验</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">export</span> NODE_TLS_REJECT_UNAUTHORIZED=0</span><br><span class="line">npm config <span class="built_in">set</span> strict-ssl <span class="literal">false</span></span><br></pre></td></tr></table></figure>
+
+
+
+<p>遇到了装入插件无法启动的问题，尝试用git reset –hard解决。<br>另外遇到一些问题：<br>logcat无法换行，adb无法启动时没有合适的提示，应该先检查再启动</p>
+<p> 1790  export ANDROID_NDK=/mnt/d/opensource/android_ndk/android-ndk-r21b/<br> 2006  export PATH=/mnt/e/open_src2/node-v12.14.1-linux-x64/bin:$PATH<br> 2030  export THEIA_DEFAULT_PLUGINS=local-dir:///mnt/e/open_src2/theia/myplugin<br> 2041  export THEIA_DEFAULT_PLUGINS=local-dir:///mnt/e/open_src2/theia/myplugin<br> 2065  export PATH=$PATH:<code>pwd</code></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://mjblog.github.io/2020/09/18/eclipse_theia/" data-id="ckg246lpx000352facrfhe5fz" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/IDE/" rel="tag">IDE</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-first-test" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2020/07/28/first-test/" class="article-date">
+  <time datetime="2020-07-28T02:15:27.727Z" itemprop="datePublished">2020-07-28</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2020/07/28/first-test/">ubuntu 16.04下驱动TP-LINK TL-WDN6200H免驱版无线网卡</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="1-先编译构建驱动"><a href="#1-先编译构建驱动" class="headerlink" title="1 先编译构建驱动"></a>1 先编译构建驱动</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">git <span class="built_in">clone</span> https://github.com/jurobystricky/Netgear-A6210</span><br><span class="line"><span class="built_in">cd</span> /usr/src/netgear-a6210-2.5.0/</span><br><span class="line">make</span><br><span class="line">sudo make install</span><br></pre></td></tr></table></figure>
+<p>DKMS Install</p>
+<p>On Debian-based distros, you can add the module to DKMS so it will automatically<br>build and install on each successive kernel upgrade. To do this, issue the following<br>commands from within the repo’s folder:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">    $ <span class="built_in">cd</span> ..</span><br><span class="line">    $ sudo mv Netgear-A6210/ /usr/src/netgear-a6210-2.5.0</span><br><span class="line">    $ sudo dkms install netgear-a6210/2.5.0</span><br><span class="line"></span><br><span class="line">To remove:</span><br><span class="line"></span><br><span class="line">    $ sudo dkms remove netgear-a6210/2.5.0 --all</span><br></pre></td></tr></table></figure>
+
+
+<h2 id="2-将无线网卡储存区中的SetupInstall-exe拷贝出来（如果没有出现无线网卡的usb储存，需要重新插拔一下无线网卡）"><a href="#2-将无线网卡储存区中的SetupInstall-exe拷贝出来（如果没有出现无线网卡的usb储存，需要重新插拔一下无线网卡）" class="headerlink" title="2 将无线网卡储存区中的SetupInstall.exe拷贝出来（如果没有出现无线网卡的usb储存，需要重新插拔一下无线网卡）"></a>2 将无线网卡储存区中的SetupInstall.exe拷贝出来（如果没有出现无线网卡的usb储存，需要重新插拔一下无线网卡）</h2><p>注意一定要把这个文件拷贝出来，不能直接再储存区中运行。运行这个程序后，储存区可能会消失掉。</p>
+<h2 id="3-每次启动后"><a href="#3-每次启动后" class="headerlink" title="3 每次启动后"></a>3 每次启动后</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">wine SetupInstall.exe，进行初始化</span><br><span class="line">sudo modprobe mt7662u_sta 或者 sudo insmod /lib/modules/4.4.0-96-generic/kernel/drivers/net/wireless/mt7662u_sta.ko</span><br><span class="line">sudo service network-manager restart</span><br></pre></td></tr></table></figure>
+<p>如果还不行，可能需要重新插拔无线网卡，再重新走一次上述流程。</p>
+<h2 id="4-ubuntu-18-04-补充"><a href="#4-ubuntu-18-04-补充" class="headerlink" title="4 ubuntu 18.04 补充"></a>4 ubuntu 18.04 补充</h2><p>18.04上原来的代码无法编译了，可以从<a href="https://github.com/kaduke/Netgear-A6210/tree/port-to-4.15下载适配高版本内核的驱动。" target="_blank" rel="noopener">https://github.com/kaduke/Netgear-A6210/tree/port-to-4.15下载适配高版本内核的驱动。</a><br>18.04上使用wine SetupInstall.exe无法进行初始化了，原因未明。这样就是加载了网卡驱动也无法找到无线网卡。<br>无奈转而直接分析wine SetupInstall.exe到底做了什么事情。分析了dmesg，lsusb的信息后，注意到wine执行之后，无线网卡对应的设备发生了变化。<br>lsusb初始化前id是2870，初始化后是7612。dmesg显示wine初始化时，出现了一次旧设备的的disconnect和新设备的加入。<br>综合各种情况来看，wine初始化时，是将无线网卡中对应的usb储存器断开了，然后将网卡设备挂上来了（这正好能解释第二节的现象）。<br>剩下的事情，就是看看不通过wine SetupInstall.exe来复现这一系列动作。尝试了各种方案后，终于在一个老外的论坛上看到，只需要eject usb storage，新的网卡设备就会出现。<br>马上尝试了一下，果然可以了。完全没有想到就是这么简单。。。<br>理顺以后整个思路就非常简单了。先手工弹出网卡带的储存盘，获得网卡设备，然后装入网卡驱动就可以上网了。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://mjblog.github.io/2020/07/28/first-test/" data-id="ckg246lq0000852fa6nwffme4" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-tvm_ir_debug" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2020/07/09/tvm_ir_debug/" class="article-date">
+  <time datetime="2020-07-09T03:44:53.000Z" itemprop="datePublished">2020-07-09</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2020/07/09/tvm_ir_debug/">tvm 构建结果调试</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h1 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h1><p>使用tvm的irbuilder直接构建了一小段计算程序，运行时有段错误。<br>tvm对内存边界的检查在较为上层的流程中，直接构建ir无法自动做检查。</p>
+<h1 id="尝试的方法"><a href="#尝试的方法" class="headerlink" title="尝试的方法"></a>尝试的方法</h1><h2 id="添加调试信息"><a href="#添加调试信息" class="headerlink" title="添加调试信息"></a>添加调试信息</h2><p>把target设置为llvm，在tvm build后使用print(build_f.get_source())，可以打印出程序的llvm-ir。<br>但是，由于tvm是直接发射的llvm-ir，没有上层的文本，所以也没有发射有意义的调试信息。</p>
+<h2 id="将LLVM-IR反向翻译回C-C"><a href="#将LLVM-IR反向翻译回C-C" class="headerlink" title="将LLVM-IR反向翻译回C/C++"></a>将LLVM-IR反向翻译回C/C++</h2><p>由于tvm可以给出llvm-ir的文本形式，如果能将llvm-ir翻译会c/c++代码，那么调试错误（甚至使用sanitizer系列工具）会简单很多。</p>
+<p>llvm曾经有一个c/c++ 后端，可以将llvm-ir翻译为c/c++代码。但是后面由于维护问题，主线已经将该功能移除。<br>经过搜索，发现有一个第三方的项目<a href="https://github.com/JuliaComputing/llvm-cbe，可以与llvm-8一起工作。" target="_blank" rel="noopener">https://github.com/JuliaComputing/llvm-cbe，可以与llvm-8一起工作。</a></p>
+<p>实际测试发现，使用clang 编译出的hello world llvm-ir能正常翻译会C，但是tvm给出的ir会导致cbe工具出现assert错误。<br>简单看了一下，可能是tvm用的llvm-ir特性较新，cbe的llvm8还不认识。</p>
+<p>从搜索过程来看，cbe的支持和需求都不是很强烈，于是不再考虑投入时间来分析和解决其问题。</p>
+<h2 id="使用TVM-的C-backend"><a href="#使用TVM-的C-backend" class="headerlink" title="使用TVM 的C backend"></a>使用TVM 的C backend</h2><p>TVM使用cuda时，其输出的就是文本形式c代码交给cuda编译器。<br>这样看来，其支持一个c代码的backend应该是顺理成章的事情。</p>
+<p>浏览tvm代码，果然其已经存在c backend了。参考<a href="https://tvm.apache.org/docs/dev/relay_bring_your_own_codegen.html" target="_blank" rel="noopener">https://tvm.apache.org/docs/dev/relay_bring_your_own_codegen.html</a> ，生成c 代码除了帮助调试外，还比较容易与定制的优化库交互，甚至也可以把它当成代码模板，再进行人工修改。</p>
+<p>使用c backend也比较简单，只需在tvm.build是传入target=’c’即可。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">build_f  = tvm.build(ls, [], target=<span class="string">'c'</span>,  name=<span class="string">'prune_conv'</span>, binds=<span class="literal">None</span>)</span><br><span class="line">print(build_f.get_source())</span><br></pre></td></tr></table></figure>
+<p>实际使用时，发现其c backend还不支持分配作用域为local的storeage。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">CodeGenC::PrintStorageSync</span><span class="params">(<span class="keyword">const</span> CallNode* op)</span> </span>&#123;  <span class="comment">// NOLINT(*)</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">CodeGenC::PrintStorageScope</span><span class="params">(<span class="keyword">const</span> <span class="built_in">std</span>::<span class="built_in">string</span>&amp; scope, <span class="built_in">std</span>::ostream&amp; os)</span> </span>&#123;  <span class="comment">// NOLINT(*)</span></span><br><span class="line">  CHECK_EQ(scope, <span class="string">"global"</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>临时将程序内的 irb.allocate 调用中的 scope=’local’ 改为’global’，可以正常的输出c代码了，如下所示。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">"tvm/runtime/c_runtime_api.h"</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">"tvm/runtime/c_backend_api.h"</span></span></span><br><span class="line"><span class="keyword">void</span>* __tvm_module_ctx = <span class="literal">NULL</span>;</span><br><span class="line"><span class="meta">#<span class="meta-keyword">ifdef</span> __cplusplus</span></span><br><span class="line"><span class="keyword">extern</span> <span class="string">"C"</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">endif</span></span></span><br><span class="line"><span class="function">TVM_DLL <span class="keyword">int32_t</span> <span class="title">main</span><span class="params">(<span class="keyword">void</span>* args, <span class="keyword">void</span>* arg_type_ids, <span class="keyword">int32_t</span> num_args, <span class="keyword">void</span>* out_ret_value, <span class="keyword">void</span>* out_ret_tcode)</span> </span>&#123;</span><br></pre></td></tr></table></figure>
+<p>作为调试，这里打印出来已经能满足要求了。<br>如果需要后续的定制开发，可以参考tvm自带的示例apps/howto_deploy/cpp_deploy.cc 。把tvm生成的代码作为与自己的程序进一步组合。</p>
+<h2 id="利用反向调试，直接分析生成的汇编"><a href="#利用反向调试，直接分析生成的汇编" class="headerlink" title="利用反向调试，直接分析生成的汇编"></a>利用反向调试，直接分析生成的汇编</h2><p>gdb支持反向调试，虽然其功能不太完善稳定，但是比较适合tvm生成的这类逻辑较为简单的场景。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">b thread_pool.cc中的launch函数</span><br><span class="line">c</span><br><span class="line">停下后，set scheduler-locking on</span><br><span class="line">si进入tvm生成的运算函数</span><br><span class="line">record full</span><br><span class="line">si走到故障处</span><br><span class="line">然后就可以用reverse-stepi等进行反向调试</span><br><span class="line">退出前可以record stop</span><br></pre></td></tr></table></figure>
+<p>注意record full是，一定要set scheduler-locking on。<br>因为full模式需要获取进程的所有信息，而当前gdb还没支持好多线程程序的序列执行功能。不锁住当前线程执行，会导致gdb报下面的assert。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">..&#x2F;..&#x2F;gdb&#x2F;nat&#x2F;x86-linux-dregs.c:146: internal-error: void x86_linux_update_debug_registers(lwp_info*): Assertion &#96;lwp_is_stopped (lwp)&#39; failed.</span><br><span class="line">A problem internal to GDB has been detected,</span><br></pre></td></tr></table></figure>
+<p>对于简单的程序，知道<br>可以在python端打印出tvm.nd.array的_tvm_handle。<br>在gdb中x _tvm_handle的数值，可以找到array对应的数据区地址。<br>结合反汇编，也可以进行简单的分析。</p>
+<h2 id="TVM-C-backend生成代码直接与python的runtime整合"><a href="#TVM-C-backend生成代码直接与python的runtime整合" class="headerlink" title="TVM C backend生成代码直接与python的runtime整合"></a>TVM C backend生成代码直接与python的runtime整合</h2><p>前面提到可以使用tvm的c backend将tvm的结果输出为c文件，但是对于分析问题来说，还是能直接运行起来更为方便。<br>最为直接的两个需求就是：使用asan查找内存越界故障， 使用vtune/perf等查找性能瓶颈。<br>前期本来打算使用c++ runtime来调用c backend的代码，但是工作量稍大，和python这端的配合也比较麻烦。<br>经过调试分析，发现可以直接将c backend生成的代码放到python运行时中运行。<br>大致方法如下：</p>
+<h3 id="生成c-文件"><a href="#生成c-文件" class="headerlink" title="生成c 文件"></a>生成c 文件</h3><p>使用前面介绍的方法，去除local指定后，可以在target=c的情况下，生成出c代码。如下实例命令。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">build_f &#x3D; tvm.build(ls, [Input, Offset, Reorder, Index, Stride, Weight, Output],  </span><br><span class="line">    target&#x3D;&#39;c&#39;, name&#x3D;&#39;prune_conv&#39;, binds&#x3D;None)</span><br><span class="line">with open( &#39;.&#x2F;out_csrc.c&#39;, &#39;w&#39; ) as f:</span><br><span class="line">    f.write(build_f.get_source())</span><br></pre></td></tr></table></figure>
+<h3 id="修改获得的c代码"><a href="#修改获得的c代码" class="headerlink" title="修改获得的c代码"></a>修改获得的c代码</h3><p>tvm的runtime装载模块时，希望看到一个名为<strong>tvm_main</strong>的符号，并且该符号中应该以字符串形式存放模块的实际入口。<br>所以，需要稍微修改一下前面获得的c代码。将其头部稍微修改一下，将main改为main_t(clang将main视为特殊符号，参数如果和c标准不一致会拒绝编译)，并且添加tvm_main符号。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> <span class="keyword">char</span> __tvm_main__[] = <span class="string">"main_t"</span>;</span><br><span class="line"><span class="function">TVM_DLL <span class="keyword">int32_t</span> <span class="title">main_t</span><span class="params">(<span class="keyword">void</span>* args, <span class="keyword">void</span>* arg_type_ids, <span class="keyword">int32_t</span> num_args, <span class="keyword">void</span>* out_ret_value, <span class="keyword">void</span>* out_ret_tcode)</span> </span>&#123;</span><br></pre></td></tr></table></figure>
+<h3 id="使用clang或者gcc将获得的c文件编译为so"><a href="#使用clang或者gcc将获得的c文件编译为so" class="headerlink" title="使用clang或者gcc将获得的c文件编译为so"></a>使用clang或者gcc将获得的c文件编译为so</h3><p>然后就可以使用clang将文件编译为so文件了，此时可以加上调试信息和asan等功能</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">clang ./out_csrc.c  -I ../incubator-tvm/include/ -I ../incubator-tvm/3rdparty/dlpack/include/  -fsanitize=address -save-temps -fPIC -O0 -g3 -shared</span><br></pre></td></tr></table></figure>
+
+<h3 id="在python中运行获得的so"><a href="#在python中运行获得的so" class="headerlink" title="在python中运行获得的so"></a>在python中运行获得的so</h3><p>参考面的示例代码，可以将前面获得的so装入python中运行。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">mod_prune = <span class="string">'/mnt/d/opensource/tvm_files/out_csrc.so'</span></span><br><span class="line">loaded_prune = tvm.runtime.load_module(mod_prune)</span><br><span class="line">evaluator = loaded_prune.time_evaluator(loaded_prune.entry_name, ctx, number=<span class="number">10</span>)</span><br><span class="line">print(<span class="string">'OPt_paper: %f'</span> % evaluator(input_np, Offset_np, Reorder_np, Index_np, Stride_np, Weight_np, output_array).mean)</span><br></pre></td></tr></table></figure>
+
+
+<h1 id="初步结论"><a href="#初步结论" class="headerlink" title="初步结论"></a>初步结论</h1><p>可以考虑优先使用tvm 的c backend进行调试分析。<br>结合反向调试的直接汇编分析也有帮助。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://mjblog.github.io/2020/07/09/tvm_ir_debug/" data-id="ckg246lqi001352fa04vm0i6q" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/AI/" rel="tag">AI</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-arduino_dev" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2020/06/05/arduino_dev/" class="article-date">
+  <time datetime="2020-06-05T03:35:29.000Z" itemprop="datePublished">2020-06-05</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2020/06/05/arduino_dev/">arduino开发体验</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h1 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h1><p>了解一下物联网的现状和开发过程。</p>
+<h1 id="甲醛浓度传感器制作"><a href="#甲醛浓度传感器制作" class="headerlink" title="甲醛浓度传感器制作"></a>甲醛浓度传感器制作</h1><h2 id="硬件准备"><a href="#硬件准备" class="headerlink" title="硬件准备"></a>硬件准备</h2><p>为了简单便宜，考虑使用成熟而廉价的arduino， uno版本30块左右。<br>但是考虑到后续接入网络的方便，选择商家的套装，包含了各种传感器和传输辅助部件。<br>甲醛浓度传感器为了简单，选择可直接从串口上报数据的商品。</p>
+<p>硬件连接也比较简单，传感器商家会给接线图，照着接就可以了，如下图。</p>
+<img src="/2020/06/05/arduino_dev/connect.jpg" class="" title="连线示意图">
+
+<p>注意传感器的Tx接到arduno的Rx，Rx接到Tx就可以了。<br>另外，如果物联网板子只有一个串口并且串口已经被用来做与pc机器之间的连接（例如我的这个uno），不要将传感器的串口直接对接到板子的串口上（可以使用其他通用针脚，然后用软串口机制来读取数据）。<br>否则会因为相互干扰出现很多莫名其妙的问题。例如程序烧写失败，传感器读不出数据等等。</p>
+<h2 id="软件"><a href="#软件" class="headerlink" title="软件"></a>软件</h2><p>arduino软件开发环境很成熟，可以直接选择最方便的Web方式进行开发。<br>到<a href="https://create.arduino.cc/" target="_blank" rel="noopener">https://create.arduino.cc/</a> 申请一个免费的账户，再到<a href="https://create.arduino.cc/getting-started/plugin/install" target="_blank" rel="noopener">https://create.arduino.cc/getting-started/plugin/install</a> 去下载连接uno的浏览器插件并安装,<br>然后启动插件(其实就是一个go语言编写的转发代理，安装后在桌面上有一个Arduino Create Agent 的图标可供快速启动)。<br>随后就可以进入<a href="https://create.arduino.cc/editor/" target="_blank" rel="noopener">https://create.arduino.cc/editor/</a> 的WebIde界面。<br>在这个主界面下，可以完成整套软件开发的过程，包括代码编写、编译、烧写，也可以查看串口的输出（和进行串口输入），如下图所示。</p>
+<img src="/2020/06/05/arduino_dev/WebIde.png" class="" title="连线示意图">
+
+<p>整个Ide界面比较直观，Example和Library中已经有大量代码，许多应用场景都有可以借鉴的示例。唯一个稍微有点隐晦的是，串口输入输出是在侧边菜单的Monitor中。</p>
+<p>按照传感器厂商给出的说明，传感器的输出是8个byte的数据+1个byte的校验，可以使用如下的示例程序将传感器周期性上报的数据打印出来。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;SoftwareSerial.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="built_in">SoftwareSerial</span> <span class="title">mySerial</span><span class="params">(<span class="number">2</span>, <span class="number">4</span>)</span></span>; <span class="comment">// RX, TX (Rx和Tx针脚注意与接线图中的连线对应)</span></span><br><span class="line"> </span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">setup</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">  <span class="built_in">Serial</span>.<span class="built_in">begin</span>(<span class="number">9600</span>);</span><br><span class="line">  <span class="keyword">while</span> (!<span class="built_in">Serial</span>) &#123;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="built_in">Serial</span>.<span class="built_in">println</span>(<span class="string">"Goodnight moon!"</span>);</span><br><span class="line"> </span><br><span class="line">  mySerial.<span class="built_in">begin</span>(<span class="number">9600</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">loop</span><span class="params">()</span> </span>&#123;</span><br><span class="line">  <span class="keyword">int</span> len = <span class="number">9</span>;</span><br><span class="line">  <span class="keyword">String</span> result;</span><br><span class="line">  <span class="keyword">while</span> (len)</span><br><span class="line">  &#123;</span><br><span class="line">      <span class="keyword">if</span>(mySerial.<span class="built_in">available</span>())</span><br><span class="line">      &#123;</span><br><span class="line">        <span class="keyword">String</span> stringOne = <span class="keyword">String</span>(mySerial.<span class="built_in">read</span>(), HEX);</span><br><span class="line">        <span class="built_in">Serial</span>.<span class="built_in">println</span>(stringOne);</span><br><span class="line">        result += stringOne;</span><br><span class="line">        --len;</span><br><span class="line">      &#125;</span><br><span class="line">      <span class="built_in">delay</span>(<span class="number">1</span>);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="built_in">Serial</span>.<span class="built_in">println</span>(result.length());</span><br><span class="line">  </span><br><span class="line">  <span class="keyword">for</span> (<span class="keyword">int</span> i=<span class="number">0</span>;i&lt;<span class="number">9</span>;i++)</span><br><span class="line">    <span class="built_in">Serial</span>.<span class="built_in">print</span>(result[i]);</span><br><span class="line">  <span class="built_in">Serial</span>.<span class="built_in">println</span>(<span class="string">" Hello Arduino "</span>);</span><br><span class="line">  <span class="built_in">delay</span>(<span class="number">1000</span>); </span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>剩下的事情就是将收集到的数据上报到云端了，可参考<a href="https://create.arduino.cc/projecthub/133030/iot-cloud-getting-started-c93255" target="_blank" rel="noopener">https://create.arduino.cc/projecthub/133030/iot-cloud-getting-started-c93255</a> 中的说明。这个步骤各个云供应商不完全一样，但是总体流程都差不多。大致都是需要将单板联网，然后将数据通过指定格式上报到云端，云端通过定义好的数据格式解析并展示。</p>
+<h1 id="总体感受"><a href="#总体感受" class="headerlink" title="总体感受"></a>总体感受</h1><h2 id="硬件"><a href="#硬件" class="headerlink" title="硬件"></a>硬件</h2><p>IOT的硬件成本已经比较低了。50块左右就能买到直接通过2g/4g网络连接到云端的物联网模块。通常IOT应用的数据量不大，数据流量现在也很便宜，所以持续维护的成本也不高。</p>
+<h2 id="软件-1"><a href="#软件-1" class="headerlink" title="软件"></a>软件</h2><p>整个软件栈已经比较完整成熟了。大部分复杂的功能逻辑已经被很好地封装到厂商提供的API内了，并且从单板到云端都有大量示例可控借鉴。<br>甚至连商业模式都比较成熟了，如下图所示。arduino的收费模式设计得非常平衡，确保个人实验时可以访问绝大部分功能，感受到方便好用而愿意付费。而商业使用时又不太可能免费占便宜。</p>
+<img src="/2020/06/05/arduino_dev/dev_plans.png" class="" title="arduino收费模式">
+<h2 id="个人历程感受"><a href="#个人历程感受" class="headerlink" title="个人历程感受"></a>个人历程感受</h2><p>纯软件开发做IOT应用，最困难和耗时的还是和硬件相关的琐碎部分。<br>本次体验中，分析和解决硬件串口冲突导致的各种问题（烧写失败，传感器无法输出）耗费了最主要的时间。其余的所有步骤总共加起来也没有耗费多少时间。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://mjblog.github.io/2020/06/05/arduino_dev/" data-id="ckg246lpv000152fa2k49h2f4" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-phoronix-2020-05" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2020/05/20/phoronix-2020-05/" class="article-date">
+  <time datetime="2020-05-20T04:01:19.000Z" itemprop="datePublished">2020-05-20</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2020/05/20/phoronix-2020-05/">phoronix 扫描2020-05</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h1 id="硬件"><a href="#硬件" class="headerlink" title="硬件"></a>硬件</h1><p>amd 桌面cpu性能重新占据优势。同级比较，优势明显。<br><a href="https://www.phoronix.com/scan.php?page=article&amp;item=amd-ryzen-313&amp;num=8" target="_blank" rel="noopener">https://www.phoronix.com/scan.php?page=article&amp;item=amd-ryzen-313&amp;num=8</a></p>
+<p>amd核显吊打intel。。。Ryzen 7 4700U was coming out about 39% faster than the Core i7 1065G7 with this given set of tests<br><a href="https://www.phoronix.com/scan.php?page=article&amp;item=amd-renoir-icelake&amp;num=5" target="_blank" rel="noopener">https://www.phoronix.com/scan.php?page=article&amp;item=amd-renoir-icelake&amp;num=5</a></p>
+<p>亚马逊的graviton2 arm64 cpu 性能有提升。在云上用物理core对抗intel和amd的vcpu已经有性能优势。但是物理机的裸核心还是差了很多，比8核心16线程的EPYC 7F32还要略慢(graviton2有64个物理核心)。<br><a href="https://www.phoronix.com/scan.php?page=article&amp;item=amazon-graviton2-benchmarks&amp;num=12" target="_blank" rel="noopener">https://www.phoronix.com/scan.php?page=article&amp;item=amazon-graviton2-benchmarks&amp;num=12</a></p>
+<h1 id="编译器、开发库"><a href="#编译器、开发库" class="headerlink" title="编译器、开发库"></a>编译器、开发库</h1><p>在intel corei7 5960X cpu 上，gcc5到gcc10的性能几乎没有变化(性能提升2%以下)，<br>这说明编译器的通用优化技术最近几年几乎没有进步。<br>这对编译器从业者来说是一个很悲哀的结论。<br>An Intel Core i7 5960X Haswell-E system was used for testing rather than a newer CPU in order to rule out back-end/micro-architecture specific optimizations across the tested compilers. Intel Haswell has offered tuned GCC support since before the GCC 5 release. Ubuntu 19.10 was running on this Core i7 5960X system with the Linux 5.3 kernel.<br><a href="https://www.phoronix.com/scan.php?page=article&amp;item=gcc5-gcc10-benchmarks&amp;num=4" target="_blank" rel="noopener">https://www.phoronix.com/scan.php?page=article&amp;item=gcc5-gcc10-benchmarks&amp;num=4</a></p>
+<p>clang9已经和gcc性能持平了，但构建速度反而是gcc更快了。以前的讽刺成真，clang编译器快是因为优化没有做够。。。<br><a href="https://www.phoronix.com/scan.php?page=article&amp;item=gcc-clang-3960x&amp;num=7" target="_blank" rel="noopener">https://www.phoronix.com/scan.php?page=article&amp;item=gcc-clang-3960x&amp;num=7</a><br><a href="https://www.phoronix.com/scan.php?page=article&amp;item=gcc10-clang10-x86&amp;num=5" target="_blank" rel="noopener">https://www.phoronix.com/scan.php?page=article&amp;item=gcc10-clang10-x86&amp;num=5</a></p>
+<p>GraalVM 和openjdk的性能差异看起来不大，这很不错，为多语言融合奠定了性能基础。<br><a href="https://www.phoronix.com/scan.php?page=article&amp;item=openjdk-corretto-graalvm&amp;num=5" target="_blank" rel="noopener">https://www.phoronix.com/scan.php?page=article&amp;item=openjdk-corretto-graalvm&amp;num=5</a></p>
+<h1 id="浏览器"><a href="#浏览器" class="headerlink" title="浏览器"></a>浏览器</h1><p>chrome的性能还是明显比较firefox更好，但是firefox最近性能在逐渐靠近chrome。<br><a href="https://www.phoronix.com/scan.php?page=article&amp;item=firefox-chrome-icelake&amp;num=7" target="_blank" rel="noopener">https://www.phoronix.com/scan.php?page=article&amp;item=firefox-chrome-icelake&amp;num=7</a><br><a href="https://www.phoronix.com/scan.php?page=article&amp;item=chrome-80-benchmarks&amp;num=5" target="_blank" rel="noopener">https://www.phoronix.com/scan.php?page=article&amp;item=chrome-80-benchmarks&amp;num=5</a></p>
+<h1 id="内核"><a href="#内核" class="headerlink" title="内核"></a>内核</h1><p>x86允许直接操作FS、GS基址寄存器指令在linux内核得到了支持。<br>IO和redis的性能有明显提高。<br><a href="https://www.phoronix.com/scan.php?page=article&amp;item=linux-fsgsbase-2020&amp;num=3" target="_blank" rel="noopener">https://www.phoronix.com/scan.php?page=article&amp;item=linux-fsgsbase-2020&amp;num=3</a></p>
+<p>amd linux 开源显卡驱动似乎有明显进步，平均分数超过了厂商闭源驱动。<br><a href="https://www.phoronix.com/scan.php?page=article&amp;item=radeon-software-20&amp;num=6" target="_blank" rel="noopener">https://www.phoronix.com/scan.php?page=article&amp;item=radeon-software-20&amp;num=6</a></p>
+<p>linux内核缓解幽灵等cpu漏洞带来的性能损失相当明显， E3-1280 v5 只有不缓解77%的性能，最新的Xeon Platinum 8280 Cascade Lake 可以到95%的性能。<br><a href="https://www.phoronix.com/scan.php?page=article&amp;item=spectre-meltdown-2&amp;num=11" target="_blank" rel="noopener">https://www.phoronix.com/scan.php?page=article&amp;item=spectre-meltdown-2&amp;num=11</a></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://mjblog.github.io/2020/05/20/phoronix-2020-05/" data-id="ckg246lq9000w52fa1ibp8stq" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-tvm_android_deploy" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2020/05/18/tvm_android_deploy/" class="article-date">
+  <time datetime="2020-05-18T03:24:26.000Z" itemprop="datePublished">2020-05-18</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2020/05/18/tvm_android_deploy/">不编译apk直接在android上部署tvm编译结果</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h1 id="技术路线"><a href="#技术路线" class="headerlink" title="技术路线"></a>技术路线</h1><p>理论上android就是一个linux内核加用户态库。因此tvm部署模型到android并不一定需要做一个apk，只需构建一个elf程序提供rpc的功能就可以了。<br>查看到<a href="https://github.com/apache/incubator-tvm/pull/4281，tvm主线已经添加了c++版本的rpc实现。" target="_blank" rel="noopener">https://github.com/apache/incubator-tvm/pull/4281，tvm主线已经添加了c++版本的rpc实现。</a><br>因此，可以使用android ndk中的工具链编译tvm rpc c++实现，绕开复杂且不必要的android apk构建(当然有一个可能的问题是，由于android的权限管控，编译好的程序在非root情况下可能无法启动。本次是在android7.1上/data/local/tmp目录可以用于执行)。</p>
+<h1 id="编译构建"><a href="#编译构建" class="headerlink" title="编译构建"></a>编译构建</h1><p>根据手机型号(坚果pro)和android版本7.1.1，下载android-ndk-r21并选择aarch64-linux-android24-clang++作为交叉编译器。</p>
+<h2 id="tvm创建build目录并编辑config-make"><a href="#tvm创建build目录并编辑config-make" class="headerlink" title="tvm创建build目录并编辑config.make"></a>tvm创建build目录并编辑config.make</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">在tvm目录下</span><br><span class="line">mkdir build_arm64</span><br><span class="line">cd  build_arm64</span><br><span class="line">cp ..&#x2F;config.make .&#x2F;</span><br></pre></td></tr></table></figure>
+<p>为了支持rpc和gpu运算，编辑config.make确保下面两项正确。其中vulkan的设置目录dep_dirs会在后面的步骤中配置好。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"># Whether enable RPC runtime</span><br><span class="line">set(USE_RPC ON)</span><br><span class="line">set(USE_VULKAN &#x2F;home&#x2F;majiang&#x2F;hd&#x2F;opensource&#x2F;tvm&#x2F;build_arm64&#x2F;dep_dirs)</span><br></pre></td></tr></table></figure>
+
+<h2 id="构建交叉版本的spirv-tools"><a href="#构建交叉版本的spirv-tools" class="headerlink" title="构建交叉版本的spirv-tools"></a>构建交叉版本的spirv-tools</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">git <span class="built_in">clone</span> https://github.com/KhronosGroup/SPIRV-Tools.git</span><br><span class="line"><span class="built_in">cd</span> SPIRV-Tools/</span><br><span class="line">git <span class="built_in">clone</span> https://github.com/KhronosGroup/SPIRV-Headers.git external/spirv-headers</span><br><span class="line">mkdir build</span><br><span class="line"><span class="built_in">cd</span> build</span><br><span class="line">cmake .. -DCMAKE_CXX_COMPILER=<span class="string">"/home/majiang/hd/opensource/android_sdk/android-ndk-r21/toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android24-clang++"</span> -DCMAKE_C_COMPILER=<span class="string">"/home/majiang/hd/opensource/android_sdk/android-ndk-r21/toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android24-clang"</span></span><br><span class="line">make -j 8</span><br><span class="line">mkdir inst</span><br><span class="line">make install DESTDIR=`<span class="built_in">pwd</span>`/inst</span><br><span class="line"><span class="comment">#本来使用make  install-headers 应该更为标准，但是spirv-headers的makefile没有写好，其忽略了DESTDIR变量，直接把头文件拷贝到了/usr/local下。规避方案直接copy</span></span><br><span class="line">cp ../external/spirv-headers/include/* inst/usr/<span class="built_in">local</span>/include/ -r</span><br></pre></td></tr></table></figure>
+
+<h2 id="构建交叉版本的runtime"><a href="#构建交叉版本的runtime" class="headerlink" title="构建交叉版本的runtime"></a>构建交叉版本的runtime</h2><p>进入build_arm64目录<br>mkdir dep_dirs<br>cd dep_dirs/<br>mkdir include<br>cp ~/hd/opensource/android_sdk/android-ndk-r21/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/include/vulkan ./include -r<br>cp ~/hd/opensource/android_sdk/android-ndk-r21/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/lib/aarch64-linux-android/24 ./lib -r<br>cp ~/hd/opensource/android_sdk/spirv-tools/SPIRV-Tools/build/inst/usr/local/include/spirv-tools/ ./include/ -r<br>cp ~/hd/opensource/android_sdk/spirv-tools/SPIRV-Tools/build/inst/usr/local/lib/* ./lib/<br>#(可选的strip -g)<br> cp ~/hd/opensource/android_sdk/spirv-tools/SPIRV-Tools/external/spirv-headers/include/spirv/ ./include/ -r<br> cd ../<br> cmake .. -DCMAKE_CXX_COMPILER=”/home/majiang/hd/opensource/android_sdk/android-ndk-r21/toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android24-clang++” -DCMAKE_C_COMPILER=”/home/majiang/hd/opensource/android_sdk/android-ndk-r21/toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android24-clang”<br>(修改config.cmake 将修改 USE_VULKAN指向 dep_dirs set(USE_VULKAN /.xxx…/tvm/build_arm64/dep_dirs))<br>make runtime -j8</p>
+<h2 id="构建cpp版本的rpc服务程序"><a href="#构建cpp版本的rpc服务程序" class="headerlink" title="构建cpp版本的rpc服务程序"></a>构建cpp版本的rpc服务程序</h2><p>在build_arm64目录下执行如下命令。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">make -C ..&#x2F;apps&#x2F;cpp_rpc CXX&#x3D;&#x2F;home&#x2F;majiang&#x2F;hd&#x2F;opensource&#x2F;android_sdk&#x2F;android-ndk-r21&#x2F;toolchains&#x2F;llvm&#x2F;prebuilt&#x2F;linux-x86_64&#x2F;bin&#x2F;aarch64-linux-android24-clang++  TVM_RUNTIME_DIR&#x3D;&#x2F;home&#x2F;majiang&#x2F;hd&#x2F;opensource&#x2F;tvm&#x2F;build_arm64&#x2F;</span><br></pre></td></tr></table></figure>
+<p>tvm当前的makefile会把所有的cc都加进去编译(cmake文件不会)，其中包括windows的win32_process.cc。为了阻止编译错误，手动将其改名为win32_process.cc-nouse。<br>有可能因为搜索路径的问题，找不到vulkan库，可以使用如下命令手动链接(添加-Wl,-rpath-link到对应api的lib目录;-Wl,-rpath-link=/home/majiang/hd/opensource/android_sdk/android-ndk-r21/platforms/android-24/arch-arm64/usr/lib/)。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&#x2F;home&#x2F;majiang&#x2F;hd&#x2F;opensource&#x2F;android_sdk&#x2F;android-ndk-r21&#x2F;toolchains&#x2F;llvm&#x2F;prebuilt&#x2F;linux-x86_64&#x2F;bin&#x2F;aarch64-linux-android24-clang++ -std&#x3D;c++14 -O2 -fPIC -Wall -I&#x2F;media&#x2F;majiang&#x2F;c6b38ac3-8b8a-4613-8259-dddbffe2f4cb&#x2F;majiang&#x2F;opensource&#x2F;tvm&#x2F;include -I&#x2F;media&#x2F;majiang&#x2F;c6b38ac3-8b8a-4613-8259-dddbffe2f4cb&#x2F;majiang&#x2F;opensource&#x2F;tvm&#x2F;3rdparty&#x2F;dmlc-core&#x2F;include -I&#x2F;media&#x2F;majiang&#x2F;c6b38ac3-8b8a-4613-8259-dddbffe2f4cb&#x2F;majiang&#x2F;opensource&#x2F;tvm&#x2F;3rdparty&#x2F;dlpack&#x2F;include -o tvm_rpc main.cc rpc_env.cc rpc_server.cc -L&#x2F;home&#x2F;majiang&#x2F;hd&#x2F;opensource&#x2F;tvm&#x2F;build_arm64_new&#x2F;  -ltvm_runtime -ldl -Wl,-R&#x2F;home&#x2F;majiang&#x2F;hd&#x2F;opensource&#x2F;tvm&#x2F;build_arm64_new&#x2F; -Wl,-rpath-link&#x3D;&#x2F;home&#x2F;majiang&#x2F;hd&#x2F;opensource&#x2F;android_sdk&#x2F;android-ndk-r21&#x2F;toolchains&#x2F;llvm&#x2F;prebuilt&#x2F;linux-x86_64&#x2F;bin&#x2F;..&#x2F;sysroot&#x2F;usr&#x2F;lib&#x2F;aarch64-linux-android&#x2F;24&#x2F;</span><br></pre></td></tr></table></figure>
+
+<h2 id="更新本地的tvm使其支持opencl和vulkan代码生成"><a href="#更新本地的tvm使其支持opencl和vulkan代码生成" class="headerlink" title="更新本地的tvm使其支持opencl和vulkan代码生成"></a>更新本地的tvm使其支持opencl和vulkan代码生成</h2><p>修改本地tvm build目录下的config.cmake，确保USE_OPENCL/VULKAN是ON状态。<br>并且确保装好了opencl和vulkan 的sdk(可参考<a href="https://www.codenong.com/cs105410317/，直接去https://vulkan.lunarg.com/sdk/home" target="_blank" rel="noopener">https://www.codenong.com/cs105410317/，直接去https://vulkan.lunarg.com/sdk/home</a> 下载vulkan sdk)。</p>
+<h1 id="配置手机"><a href="#配置手机" class="headerlink" title="配置手机"></a>配置手机</h1><h2 id="打开USB调试"><a href="#打开USB调试" class="headerlink" title="打开USB调试"></a>打开USB调试</h2><p>在手机设置的“关于本机”页面中连续点击 “软件版本” 条目，可以打开开发者模式。然后在全局高级设置中会出现 “开发者选项”，进入其条目打开“USB调试”即可。</p>
+<h2 id="安装adb"><a href="#安装adb" class="headerlink" title="安装adb"></a>安装adb</h2><p>apt install adb -y</p>
+<h2 id="上传文件并设置权限"><a href="#上传文件并设置权限" class="headerlink" title="上传文件并设置权限"></a>上传文件并设置权限</h2><p>android高版本在没有root的情况下，不能直接给sd卡中的程序加上可执行权限，参考<a href="https://my.oschina.net/jerikc/blog/497090" target="_blank" rel="noopener">https://my.oschina.net/jerikc/blog/497090</a> ，可以拷贝到/data/local/tmp 的特殊路径下，并添加执行权限。<br>在tvm的目录下将两个必须的文件上传。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">adb push apps&#x2F;cpp_rpc&#x2F;tvm_rpc  &#x2F;data&#x2F;local&#x2F;tmp</span><br><span class="line">adb push build_arm64_new&#x2F;libtvm_runtime.so  &#x2F;data&#x2F;local&#x2F;tmp</span><br></pre></td></tr></table></figure>
+<p>另外，由于使用了c++，还需上传 libc++_shared.so(参考<a href="https://developer.android.com/ndk/guides/cpp-support#libc)。" target="_blank" rel="noopener">https://developer.android.com/ndk/guides/cpp-support#libc)。</a></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">adb push &#x2F;home&#x2F;majiang&#x2F;hd&#x2F;opensource&#x2F;android_sdk&#x2F;android-ndk-r21&#x2F;toolchains&#x2F;llvm&#x2F;prebuilt&#x2F;linux-x86_64&#x2F;bin&#x2F;..&#x2F;sysroot&#x2F;usr&#x2F;lib&#x2F;aarch64-linux-android&#x2F;libc++_shared.so  &#x2F;data&#x2F;local&#x2F;tmp</span><br></pre></td></tr></table></figure>
+
+<p>然后进入手机，为程序设置可执行权限。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">adb shell</span><br><span class="line">cd &#x2F;data&#x2F;local&#x2F;tmp</span><br><span class="line">chmod 777 *</span><br></pre></td></tr></table></figure>
+
+<h2 id="测试rpc程序"><a href="#测试rpc程序" class="headerlink" title="测试rpc程序"></a>测试rpc程序</h2><p>使用下面的命令，初步测试程序能否正常启动。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">adb shell</span><br><span class="line">cd &#x2F;data&#x2F;local&#x2F;tmp</span><br><span class="line">export LD_LIBRARY_PATH&#x3D;&#96;pwd&#96;</span><br><span class="line">.&#x2F;tvm_rpc</span><br></pre></td></tr></table></figure>
+<p>如果正常，应该能看到help信息，示例如下。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">[10:17:53] main.cc:289: Command line usage</span><br><span class="line"> server       - Start the server</span><br><span class="line">--host        - The hostname of the server, Default&#x3D;0.0.0.0</span><br><span class="line">--port        - The port of the RPC, Default&#x3D;9090</span><br><span class="line">--port-end    - The end search port of the RPC, Default&#x3D;9199</span><br><span class="line">--tracker     - The RPC tracker address in host:port format e.g. 10.1.1.2:9190 Default&#x3D;&quot;&quot;</span><br><span class="line">--key         - The key used to identify the device type in tracker. Default&#x3D;&quot;&quot;</span><br><span class="line">--custom-addr - Custom IP Address to Report to RPC Tracker. Default&#x3D;&quot;&quot;</span><br><span class="line">--silent      - Whether to run in silent mode. Default&#x3D;False</span><br></pre></td></tr></table></figure>
+
+
+<h1 id="启动rpc服务，进行测试"><a href="#启动rpc服务，进行测试" class="headerlink" title="启动rpc服务，进行测试"></a>启动rpc服务，进行测试</h1><p>启动cpp版本的rpc后，测试其功能是否正常。<br>首先在host主机上启动rpc tracker。使用如下命令。<br>应该会看到”INFO:RPCTracker:bind to 0.0.0.0:9190”这样的提示。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">export TVM_HOME&#x3D;&#x2F;home&#x2F;majiang&#x2F;hd&#x2F;opensource&#x2F;tvm</span><br><span class="line">export PYTHONPATH&#x3D;$TVM_HOME&#x2F;python:$TVM_HOME&#x2F;topi&#x2F;python:$&#123;PYTHONPATH&#125;</span><br><span class="line">python3 -m tvm.exec.rpc_tracker</span><br></pre></td></tr></table></figure>
+
+<p>然后在手机上启动cpp 版本的rpc server。注意tracker选项中的ip地址是电脑主机的ip，不是手机的ip，9190是前面启动tracker给出的port。–key一定写成android，否则后面的android_rpc_test.py会找不到设备（它写死了设备的key为android）。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">adb shell</span><br><span class="line">cd &#x2F;data&#x2F;local&#x2F;tmp</span><br><span class="line">export LD_LIBRARY_PATH&#x3D;&#96;pwd&#96;</span><br><span class="line">.&#x2F;tvm_rpc  server --tracker&#x3D;192.168.3.4:9190 --key&#x3D;android</span><br></pre></td></tr></table></figure>
+
+<p>此时，在电脑主机上可以查询到手机了。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"> python3 -m tvm.exec.query_rpc_tracker</span><br><span class="line">Tracker address 192.168.3.4:9190</span><br><span class="line"></span><br><span class="line">Server List</span><br><span class="line">----------------------------</span><br><span class="line">server-address	key</span><br><span class="line">----------------------------</span><br><span class="line">192.168.3.33:38151	server:android</span><br><span class="line">----------------------------</span><br><span class="line"></span><br><span class="line">Queue Status</span><br><span class="line">-------------------------------</span><br><span class="line">key       total  free  pending</span><br><span class="line">-------------------------------</span><br><span class="line">android   1      1     0      </span><br><span class="line">-------------------------------</span><br></pre></td></tr></table></figure>
+
+<p>最后，进入tvm/apps/android_rpc目录，启动android_rpc的测试。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">export TVM_HOME&#x3D;&#x2F;home&#x2F;majiang&#x2F;hd&#x2F;opensource&#x2F;tvm</span><br><span class="line">export PYTHONPATH&#x3D;$TVM_HOME&#x2F;python:$TVM_HOME&#x2F;topi&#x2F;python:$&#123;PYTHONPATH&#125;</span><br><span class="line">export TVM_TRACKER_HOST&#x3D;192.168.3.4</span><br><span class="line">export TVM_TRACKER_PORT&#x3D;9190</span><br><span class="line">export TVM_NDK_CC&#x3D;&#x2F;home&#x2F;majiang&#x2F;&#x2F;hd&#x2F;opensource&#x2F;android_sdk&#x2F;android-ndk-r21&#x2F;toolchains&#x2F;llvm&#x2F;prebuilt&#x2F;linux-x86_64&#x2F;bin&#x2F;aarch64-linux-android24-clang++</span><br><span class="line">python3 tests&#x2F;android_rpc_test.py</span><br></pre></td></tr></table></figure>
+
+<p>正常时可以看到如下的提示(打开GPU测试需要修改android_rpc_test.py，设置test_vulkan = True)。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">Run CPU test ...</span><br><span class="line">0.000340646 secs&#x2F;op</span><br><span class="line"></span><br><span class="line">Run GPU(Vulkan Flavor) test ...</span><br><span class="line">4.40886e-05 secs&#x2F;op</span><br></pre></td></tr></table></figure>
+
+<h1 id="android端json解析报错问题分析"><a href="#android端json解析报错问题分析" class="headerlink" title="android端json解析报错问题分析"></a>android端json解析报错问题分析</h1><p>使用简单的rpc测试正常，但是使用apps/benchmark/mobile_gpu_imagenet_bench.py ( python3 ./mobile_gpu_imagenet_bench.py –model rk3399   –network mobilenet   –rpc-key android)等复杂测试，会出现手机端报json格式错误。具体的表现是运行到runtime.create时，手机端的runtime解析json格式assert报错，形式不固定(JSONReader::BeginObject等期望的字符没有读到)。</p>
+<h2 id="使用gdb进行初步调试定位"><a href="#使用gdb进行初步调试定位" class="headerlink" title="使用gdb进行初步调试定位"></a>使用gdb进行初步调试定位</h2><p>在没有任何背景信息的情况下，可以先行利用gdb继续初步查看。<br>android-ndk提供了arm64版本的gdb-server和x86版本的gdb。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">在ndk目录下</span><br><span class="line">adb push .&#x2F;prebuilt&#x2F;android-arm64&#x2F;gdbserver&#x2F;gdbserver  &#x2F;data&#x2F;local&#x2F;tmp</span><br></pre></td></tr></table></figure>
+<p>然后。<br>android端<br>cd  /data/local/tmp<br> ./gdbserver 192.168.3.33:8888(手机ip和希望使用的端口) –attach 2126 (使用ps |grep tvm_rpc看到的rpc进程)</p>
+<p>host端<br>./android-ndk-r21/prebuilt/linux-x86_64/bin/gdb  ../tvm/apps/cpp_rpc/tvm_rpc</p>
+<h2 id="使用asan排查可疑内存问题"><a href="#使用asan排查可疑内存问题" class="headerlink" title="使用asan排查可疑内存问题"></a>使用asan排查可疑内存问题</h2><h3 id="编译"><a href="#编译" class="headerlink" title="编译"></a>编译</h3><p>需要将libtvm_runtime.so和tvm_rpc都加上asan重新编译(注意如果不重新编译tvm_rpc，asan的检查可能无法准确输出信息)。<br>对于前者，需要修改config.make，在其尾部加上如下语句，然后重新cmake一次(如果是干净的环境下cmake，可能会出现找不到pthread.h的错误。去掉下面语句成功cmake一次，再重新加上后cmake一次，就可以了，原因暂未调查。)。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">set(CMAKE_C_FLAGS &quot;$&#123;CMAKE_C_FLAGS&#125; -fsanitize&#x3D;address&quot;)</span><br><span class="line">set(CMAKE_CXX_FLAGS &quot;$&#123;CMAKE_CXX_FLAGS&#125; -fsanitize&#x3D;address&quot;)</span><br></pre></td></tr></table></figure>
+<p>对于后者，可以在make的时候添加CXXFLAGS，也可以直接手动加编译参数（因为编译tvm_rpc只需要单条命令）。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&#x2F;home&#x2F;majiang&#x2F;hd&#x2F;opensource&#x2F;android_sdk&#x2F;android-ndk-r21&#x2F;toolchains&#x2F;llvm&#x2F;prebuilt&#x2F;linux-x86_64&#x2F;bin&#x2F;aarch64-linux-android24-clang++ -std&#x3D;c++14 -O2 -fPIC -Wall -I&#x2F;media&#x2F;majiang&#x2F;c6b38ac3-8b8a-4613-8259-dddbffe2f4cb&#x2F;majiang&#x2F;opensource&#x2F;tvm&#x2F;include -I&#x2F;media&#x2F;majiang&#x2F;c6b38ac3-8b8a-4613-8259-dddbffe2f4cb&#x2F;majiang&#x2F;opensource&#x2F;tvm&#x2F;3rdparty&#x2F;dmlc-core&#x2F;include -I&#x2F;media&#x2F;majiang&#x2F;c6b38ac3-8b8a-4613-8259-dddbffe2f4cb&#x2F;majiang&#x2F;opensource&#x2F;tvm&#x2F;3rdparty&#x2F;dlpack&#x2F;include -o tvm_rpc main.cc rpc_env.cc rpc_server.cc -L&#x2F;home&#x2F;majiang&#x2F;hd&#x2F;opensource&#x2F;tvm&#x2F;build_arm64&#x2F;  -ltvm_runtime -ldl -Wl,-R&#x2F;home&#x2F;majiang&#x2F;hd&#x2F;opensource&#x2F;tvm&#x2F;build_arm64&#x2F; -Wl,-rpath-link&#x3D;&#x2F;home&#x2F;majiang&#x2F;hd&#x2F;opensource&#x2F;android_sdk&#x2F;android-ndk-r21&#x2F;platforms&#x2F;android-24&#x2F;arch-arm64&#x2F;usr&#x2F;lib&#x2F; -fsanitize&#x3D;address</span><br></pre></td></tr></table></figure>
+<h3 id="运行"><a href="#运行" class="headerlink" title="运行"></a>运行</h3><p>使用adb push将新的rumtime和tvm_rpc上传。<br>然后使用下面命令上传asan需要的动态库。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">adb push &#x2F;home&#x2F;majiang&#x2F;hd&#x2F;opensource&#x2F;android_sdk&#x2F;android-ndk-r21&#x2F;toolchains&#x2F;llvm&#x2F;prebuilt&#x2F;linux-x86_64&#x2F;lib64&#x2F;clang&#x2F;9.0.8&#x2F;lib&#x2F;linux&#x2F;libclang_rt.asan-aarch64-android.so &#x2F;data&#x2F;local&#x2F;tmp</span><br></pre></td></tr></table></figure>
+<p>然后使用正常方式启动tvm_rpc即可。</p>
+<p>再次运行触发json解析错误的测试用例，这次asan给出了准确的输出，确实有堆内存越界。在启动tvm_rpc的终端上可以看到如下输出。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br></pre></td><td class="code"><pre><span class="line">&#x3D;&#x3D;5713&#x3D;&#x3D;ERROR: AddressSanitizer: heap-buffer-overflow on address 0x0076a6ec7100 at pc 0x007fa7f66f50 bp 0x005fa41fc130 sp 0x005fa41fb8d8</span><br><span class="line">WRITE of size 20942 at 0x0076a6ec7100 thread T1</span><br><span class="line">    #0 0x7fa7f66f4c  (&#x2F;data&#x2F;local&#x2F;tmp&#x2F;libclang_rt.asan-aarch64-android.so+0x85f4c)</span><br><span class="line">    #1 0x7fa7f66c64  (&#x2F;data&#x2F;local&#x2F;tmp&#x2F;libclang_rt.asan-aarch64-android.so+0x85c64)</span><br><span class="line">    #2 0x7fa7757a68  (&#x2F;data&#x2F;local&#x2F;tmp&#x2F;libtvm_runtime.so+0x55ba68)</span><br><span class="line">    #3 0x7fa7757458  (&#x2F;data&#x2F;local&#x2F;tmp&#x2F;libtvm_runtime.so+0x55b458)</span><br><span class="line">    #4 0x7fa770a0cc  (&#x2F;data&#x2F;local&#x2F;tmp&#x2F;libtvm_runtime.so+0x50e0cc)</span><br><span class="line">    #5 0x7fa76faf00  (&#x2F;data&#x2F;local&#x2F;tmp&#x2F;libtvm_runtime.so+0x4fef00)</span><br><span class="line">    #6 0x7fa76f9ce0  (&#x2F;data&#x2F;local&#x2F;tmp&#x2F;libtvm_runtime.so+0x4fdce0)</span><br><span class="line">    #7 0x7fa76fcb3c  (&#x2F;data&#x2F;local&#x2F;tmp&#x2F;libtvm_runtime.so+0x500b3c)</span><br><span class="line">    #8 0x7fa774d3c8  (&#x2F;data&#x2F;local&#x2F;tmp&#x2F;libtvm_runtime.so+0x5513c8)</span><br><span class="line">    #9 0x555558b444  (&#x2F;data&#x2F;local&#x2F;tmp&#x2F;tvm_rpc+0x36444)</span><br><span class="line">    #10 0x5555583db0  (&#x2F;data&#x2F;local&#x2F;tmp&#x2F;tvm_rpc+0x2edb0)</span><br><span class="line">    #11 0x5555585180  (&#x2F;data&#x2F;local&#x2F;tmp&#x2F;tvm_rpc+0x30180)</span><br><span class="line">    #12 0x5555585354  (&#x2F;data&#x2F;local&#x2F;tmp&#x2F;tvm_rpc+0x30354)</span><br><span class="line">    #13 0x7fa7e6a41c  (&#x2F;system&#x2F;lib64&#x2F;libc.so+0x6841c)</span><br><span class="line">    #14 0x7fa7e1fe00  (&#x2F;system&#x2F;lib64&#x2F;libc.so+0x1de00)</span><br><span class="line"></span><br><span class="line">0x0076a6ec7100 is located 0 bytes to the right of 4096-byte region [0x0076a6ec6100,0x0076a6ec7100)</span><br><span class="line">allocated by thread T1 here:</span><br><span class="line">    #0 0x7fa7f8b374  (&#x2F;data&#x2F;local&#x2F;tmp&#x2F;libclang_rt.asan-aarch64-android.so+0xaa374)</span><br><span class="line">    #1 0x7fa73a3460  (&#x2F;data&#x2F;local&#x2F;tmp&#x2F;libtvm_runtime.so+0x1a7460)</span><br><span class="line">    #2 0x7fa73a3438  (&#x2F;data&#x2F;local&#x2F;tmp&#x2F;libtvm_runtime.so+0x1a7438)</span><br><span class="line">    #3 0x7fa73a2bf0  (&#x2F;data&#x2F;local&#x2F;tmp&#x2F;libtvm_runtime.so+0x1a6bf0)</span><br><span class="line">    #4 0x7fa7683008  (&#x2F;data&#x2F;local&#x2F;tmp&#x2F;libtvm_runtime.so+0x487008)</span><br><span class="line">    #5 0x7fa7682240  (&#x2F;data&#x2F;local&#x2F;tmp&#x2F;libtvm_runtime.so+0x486240)</span><br><span class="line">    #6 0x7fa7681448  (&#x2F;data&#x2F;local&#x2F;tmp&#x2F;libtvm_runtime.so+0x485448)</span><br><span class="line">    #7 0x7fa76fab4c  (&#x2F;data&#x2F;local&#x2F;tmp&#x2F;libtvm_runtime.so+0x4feb4c)</span><br><span class="line">    #8 0x7fa76f9ce0  (&#x2F;data&#x2F;local&#x2F;tmp&#x2F;libtvm_runtime.so+0x4fdce0)</span><br><span class="line">    #9 0x7fa76fcb3c  (&#x2F;data&#x2F;local&#x2F;tmp&#x2F;libtvm_runtime.so+0x500b3c)</span><br><span class="line">    #10 0x7fa774d3c8  (&#x2F;data&#x2F;local&#x2F;tmp&#x2F;libtvm_runtime.so+0x5513c8)</span><br><span class="line">    #11 0x555558b444  (&#x2F;data&#x2F;local&#x2F;tmp&#x2F;tvm_rpc+0x36444)</span><br><span class="line">    #12 0x5555583db0  (&#x2F;data&#x2F;local&#x2F;tmp&#x2F;tvm_rpc+0x2edb0)</span><br><span class="line">    #13 0x5555585180  (&#x2F;data&#x2F;local&#x2F;tmp&#x2F;tvm_rpc+0x30180)</span><br><span class="line">    #14 0x5555585354  (&#x2F;data&#x2F;local&#x2F;tmp&#x2F;tvm_rpc+0x30354)</span><br><span class="line">    #15 0x7fa7e6a41c  (&#x2F;system&#x2F;lib64&#x2F;libc.so+0x6841c)</span><br><span class="line">    #16 0x7fa7e1fe00  (&#x2F;system&#x2F;lib64&#x2F;libc.so+0x1de00)</span><br><span class="line"></span><br><span class="line">Thread T1 created by T0 here:</span><br><span class="line">    #0 0x7fa7f725a0  (&#x2F;data&#x2F;local&#x2F;tmp&#x2F;libclang_rt.asan-aarch64-android.so+0x915a0)</span><br><span class="line">    #1 0x5555584ebc  (&#x2F;data&#x2F;local&#x2F;tmp&#x2F;tvm_rpc+0x2febc)</span><br><span class="line">    #2 0x5555584c20  (&#x2F;data&#x2F;local&#x2F;tmp&#x2F;tvm_rpc+0x2fc20)</span><br><span class="line">    #3 0x5555582608  (&#x2F;data&#x2F;local&#x2F;tmp&#x2F;tvm_rpc+0x2d608)</span><br><span class="line">    #4 0x5555581224  (&#x2F;data&#x2F;local&#x2F;tmp&#x2F;tvm_rpc+0x2c224)</span><br><span class="line">    #5 0x555556cdd4  (&#x2F;data&#x2F;local&#x2F;tmp&#x2F;tvm_rpc+0x17dd4)</span><br><span class="line">    #6 0x555556d8ac  (&#x2F;data&#x2F;local&#x2F;tmp&#x2F;tvm_rpc+0x188ac)</span><br><span class="line">    #7 0x7fa7e1c7d8  (&#x2F;system&#x2F;lib64&#x2F;libc.so+0x1a7d8)</span><br><span class="line">    #8 0x5555566b10  (&#x2F;data&#x2F;local&#x2F;tmp&#x2F;tvm_rpc+0x11b10)</span><br><span class="line">    #9 0x7fa8460d54  (&#x2F;system&#x2F;bin&#x2F;linker64+0x6d54)</span><br><span class="line"></span><br><span class="line">SUMMARY: AddressSanitizer: heap-buffer-overflow (&#x2F;data&#x2F;local&#x2F;tmp&#x2F;libclang_rt.asan-aarch64-android.so+0x85f4c) </span><br><span class="line">Shadow bytes around the buggy address:</span><br><span class="line">  0x001ed4dd8dd0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00</span><br><span class="line">  0x001ed4dd8de0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00</span><br><span class="line">  0x001ed4dd8df0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00</span><br><span class="line">  0x001ed4dd8e00: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00</span><br><span class="line">  0x001ed4dd8e10: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00</span><br><span class="line">&#x3D;&gt;0x001ed4dd8e20:[fa]fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa</span><br><span class="line">  0x001ed4dd8e30: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa</span><br><span class="line">  0x001ed4dd8e40: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa</span><br><span class="line">  0x001ed4dd8e50: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa</span><br><span class="line">  0x001ed4dd8e60: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa</span><br><span class="line">  0x001ed4dd8e70: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa</span><br><span class="line">Shadow byte legend (one shadow byte represents 8 application bytes):</span><br><span class="line">  Addressable:           00</span><br><span class="line">  Partially addressable: 01 02 03 04 05 06 07 </span><br><span class="line">  Heap left redzone:       fa</span><br><span class="line">  Freed heap region:       fd</span><br><span class="line">  Stack left redzone:      f1</span><br><span class="line">  Stack mid redzone:       f2</span><br><span class="line">  Stack right redzone:     f3</span><br><span class="line">  Stack after return:      f5</span><br><span class="line">  Stack use after scope:   f8</span><br><span class="line">  Global redzone:          f9</span><br><span class="line">  Global init order:       f6</span><br><span class="line">  Poisoned by user:        f7</span><br><span class="line">  Container overflow:      fc</span><br><span class="line">  Array cookie:            ac</span><br><span class="line">  Intra object redzone:    bb</span><br><span class="line">  ASan internal:           fe</span><br><span class="line">  Left alloca redzone:     ca</span><br><span class="line">  Right alloca redzone:    cb</span><br><span class="line">  Shadow gap:              cc</span><br><span class="line">&#x3D;&#x3D;5713&#x3D;&#x3D;ABORTING</span><br></pre></td></tr></table></figure>
+<p>由于是交叉编译运行，asan无法直接给出了文件和行号信息。<br>为了便于理解日志，可以将上面的日志信息复制并保存到host机器的文件中，再使用asan提供的专用symbolize工具获得文件和行号。</p>
+<h3 id="日志解析"><a href="#日志解析" class="headerlink" title="日志解析"></a>日志解析</h3><p>为了解析交叉编译的日志，asan提供了专门的symbolizer工具。<br>该工具的核心任务就是将  “binary文件+offset” 翻译为 “文件:函数：行号”。<br>llvm的asan提供的工具在， <a href="https://llvm.org/svn/llvm-project/compiler-rt/trunk/lib/asan/scripts/asan_symbolize.py。它对翻译工作做了封装，可以使用llvm-symbolizer/address2line等多种底层工具完成翻译。" target="_blank" rel="noopener">https://llvm.org/svn/llvm-project/compiler-rt/trunk/lib/asan/scripts/asan_symbolize.py。它对翻译工作做了封装，可以使用llvm-symbolizer/address2line等多种底层工具完成翻译。</a></p>
+<p>其使用也非常简单，如下一条命令即可完成翻译。<br>error.log是含有错误信息的文件。<br>-c 是交叉编译的prefix<br>-s 是sysroot，该路径下需要含有带调试信息的binary文件</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">.&#x2F;asan_symbolize.py  -d -c &quot;&#x2F;home&#x2F;majiang&#x2F;hd&#x2F;opensource&#x2F;android_sdk&#x2F;android-ndk-r21&#x2F;toolchains&#x2F;llvm&#x2F;prebuilt&#x2F;linux-x86_64&#x2F;bin&#x2F;aarch64-linux-android24-&quot;  -s &quot;&#x2F;home&#x2F;majiang&#x2F;hd&#x2F;opensource&#x2F;tvm&#x2F;debug_arm64&#x2F;&quot; &lt; error.log</span><br></pre></td></tr></table></figure>
+<p>这个脚本错误信息不是非常友好，需要先行确认底层的symbolizer能正常工作，sysroot中含有正确的binary文件。<br>例如，如果系统PATH中没有llvm-symbolizer，只有llvm-symbolizer-9(没有安装默认的llvm版本，而是安装了新的9版本)，需要先export ASAN_SYMBOLIZER_PATH=llvm-symbolizer-9，再运行脚本。<br>sysroot中的路径布置必须与log中的日志完全一致，否则脚本报错信息也比较难以理解。</p>
+<h3 id="故障修复"><a href="#故障修复" class="headerlink" title="故障修复"></a>故障修复</h3><p>使用asan，可以获得如下的故障日志。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br></pre></td><td class="code"><pre><span class="line">&#x3D;&#x3D;5713&#x3D;&#x3D;ERROR: AddressSanitizer: heap-buffer-overflow on address 0x0076a6ec7100 at pc 0x007fa7f66f50 bp 0x005fa41fc130 sp 0x005fa41fb8d8</span><br><span class="line">WRITE of size 20942 at 0x0076a6ec7100 thread T1</span><br><span class="line">    #0 0x7fa7f66f4c in recvfrom &#x2F;toolchain&#x2F;llvm-project&#x2F;compiler-rt&#x2F;lib&#x2F;asan&#x2F;..&#x2F;sanitizer_common&#x2F;sanitizer_common_interceptors.inc:6404:5</span><br><span class="line">    #1 0x7fa7f66c64 in recv &#x2F;toolchain&#x2F;llvm-project&#x2F;compiler-rt&#x2F;lib&#x2F;asan&#x2F;..&#x2F;sanitizer_common&#x2F;sanitizer_common_interceptors.inc:6385:17</span><br><span class="line">    #2 0x7fa7757a68 in tvm::support::TCPSocket::Recv(void*, unsigned long, int) &#x2F;home&#x2F;majiang&#x2F;hd&#x2F;opensource&#x2F;tvm&#x2F;src&#x2F;runtime&#x2F;rpc&#x2F;..&#x2F;..&#x2F;support&#x2F;socket.h:483:12</span><br><span class="line">    #3 0x7fa7757458 in tvm::runtime::SockChannel::Recv(void*, unsigned long) &#x2F;home&#x2F;majiang&#x2F;hd&#x2F;opensource&#x2F;tvm&#x2F;src&#x2F;runtime&#x2F;rpc&#x2F;rpc_socket_impl.cc:53:23</span><br><span class="line">    #4 0x7fa770a0cc in tvm::runtime::RPCSession::HandleUntilReturnEvent(tvm::runtime::TVMRetValue*, bool, tvm::runtime::PackedFunc const*)::$_1::operator()(void*, unsigned long) const &#x2F;home&#x2F;majiang&#x2F;hd&#x2F;opensource&#x2F;tvm&#x2F;src&#x2F;runtime&#x2F;rpc&#x2F;rpc_session.cc:880:28</span><br><span class="line">    #5 0x7fa76faf00 in unsigned long tvm::support::RingBuffer::WriteWithCallback&lt;tvm::runtime::RPCSession::HandleUntilReturnEvent(tvm::runtime::TVMRetValue*, bool, tvm::runtime::PackedFunc const*)::$_1&gt;(tvm::runtime::RPCSession::HandleUntilReturnEvent(tvm::runtime::TVMRetValue*, bool, tvm::runtime::PackedFunc const*)::$_1, unsigned long) &#x2F;home&#x2F;majiang&#x2F;hd&#x2F;opensource&#x2F;tvm&#x2F;src&#x2F;runtime&#x2F;rpc&#x2F;..&#x2F;..&#x2F;support&#x2F;ring_buffer.h:160:25</span><br><span class="line">    #6 0x7fa76f9ce0 in tvm::runtime::RPCSession::HandleUntilReturnEvent(tvm::runtime::TVMRetValue*, bool, tvm::runtime::PackedFunc const*) &#x2F;home&#x2F;majiang&#x2F;hd&#x2F;opensource&#x2F;tvm&#x2F;src&#x2F;runtime&#x2F;rpc&#x2F;rpc_session.cc:879:26</span><br><span class="line">    #7 0x7fa76fcb3c in tvm::runtime::RPCSession::ServerLoop() &#x2F;home&#x2F;majiang&#x2F;hd&#x2F;opensource&#x2F;tvm&#x2F;src&#x2F;runtime&#x2F;rpc&#x2F;rpc_session.cc:952:3</span><br><span class="line">    #8 0x7fa774d3c8 in tvm::runtime::RPCServerLoop(int) &#x2F;home&#x2F;majiang&#x2F;hd&#x2F;opensource&#x2F;tvm&#x2F;src&#x2F;runtime&#x2F;rpc&#x2F;rpc_socket_impl.cc:113:30</span><br><span class="line">    #9 0x555558b444 in tvm::runtime::RPCServer::ServerLoopProc(tvm::support::TCPSocket, tvm::support::SockAddr) ??:0:0</span><br><span class="line">    #10 0x5555583db0 in tvm::runtime::RPCServer::ListenLoopProc() ??:0:0</span><br><span class="line">    #11 0x5555585180 in std::__ndk1::__async_assoc_state&lt;void, std::__ndk1::__async_func&lt;void (tvm::runtime::RPCServer::*)(), tvm::runtime::RPCServer*&gt; &gt;::__execute() ??:0:0</span><br><span class="line">    #12 0x5555585354 in void* std::__ndk1::__thread_proxy&lt;std::__ndk1::tuple&lt;std::__ndk1::unique_ptr&lt;std::__ndk1::__thread_struct, std::__ndk1::default_delete&lt;std::__ndk1::__thread_struct&gt; &gt;, void (std::__ndk1::__async_assoc_state&lt;void, std::__ndk1::__async_func&lt;void (tvm::runtime::RPCServer::*)(), tvm::runtime::RPCServer*&gt; &gt;::*)(), std::__ndk1::__async_assoc_state&lt;void, std::__ndk1::__async_func&lt;void (tvm::runtime::RPCServer::*)(), tvm::runtime::RPCServer*&gt; &gt;*&gt; &gt;(void*) ??:0:0</span><br><span class="line">    #13 0x7fa7e6a41c in __pthread_start(void*) ??:0:0</span><br><span class="line">    #14 0x7fa7e1fe00 in __start_thread ??:0:0</span><br><span class="line"></span><br><span class="line">0x0076a6ec7100 is located 0 bytes to the right of 4096-byte region [0x0076a6ec6100,0x0076a6ec7100)</span><br><span class="line">allocated by thread T1 here:</span><br><span class="line">    #0 0x7fa7f8b374 in operator new(unsigned long) _asan_rtl_:3</span><br><span class="line">    #1 0x7fa73a3460 in std::__ndk1::__libcpp_allocate(unsigned long, unsigned long) &#x2F;home&#x2F;majiang&#x2F;hd&#x2F;opensource&#x2F;android_sdk&#x2F;android-ndk-r21&#x2F;toolchains&#x2F;llvm&#x2F;prebuilt&#x2F;linux-x86_64&#x2F;bin&#x2F;..&#x2F;sysroot&#x2F;usr&#x2F;include&#x2F;c++&#x2F;v1&#x2F;new:253:10</span><br><span class="line">    #2 0x7fa73a3438 in std::__ndk1::allocator&lt;char&gt;::allocate(unsigned long, void const*) &#x2F;home&#x2F;majiang&#x2F;hd&#x2F;opensource&#x2F;android_sdk&#x2F;android-ndk-r21&#x2F;toolchains&#x2F;llvm&#x2F;prebuilt&#x2F;linux-x86_64&#x2F;bin&#x2F;..&#x2F;sysroot&#x2F;usr&#x2F;include&#x2F;c++&#x2F;v1&#x2F;memory:1813:37</span><br><span class="line">    #3 0x7fa73a2bf0 in std::__ndk1::allocator_traits&lt;std::__ndk1::allocator&lt;char&gt; &gt;::allocate(std::__ndk1::allocator&lt;char&gt;&amp;, unsigned long) &#x2F;home&#x2F;majiang&#x2F;hd&#x2F;opensource&#x2F;android_sdk&#x2F;android-ndk-r21&#x2F;toolchains&#x2F;llvm&#x2F;prebuilt&#x2F;linux-x86_64&#x2F;bin&#x2F;..&#x2F;sysroot&#x2F;usr&#x2F;include&#x2F;c++&#x2F;v1&#x2F;memory:1546:21</span><br><span class="line">    #4 0x7fa7683008 in std::__ndk1::__split_buffer&lt;char, std::__ndk1::allocator&lt;char&gt;&amp;&gt;::__split_buffer(unsigned long, unsigned long, std::__ndk1::allocator&lt;char&gt;&amp;) &#x2F;home&#x2F;majiang&#x2F;hd&#x2F;opensource&#x2F;android_sdk&#x2F;android-ndk-r21&#x2F;toolchains&#x2F;llvm&#x2F;prebuilt&#x2F;linux-x86_64&#x2F;bin&#x2F;..&#x2F;sysroot&#x2F;usr&#x2F;include&#x2F;c++&#x2F;v1&#x2F;__split_buffer:318:29</span><br><span class="line">    #5 0x7fa7682240 in std::__ndk1::vector&lt;char, std::__ndk1::allocator&lt;char&gt; &gt;::shrink_to_fit() &#x2F;home&#x2F;majiang&#x2F;hd&#x2F;opensource&#x2F;android_sdk&#x2F;android-ndk-r21&#x2F;toolchains&#x2F;llvm&#x2F;prebuilt&#x2F;linux-x86_64&#x2F;bin&#x2F;..&#x2F;sysroot&#x2F;usr&#x2F;include&#x2F;c++&#x2F;v1&#x2F;vector:1598:57</span><br><span class="line">    #6 0x7fa7681448 in tvm::support::RingBuffer::Reserve(unsigned long) &#x2F;home&#x2F;majiang&#x2F;hd&#x2F;opensource&#x2F;tvm&#x2F;src&#x2F;runtime&#x2F;rpc&#x2F;..&#x2F;..&#x2F;support&#x2F;ring_buffer.h:74:15</span><br><span class="line">    #7 0x7fa76fab4c in unsigned long tvm::support::RingBuffer::WriteWithCallback&lt;tvm::runtime::RPCSession::HandleUntilReturnEvent(tvm::runtime::TVMRetValue*, bool, tvm::runtime::PackedFunc const*)::$_1&gt;(tvm::runtime::RPCSession::HandleUntilReturnEvent(tvm::runtime::TVMRetValue*, bool, tvm::runtime::PackedFunc const*)::$_1, unsigned long) &#x2F;home&#x2F;majiang&#x2F;hd&#x2F;opensource&#x2F;tvm&#x2F;src&#x2F;runtime&#x2F;rpc&#x2F;..&#x2F;..&#x2F;support&#x2F;ring_buffer.h:148:11</span><br><span class="line">    #8 0x7fa76f9ce0 in tvm::runtime::RPCSession::HandleUntilReturnEvent(tvm::runtime::TVMRetValue*, bool, tvm::runtime::PackedFunc const*) &#x2F;home&#x2F;majiang&#x2F;hd&#x2F;opensource&#x2F;tvm&#x2F;src&#x2F;runtime&#x2F;rpc&#x2F;rpc_session.cc:879:26</span><br><span class="line">    #9 0x7fa76fcb3c in tvm::runtime::RPCSession::ServerLoop() &#x2F;home&#x2F;majiang&#x2F;hd&#x2F;opensource&#x2F;tvm&#x2F;src&#x2F;runtime&#x2F;rpc&#x2F;rpc_session.cc:952:3</span><br><span class="line">    #10 0x7fa774d3c8 in tvm::runtime::RPCServerLoop(int) &#x2F;home&#x2F;majiang&#x2F;hd&#x2F;opensource&#x2F;tvm&#x2F;src&#x2F;runtime&#x2F;rpc&#x2F;rpc_socket_impl.cc:113:30</span><br><span class="line">    #11 0x555558b444 in tvm::runtime::RPCServer::ServerLoopProc(tvm::support::TCPSocket, tvm::support::SockAddr) ??:0:0</span><br><span class="line">    #12 0x5555583db0 in tvm::runtime::RPCServer::ListenLoopProc() ??:0:0</span><br><span class="line">    #13 0x5555585180 in std::__ndk1::__async_assoc_state&lt;void, std::__ndk1::__async_func&lt;void (tvm::runtime::RPCServer::*)(), tvm::runtime::RPCServer*&gt; &gt;::__execute() ??:0:0</span><br><span class="line">    #14 0x5555585354 in void* std::__ndk1::__thread_proxy&lt;std::__ndk1::tuple&lt;std::__ndk1::unique_ptr&lt;std::__ndk1::__thread_struct, std::__ndk1::default_delete&lt;std::__ndk1::__thread_struct&gt; &gt;, void (std::__ndk1::__async_assoc_state&lt;void, std::__ndk1::__async_func&lt;void (tvm::runtime::RPCServer::*)(), tvm::runtime::RPCServer*&gt; &gt;::*)(), std::__ndk1::__async_assoc_state&lt;void, std::__ndk1::__async_func&lt;void (tvm::runtime::RPCServer::*)(), tvm::runtime::RPCServer*&gt; &gt;*&gt; &gt;(void*) ??:0:0</span><br><span class="line">    #15 0x7fa7e6a41c in __pthread_start(void*) ??:0:0</span><br><span class="line">    #16 0x7fa7e1fe00 in __start_thread ??:0:0</span><br><span class="line"></span><br><span class="line">Thread T1 created by T0 here:</span><br><span class="line">    #0 0x7fa7f725a0 in pthread_create _asan_rtl_:3</span><br><span class="line">    #1 0x5555584ebc in std::__ndk1::thread::thread&lt;void (std::__ndk1::__async_assoc_state&lt;void, std::__ndk1::__async_func&lt;void (tvm::runtime::RPCServer::*)(), tvm::runtime::RPCServer*&gt; &gt;::*)(), std::__ndk1::__async_assoc_state&lt;void, std::__ndk1::__async_func&lt;void (tvm::runtime::RPCServer::*)(), tvm::runtime::RPCServer*&gt; &gt;*, void&gt;(void (std::__ndk1::__async_assoc_state&lt;void, std::__ndk1::__async_func&lt;void (tvm::runtime::RPCServer::*)(), tvm::runtime::RPCServer*&gt; &gt;::*&amp;&amp;)(), std::__ndk1::__async_assoc_state&lt;void, std::__ndk1::__async_func&lt;void (tvm::runtime::RPCServer::*)(), tvm::runtime::RPCServer*&gt; &gt;*&amp;&amp;) ??:0:0</span><br><span class="line">    #2 0x5555584c20 in std::__ndk1::future&lt;void&gt; std::__ndk1::__make_async_assoc_state&lt;void, std::__ndk1::__async_func&lt;void (tvm::runtime::RPCServer::*)(), tvm::runtime::RPCServer*&gt; &gt;(std::__ndk1::__async_func&lt;void (tvm::runtime::RPCServer::*)(), tvm::runtime::RPCServer*&gt;&amp;&amp;) ??:0:0</span><br><span class="line">    #3 0x5555582608 in tvm::runtime::RPCServer::Start() ??:0:0</span><br><span class="line">    #4 0x5555581224 in tvm::runtime::RPCServerCreate(std::__ndk1::basic_string&lt;char, std::__ndk1::char_traits&lt;char&gt;, std::__ndk1::allocator&lt;char&gt; &gt;, int, int, std::__ndk1::basic_string&lt;char, std::__ndk1::char_traits&lt;char&gt;, std::__ndk1::allocator&lt;char&gt; &gt;, std::__ndk1::basic_string&lt;char, std::__ndk1::char_traits&lt;char&gt;, std::__ndk1::allocator&lt;char&gt; &gt;, std::__ndk1::basic_string&lt;char, std::__ndk1::char_traits&lt;char&gt;, std::__ndk1::allocator&lt;char&gt; &gt;, bool) ??:0:0</span><br><span class="line">    #5 0x555556cdd4 in RpcServer(int, char**) ??:0:0</span><br><span class="line">    #6 0x555556d8ac in main ??:0:0</span><br><span class="line">    #7 0x7fa7e1c7d8 in __libc_init ??:0:0</span><br><span class="line">    #8 0x5555566b10 in _start_main ??:0:0</span><br></pre></td></tr></table></figure>
+<p>从这个日志可以很快定位到核心的错误逻辑。<br>ring_buffer.h 中的Reserve函数实现逻辑有问题，没有为数据预留足够的空间，后续直接recv到buffer中的数据会导致overflow。<br>如下逻辑所示，当请求reserver的size n小于当前buffer的size<br>时，reserve函数会减小buffer保有的内存，节约资源。<br>但是其减小内存后，只保留kInitCapacity个byte，忽略了输入请求n可能大于kInitCapacity的情况。<br>发生错误时，输入的n为25038 (graph json的string长度)kInitCapacity 只有 4096。recv到的json字符串破坏了buffer，导致后续逻辑混乱。<br>修复的逻辑也简单，只需要保证收缩后的尺寸不小于n就可以了。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">Reserve</span><span class="params">(<span class="keyword">size_t</span> n)</span> </span>&#123;</span><br><span class="line">  <span class="keyword">if</span> (ring_.<span class="built_in">size</span>() &lt; n) &#123;</span><br><span class="line">      <span class="comment">//扩大ring buffer的size</span></span><br><span class="line">      &#125;</span><br><span class="line">  &#125; <span class="keyword">else</span> <span class="keyword">if</span> (ring_.<span class="built_in">size</span>() &gt; n * <span class="number">8</span> &amp;&amp; ring_.<span class="built_in">size</span>() &gt; kInitCapacity &amp;&amp; bytes_available_ &gt; <span class="number">0</span>) &#123;</span><br><span class="line">      <span class="comment">// shrink too large temporary buffer to avoid out of memory on some embedded devices</span></span><br><span class="line">      <span class="keyword">size_t</span> old_bytes = bytes_available_;</span><br><span class="line"></span><br><span class="line">      <span class="function"><span class="built_in">std</span>::<span class="built_in">vector</span>&lt;<span class="keyword">char</span>&gt; <span class="title">tmp</span><span class="params">(old_bytes)</span></span>;</span><br><span class="line"></span><br><span class="line">      Read(&amp;tmp[<span class="number">0</span>], old_bytes);</span><br><span class="line">      <span class="comment">//ring_.resize(kInitCapacity); this may cause overflow when n&gt;kInitCapacity</span></span><br><span class="line">      ring_.resize(kInitCapacity &gt; n? kInitCapacity : n);</span><br><span class="line">      ring_.shrink_to_fit();</span><br><span class="line"></span><br><span class="line">      <span class="built_in">memcpy</span>(&amp;ring_[<span class="number">0</span>], &amp;tmp[<span class="number">0</span>], old_bytes);</span><br><span class="line">      head_ptr_ = <span class="number">0</span>;</span><br><span class="line">      bytes_available_ = old_bytes;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h1 id="查看错误输出"><a href="#查看错误输出" class="headerlink" title="查看错误输出"></a>查看错误输出</h1><p>rpc时看不到错误信息。查看apps/android_camera/app/src/main/jni/tvm_runtime.h　可以发现，原因是android上需要特殊的打印指令，但是编译时我们没有打开对应的宏，也没有添加对应的打印函数，如下代码所示。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">&#x2F;* Enable custom logging - this will cause TVM to pass every log message</span><br><span class="line"> * through CustomLogMessage instead of LogMessage. By enabling this, we must</span><br><span class="line"> * implement dmlc::CustomLogMessage::Log. We use this to pass TVM log</span><br><span class="line"> * messages to Android logcat.</span><br><span class="line"> *&#x2F;</span><br><span class="line">#define DMLC_LOG_CUSTOMIZE 1</span><br><span class="line"></span><br><span class="line">&#x2F;* Ensure that fatal errors are passed to the logger before throwing</span><br><span class="line"> * in LogMessageFatal</span><br><span class="line"> *&#x2F;</span><br><span class="line">#define DMLC_LOG_BEFORE_THROW 1</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">#include &lt;android&#x2F;log.h&gt;</span><br><span class="line"></span><br><span class="line">void dmlc::CustomLogMessage::Log(const std::string&amp; msg) &#123;</span><br><span class="line">  &#x2F;&#x2F; This is called for every message logged by TVM.</span><br><span class="line">  &#x2F;&#x2F; We pass the message to logcat.</span><br><span class="line">  __android_log_write(ANDROID_LOG_DEBUG, &quot;TVM_RUNTIME&quot;, msg.c_str());</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h1 id="添加adreon-opencl支持"><a href="#添加adreon-opencl支持" class="headerlink" title="添加adreon opencl支持"></a>添加adreon opencl支持</h1><p>从手机中pull出libOpenCL_system.so  libion.so放入dep_libs_from_phone<br>从高通网站下载opencl sdk<br>同样在build_arm64中<br>cmake ./. -DCMAKE_CXX_COMPILER=”/mnt/d/opensource/android_ndk/android-ndk-r21b/toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android28-clang++” -DCMAKE_C_COMPILER=”/mnt/d/opensource/android_ndk/android-ndk-r21b/toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android28-clang”   -DOpenCL_INCLUDE_DIR=/mnt/d/opensource/opencl-sdk-1.2.2/inc   -DOpenCL_LIBRARY=/mnt/d/opensource/opencl-sdk-1.2.2/dep_libs_from_phone</p>
+<p>make -j 32 runtime</p>
+<p> make -C ../apps/cpp_rpc CXX=/mnt/d/opensource/android_ndk/android-ndk-r21b/toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android28-clang++  TVM_RUNTIME_DIR=/mnt/d/opensource/opensrc_tvm/tvm/build_arm64</p>
+<p> 链接cpp_rpc仍然有错，手动添加 -lOpenCL_system  -Wl,-rpath-link=xx 通过(需要把android 的system/lib64下的库全拉过来)<br>  /mnt/d/opensource/android_ndk/android-ndk-r21b/toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android28-clang++ -std=c++14 -O2 -fPIC -Wall -I/mnt/d/opensource/opensrc_tvm/tvm/include -I/mnt/d/opensource/opensrc_tvm/tvm/3rdparty/dmlc-core/include -I/mnt/d/opensource/opensrc_tvm/tvm/3rdparty/dlpack/include -o tvm_rpc main.cc rpc_env.cc rpc_server.cc -L/mnt/d/opensource/opensrc_tvm/tvm/build_arm64  -ltvm_runtime -ldl -Wl,-R/mnt/d/opensource/opensrc_tvm/tvm/build_arm64 -L /mnt/d/opensource/opencl-sdk-1.2.2/dep_libs_from_phone -lOpenCL_system -Wl,-rpath-link=/mnt/d/opensource/opencl-sdk-1.2.2/dep_libs_from_phone/lib64 -Wl,-v -v -Wl,-t</p>
+<h1 id="启动-apps-android-rpc-tests-android-rpc-test-py-段错误"><a href="#启动-apps-android-rpc-tests-android-rpc-test-py-段错误" class="headerlink" title="启动 apps/android_rpc//tests/android_rpc_test.py 段错误"></a>启动 apps/android_rpc//tests/android_rpc_test.py 段错误</h1><p>同时支持opencl和vulkan后，启动android_rpc_test.py 出现段错误。<br>使用pdb启动，可以看到打印出的错误信息。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">  File &quot;&#x2F;usr&#x2F;lib&#x2F;python3.6&#x2F;ctypes&#x2F;__init__.py&quot;, line 348, in __init__</span><br><span class="line">    self._handle &#x3D; _dlopen(self._name, mode)</span><br><span class="line">OSError: &#x2F;home&#x2F;majiang&#x2F;opensrc&#x2F;tvm&#x2F;build&#x2F;libtvm.so: undefined symbol: spvContextDestroy</span><br><span class="line">Uncaught exception. Entering post mortem debugging</span><br><span class="line">Running &#39;cont&#39; or &#39;step&#39; will restart the program</span><br></pre></td></tr></table></figure>
+<p>google了这个错误，找到了<a href="https://github.com/google/shaderc/issues/470，原因应该是少链接了一个库。" target="_blank" rel="noopener">https://github.com/google/shaderc/issues/470，原因应该是少链接了一个库。</a><br>删除libtvm.so后，make VERBOSE=1拷贝出链接命令，在尾部添加-lSPIRV-Tools后重新链接。<br>链接完成后，故障消失。<br>怀疑与cmake版本有关系，缺失了库的依赖，暂不进一步分析。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://mjblog.github.io/2020/05/18/tvm_android_deploy/" data-id="ckg246lr4001j52fa0vxv7pys" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/AI/" rel="tag">AI</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-tvm-runtime" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2020/05/09/tvm-runtime/" class="article-date">
+  <time datetime="2020-05-09T03:43:18.000Z" itemprop="datePublished">2020-05-09</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2020/05/09/tvm-runtime/">tvm graph_runtime 分析</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h1 id="runtime总体逻辑"><a href="#runtime总体逻辑" class="headerlink" title="runtime总体逻辑"></a>runtime总体逻辑</h1><p>runtime总体逻辑是：读出编译好的运算图(包含了二进制代码和描述信息)；根据运算图信息为各个存储节点分配储存；构建可执行OP的函数体(实际是调用已经编译好的代码)；逐个执行可执行的OP。</p>
+<h2 id="代码逻辑"><a href="#代码逻辑" class="headerlink" title="代码逻辑"></a>代码逻辑</h2><p>用户编译和运行深度学习模型的典型python代码片段如下所示</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">with</span> relay.build_config(opt_level=<span class="number">3</span>):</span><br><span class="line">    graph, lib, params = relay.build(net, target=target_n, params=params)</span><br><span class="line"></span><br><span class="line">ctx = [cpu_ctx, gpu_ctx]</span><br><span class="line">module = graph_runtime.create(graph, lib, ctx)</span><br><span class="line">module.run()</span><br></pre></td></tr></table></figure>
+<p>在python端调用graph_runtime.create，会走到GraphRuntimeCreate，然后再到<br>GraphRuntime::Init创建runtime结构，并返回Module结构给python。python端通过module.run()方法来运行模型。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="function">Module <span class="title">GraphRuntimeCreate</span><span class="params">(<span class="keyword">const</span> <span class="built_in">std</span>::<span class="built_in">string</span>&amp; sym_json,</span></span></span><br><span class="line"><span class="function"><span class="params">                          <span class="keyword">const</span> tvm::runtime::Module&amp; m,</span></span></span><br><span class="line"><span class="function"><span class="params">                          <span class="keyword">const</span> <span class="built_in">std</span>::<span class="built_in">vector</span>&lt;TVMContext&gt;&amp; ctxs)</span> </span>&#123;</span><br><span class="line">  <span class="keyword">auto</span> exec = make_object&lt;GraphRuntime&gt;();</span><br><span class="line">  exec-&gt;Init(sym_json, m, ctxs);</span><br><span class="line">  <span class="keyword">return</span> Module(exec);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">GraphRuntime::Init</span><span class="params">(<span class="keyword">const</span> <span class="built_in">std</span>::<span class="built_in">string</span>&amp; graph_json,</span></span></span><br><span class="line"><span class="function"><span class="params">                        tvm::runtime::Module <span class="keyword">module</span>,</span></span></span><br><span class="line"><span class="function"><span class="params">                        <span class="keyword">const</span> <span class="built_in">std</span>::<span class="built_in">vector</span>&lt;TVMContext&gt;&amp; ctxs)</span> </span>&#123;</span><br><span class="line">  <span class="function"><span class="built_in">std</span>::<span class="built_in">istringstream</span> <span class="title">is</span><span class="params">(graph_json)</span></span>;</span><br><span class="line">  <span class="function">dmlc::JSONReader <span class="title">reader</span><span class="params">(&amp;is)</span></span>;</span><br><span class="line">  <span class="keyword">this</span>-&gt;Load(&amp;reader);</span><br><span class="line">  module_ = <span class="keyword">module</span>;</span><br><span class="line">  ctxs_ = ctxs;</span><br><span class="line">  <span class="keyword">this</span>-&gt;SetupStorage();</span><br><span class="line">  <span class="keyword">this</span>-&gt;SetupOpExecs();</span><br><span class="line">  <span class="keyword">for</span> (<span class="keyword">size_t</span> i = <span class="number">0</span>; i &lt; input_nodes_.<span class="built_in">size</span>(); i++) &#123;</span><br><span class="line">    <span class="keyword">const</span> <span class="keyword">uint32_t</span> nid = input_nodes_[i];</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">string</span>&amp; name = nodes_[nid].name;</span><br><span class="line">    input_map_[name] = i;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>GraphRuntime::Init所做的主要工作包括两个部分，第一个是从json格式的string中读取出编译好的运算图(this-&gt;Load(&amp;reader))，第二个是初始化运行环境(SetupStorage和SetupOpExecs)。<br>Load比较简单不展开。<br>SetupStorage的核心逻辑是从json读出需要存空间的各个矩阵信息，然后为其在对应的计算设备上分配内存(通过调用NDArray::Empty(shape, DLDataType{kDLFloat, 32, 1}, ctx)))。需要注意的点是，每一个设备上实际上只进行一次分配(分配最大所需的储存)。<br>SetupOpExecs的核心逻辑是把构建 OP函数体(实际功能前面已经编译好了，这里的函数体实际上只是去调用)和其所需要的参数args结构。</p>
+<h2 id="不支持OP级别的并行"><a href="#不支持OP级别的并行" class="headerlink" title="不支持OP级别的并行"></a>不支持OP级别的并行</h2><p>当前tvm的graph_runtime就是一个简单的静态执行器。<br>比较典型的示例点就是下面的run函数。它的逻辑只是串行地逐个运行OP的函数体。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">GraphRuntime::Run</span><span class="params">()</span> </span>&#123;</span><br><span class="line">  <span class="comment">// setup the array and requirements.</span></span><br><span class="line">  <span class="keyword">for</span> (<span class="keyword">size_t</span> i = <span class="number">0</span>; i &lt; op_execs_.<span class="built_in">size</span>(); ++i) &#123;</span><br><span class="line">    <span class="keyword">if</span> (op_execs_[i]) op_execs_[i]();</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>并且，由于每一个OP都是同步执行的（也就是必须等待执行结果出来后，OP函数体才返回），所以runtime的顶层是不具备并行能力的。<br>理论上，tvm runtime当前不能支持cpu和gpu同时执行计算。（除非在一个OP植入异构执行代码，但是当前又没有构造对应OP的方法?）</p>
+<h2 id="多线程运行是由生成的函数来调用的。"><a href="#多线程运行是由生成的函数来调用的。" class="headerlink" title="多线程运行是由生成的函数来调用的。"></a>多线程运行是由生成的函数来调用的。</h2><p>cuda运算和copy操作都是直接执行，没有调用多线程执行。<br>#0  TVMBackendParallelLaunch (flambda=0x7ff20bc98a20, cdata=0x7fffce203b60, num_task=0) at /home/majiang/hd/opensource/tvm/src/runtime/thread_pool.cc:398<br>#1  0x00007ff20bc98688 in ?? ()<br>#2  0x00007ff1dbf3ab4e in tvm::runtime::&lt;lambda(tvm::runtime::TVMArgs, tvm::runtime::TVMRetValue<em>)&gt;::operator()(tvm::runtime::TVMArgs, tvm::runtime::TVMRetValue *) const (<br>    __closure=0x3664bf0, args=…, rv=0x7fffce203eb0) at /home/majiang/hd/opensource/tvm/src/runtime/library_module.cc:88<br>#3  0x00007ff1dbf3bfbc in std::_Function_handler&lt;void(tvm::runtime::TVMArgs, tvm::runtime::TVMRetValue</em>), tvm::runtime::WrapPackedFunc(TVMBackendPackedCFunc, const tvm::runtime::ObjectPtr<a href="tvm::runtime::Object">tvm::runtime::Object</a>&amp;)::&lt;lambda(tvm::runtime::TVMArgs, tvm::runtime::TVMRetValue<em>)&gt; &gt;::<em>M</em>invoke(const std::_Any_data &amp;, tvm::runtime::TVMArgs &amp;&amp;, tvm::runtime::TVMRetValue *&amp;&amp;) (__functor=…, __args#0=…, __args#1=@0x7fffce203e10: 0x7fffce203eb0) at /usr/include/c++/7/bits/std_function.h:316<br>#4  0x00007ff1db3b52ec in std::function&lt;void (tvm::runtime::TVMArgs, tvm::runtime::TVMRetValue</em>)&gt;::operator()(tvm::runtime::TVMArgs, tvm::runtime::TVMRetValue*) const (<br>    this=0x36e8f10, <strong>args#0=…, __args#1=0x7fffce203eb0) at /usr/include/c++/7/bits/std_function.h:706<br>#5  0x00007ff1db3b4e32 in tvm::runtime::PackedFunc::CallPacked (this=0x36e8f10, args=…, rv=0x7fffce203eb0)<br>    at /home/majiang/hd/opensource/tvm/include/tvm/runtime/packed_func.h:1040<br>#6  0x00007ff1dbfa6c55 in tvm::runtime::GraphRuntime::&lt;lambda()&gt;::operator()(void) const (</strong>closure=0x36e8f00)<br>    at /home/majiang/hd/opensource/tvm/src/runtime/graph/graph_runtime.cc:402<br>#7  0x00007ff1dbfaa837 in std::_Function_handler&lt;void(), tvm::runtime::GraphRuntime::CreateTVMOp(const tvm::runtime::TVMOpParam&amp;, const std::vector<DLTensor>&amp;, size_t)::&lt;lambda()&gt; &gt;::<em>M</em>invoke(const std::_Any_data &amp;) (__functor=…) at /usr/include/c++/7/bits/std_function.h:316<br>#8  0x00007ff1db439068 in std::function&lt;void ()&gt;::operator()() const (this=0x392ff70) at /usr/include/c++/7/bits/std_function.h:706<br>#9  0x00007ff1dbfa2fb9 in tvm::runtime::GraphRuntime::Run (this=0x4076790) at /home/majiang/hd/opensource/tvm/src/runtime/graph/graph_runtime.cc:56</p>
+<h2 id=""><a href="#" class="headerlink" title=""></a></h2>
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://mjblog.github.io/2020/05/09/tvm-runtime/" data-id="ckg246lq9000y52fa3en5gtb1" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/AI/" rel="tag">AI</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-clang-tidy_in_vscode" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2020/04/10/clang-tidy_in_vscode/" class="article-date">
+  <time datetime="2020-04-10T04:21:37.000Z" itemprop="datePublished">2020-04-10</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2020/04/10/clang-tidy_in_vscode/">vscode中使用clang-tidy</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h1 id="介绍"><a href="#介绍" class="headerlink" title="介绍"></a>介绍</h1><p>clang-tidy是一个开源的lint工具。<br>它的主要作用:<br>a) 自动化检查代码格式是否满足要求<br>b) 增强编译器的检查功能，提示可能出错或有性能问题的代码</p>
+<p>背靠clang/llvm的强大能力，clang-tidy提供了极强的定制和扩展能力。<br>这使得很多新的大型C/C++项目从项目初始就启用clang-tidy。</p>
+<h1 id="vscode上使用clang-tidy"><a href="#vscode上使用clang-tidy" class="headerlink" title="vscode上使用clang-tidy"></a>vscode上使用clang-tidy</h1><p>在vscode上使用clang-tidy很简单，只需要安装Clang-Tidy插件就可以了。<br>该插件的基本原理是调用clang-tidy –export-fixes=- 输出文本，然后解析文本后组装为vs能识别的告警信息。</p>
+<h2 id="准备环境"><a href="#准备环境" class="headerlink" title="准备环境"></a>准备环境</h2><h3 id="安装clang-tidy并配置好插件"><a href="#安装clang-tidy并配置好插件" class="headerlink" title="安装clang-tidy并配置好插件"></a>安装clang-tidy并配置好插件</h3><p>首先需要安装clang-tidy，使用apt安装或者自行编译都可以。<br>然后安装Clang-Tidy插件，并确保插件配置能找到clang-tidy的程序(确保路径或者PATH正确)。</p>
+<h3 id="为工程中的代码生成compile-commands-json"><a href="#为工程中的代码生成compile-commands-json" class="headerlink" title="为工程中的代码生成compile_commands.json"></a>为工程中的代码生成compile_commands.json</h3><p>clang-tidy和许多clang体系工具一样，知道源代码编译命令后可以工作得更好。<br>由于源代码文件众多，实际上可操作的方法只有使用编译系统自动生成的编译命令记录compile_commands.json。使用cmake的体系，添加-DCMAKE_EXPORT_COMPILE_COMMANDS=ON就能自动生成该文件。其他构建体系也有类似的解决方案，可参考<a href="https://sarcasm.github.io/notes/dev/compilation-database.html" target="_blank" rel="noopener">https://sarcasm.github.io/notes/dev/compilation-database.html</a> 。<br>生成该文件后，还需要注意把这个.json放置到源代码的父目录下，否则clang-tidy会找不到。如果在${top_dir}/build中构建工程并生成了compile_commands.json，但是代码在${top_dir}/src中，则clang-tidy无法自动找到compile_commands.json，需要把其拷贝到${top_dir}下。</p>
+<h3 id="修复Clang-Tidy不支持中文的bug"><a href="#修复Clang-Tidy不支持中文的bug" class="headerlink" title="修复Clang-Tidy不支持中文的bug"></a>修复Clang-Tidy不支持中文的bug</h3><p>Clang-Tidy使用了clang-tidy文本输出YAML格式的部分(来自 –export-fixes部分)。<br>示例如下：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">MainSourceFile:  &#39;&#x2F;media&#x2F;majiang&#x2F;c6b38ac3-8b8a-4613-8259-dddbffe2f4cb&#x2F;majiang&#x2F;cpp_exercise&#x2F;llvm_study_Kaleidoscope&#x2F;.&#x2F;main.cpp&#39;</span><br><span class="line">Diagnostics:</span><br><span class="line">  - DiagnosticName:  cppcoreguidelines-pro-type-vararg</span><br><span class="line">    DiagnosticMessage:</span><br><span class="line">      Message:         do not call c-style vararg functions</span><br><span class="line">      FilePath:        &#39;&#x2F;tmp&#x2F;test_main.cpp&#39;</span><br><span class="line">      FileOffset:      1266</span><br><span class="line">      Replacements:    []</span><br></pre></td></tr></table></figure>
+<p>最核心的信息是FilePath和FileOffset，这两个信息给出了Vscode界面应该在哪里显示告警。<br>但不幸的是，FileOffset这个值是clang-tidy给其自动修复工具用的，所以其值是一个以byte计数的偏移。<br>而在vscode中，文件位置的offset不是以byte记的，而是以字符来计算的。如果混入了中文等多byte字符，则vscode中的offset数值将小于clang-tidy给出的FileOffset。</p>
+<p>更加糟糕的是，vscode当前没有给出把一个FileOffset转换为行号和列号的接口。其只提供了TextDocument.positionAt(offset: number)。这里的offset是以字符记的。看起来vscode是把单个字符当做了最小单元(哪怕这个字符实际上对应多个byte，可能这样对上层抽象的处理更加容易）。<br>由于上面描述的问题，一旦代码中出现中文等多byte字符，Clang-Tidy插件给出的告警就会向下漂移(由于其调用了TextDocument.positionAt，并且传入的是以byte记的offset，所以计算出的lineno要更大)。</p>
+<p>参考 <a href="https://github.com/notskm/vscode-clang-tidy/issues/13，已经有人提到了这个问题，并且作者也给出了与我同样的分析，但是没有提出解决方案。" target="_blank" rel="noopener">https://github.com/notskm/vscode-clang-tidy/issues/13，已经有人提到了这个问题，并且作者也给出了与我同样的分析，但是没有提出解决方案。</a></p>
+<p>但是，实际上clang-tidy在非YAML部分其实已经给出了正确的行号和列号，如下所示。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">main.cpp:46:3: warning: do not call c-style vararg functions [cppcoreguidelines-pro-type-vararg]</span><br></pre></td></tr></table></figure>
+<p>很奇怪的是Clang-Tidy插件专门从这一行中提取了warning这个关键字用来计算提示信息的严重程度，但是没用这里的行号和列号。<br>一种快速的规避方案，可以就从这里提取行号和列号。参考如下补丁。</p>
+<figure class="highlight diff"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">--- /home/majiang/.vscode/extensions/notskm.clang-tidy-0.4.1/out/tidy.js</span></span><br><span class="line"><span class="comment">+++ /home/majiang/.vscode/extensions/notskm.clang-tidy-0.4.1/out/tidy-fix.js</span></span><br><span class="line"><span class="meta">@@ -97,6 +97,7 @@</span></span><br><span class="line">                     "FilePath": diag.DiagnosticMessage.FilePath,</span><br><span class="line">                     "FileOffset": diag.DiagnosticMessage.FileOffset,</span><br><span class="line">                     "Replacements": diag.DiagnosticMessage.Replacements,</span><br><span class="line"><span class="addition">+                    "Lineno": 0,</span></span><br><span class="line">                     "Severity": vscode.DiagnosticSeverity.Warning</span><br><span class="line">                 &#125;</span><br><span class="line">             &#125;);</span><br><span class="line"><span class="meta">@@ -109,6 +110,7 @@</span></span><br><span class="line">                     "FilePath": diag.FilePath,</span><br><span class="line">                     "FileOffset": diag.FileOffset,</span><br><span class="line">                     "Replacements": diag.Replacements ? diag.Replacements : [],</span><br><span class="line"><span class="addition">+                    "Lineno": 0,</span></span><br><span class="line">                     "Severity": vscode.DiagnosticSeverity.Warning</span><br><span class="line">                 &#125;</span><br><span class="line">             &#125;);</span><br><span class="line"><span class="meta">@@ -117,7 +119,8 @@</span></span><br><span class="line">     let diagnostics = structuredResults.Diagnostics;</span><br><span class="line">     const severities = collectDiagnosticSeverities(clangTidyOutput);</span><br><span class="line">     for (let i = 0; i &lt; diagnostics.length || i &lt; severities.length; i++) &#123;</span><br><span class="line"><span class="deletion">-        diagnostics[i].DiagnosticMessage.Severity = severities[i];</span></span><br><span class="line"><span class="addition">+        diagnostics[i].DiagnosticMessage.Severity = severities[i].severity;</span></span><br><span class="line"><span class="addition">+        diagnostics[i].DiagnosticMessage.Lineno = severities[i].lineno;</span></span><br><span class="line">     &#125;</span><br><span class="line">     return structuredResults;</span><br><span class="line"> &#125;</span><br><span class="line"><span class="meta">@@ -129,10 +132,9 @@</span></span><br><span class="line">         if (diagnosticMessage.Replacements.length &gt; 0) &#123;</span><br><span class="line">             diagnosticMessage.Replacements</span><br><span class="line">                 .forEach(replacement =&gt; &#123;</span><br><span class="line"><span class="deletion">-                const beginPos = document.positionAt(replacement.Offset);</span></span><br><span class="line"><span class="deletion">-                const endPos = document.positionAt(replacement.Offset + replacement.Length);</span></span><br><span class="line"><span class="addition">+                const line = Number(diagnosticMessage.Lineno) - 1;</span></span><br><span class="line">                 const diagnostic = &#123;</span><br><span class="line"><span class="deletion">-                    range: new vscode.Range(beginPos, endPos),</span></span><br><span class="line"><span class="addition">+                    range: new vscode.Range(line, 0, line, Number.MAX_VALUE),</span></span><br><span class="line">                     severity: diagnosticMessage.Severity,</span><br><span class="line">                     message: diagnosticMessage.Message,</span><br><span class="line">                     code: diag.DiagnosticName,</span><br><span class="line"><span class="meta">@@ -142,7 +144,7 @@</span></span><br><span class="line">             &#125;);</span><br><span class="line">         &#125;</span><br><span class="line">         else &#123;</span><br><span class="line"><span class="deletion">-            const line = document.positionAt(diagnosticMessage.FileOffset).line;</span></span><br><span class="line"><span class="addition">+            const line = Number(diagnosticMessage.Lineno) - 1;</span></span><br><span class="line">             results.push(&#123;</span><br><span class="line">                 range: new vscode.Range(line, 0, line, Number.MAX_VALUE),</span><br><span class="line">                 severity: diagnosticMessage.Severity,</span><br><span class="line"><span class="meta">@@ -157,28 +159,28 @@</span></span><br><span class="line"> exports.collectDiagnostics = collectDiagnostics;</span><br><span class="line"> function collectDiagnosticSeverities(clangTidyOutput) &#123;</span><br><span class="line">     const data = clangTidyOutput.split('\n');</span><br><span class="line"><span class="deletion">-    const regex = /^.*:\d+:\d+:\s+(warning|error|info|hint):\s+.*$/;</span></span><br><span class="line"><span class="addition">+    const regex = /^.*:(\d&#123;1,&#125;)+:(\d&#123;1,&#125;)+:\s+(warning|error|info|hint):\s+.*$/;</span></span><br><span class="line">     let severities = [];</span><br><span class="line">     data.forEach(line =&gt; &#123;</span><br><span class="line">         const matches = regex.exec(line);</span><br><span class="line">         if (matches <span class="comment">=== null) &#123;</span></span><br><span class="line">             return;</span><br><span class="line">         &#125;</span><br><span class="line"><span class="deletion">-        switch (matches[1]) &#123;</span></span><br><span class="line"><span class="addition">+        switch (matches[3]) &#123;</span></span><br><span class="line">             case 'error':</span><br><span class="line"><span class="deletion">-                severities.push(vscode.DiagnosticSeverity.Error);</span></span><br><span class="line"><span class="addition">+                severities.push(&#123;severity: vscode.DiagnosticSeverity.Error, lineno: matches[1]&#125;);</span></span><br><span class="line">                 break;</span><br><span class="line">             case 'warning':</span><br><span class="line"><span class="deletion">-                severities.push(vscode.DiagnosticSeverity.Warning);</span></span><br><span class="line"><span class="addition">+                severities.push(&#123;severity: vscode.DiagnosticSeverity.Warning, lineno: matches[1]&#125;);</span></span><br><span class="line">                 break;</span><br><span class="line">             case 'info':</span><br><span class="line"><span class="deletion">-                severities.push(vscode.DiagnosticSeverity.Information);</span></span><br><span class="line"><span class="addition">+                severities.push(&#123;severity: vscode.DiagnosticSeverity.Information, lineno: matches[1]&#125;);</span></span><br><span class="line">                 break;</span><br><span class="line">             case 'hint':</span><br><span class="line"><span class="deletion">-                severities.push(vscode.DiagnosticSeverity.Hint);</span></span><br><span class="line"><span class="addition">+                severities.push(&#123;severity: vscode.DiagnosticSeverity.Hint, lineno: matches[1]&#125; );</span></span><br><span class="line">                 break;</span><br><span class="line">             default:</span><br><span class="line"><span class="deletion">-                severities.push(vscode.DiagnosticSeverity.Warning);</span></span><br><span class="line"><span class="addition">+                severities.push(&#123;severity: vscode.DiagnosticSeverity.Warning, lineno: matches[1]&#125;);</span></span><br><span class="line">                 break;</span><br><span class="line">         &#125;</span><br><span class="line">     &#125;);</span><br></pre></td></tr></table></figure>
+
+
+
+
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://mjblog.github.io/2020/04/10/clang-tidy_in_vscode/" data-id="ckg246lpy000452fa9a85a6mx" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/env/" rel="tag">env</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-nvida-nsight" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2020/03/26/nvida-nsight/" class="article-date">
+  <time datetime="2020-03-26T11:24:06.000Z" itemprop="datePublished">2020-03-26</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2020/03/26/nvida-nsight/">nvidia 性能分析工具</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h1 id="总体结构"><a href="#总体结构" class="headerlink" title="总体结构"></a>总体结构</h1><img src="/2020/03/26/nvida-nsight/nvidia_profile.png" class="" title="NVIDIA 性能工具关系">
+
+<h1 id="nsight-system"><a href="#nsight-system" class="headerlink" title="nsight system"></a>nsight system</h1><p>是个系统级的工具，可以综合看系统的全貌。<br>特别适合于查看那些负载卸载到了GPU上，哪些操作各自耗时多少，CPU是否在等待数据等等。<br>如下图所示。</p>
+<img src="/2020/03/26/nvida-nsight/nsight.png" class="" title="nsight 核心功能示意图">
+<p>另外，只能启动程序并测量，不能attach进程，稍微有点不方便。<br>可以选择手动start测量。</p>
+<h1 id="nsight-compute"><a href="#nsight-compute" class="headerlink" title="nsight compute"></a>nsight compute</h1><h2 id="介绍"><a href="#介绍" class="headerlink" title="介绍"></a>介绍</h2><p>可参考<a href="https://devblogs.nvidia.com/using-nsight-compute-to-inspect-your-kernels/" target="_blank" rel="noopener">https://devblogs.nvidia.com/using-nsight-compute-to-inspect-your-kernels/</a></p>
+<p>Important Features<br>    Interactive kernel profiler and API debugger<br>    Graphical profile report<br>    Result comparison across one or multiple reports within the tool<br>    Fast Data Collection<br>    UI and Command Line interface<br>    Fully customizable reports and analysis rules</p>
+<h2 id="试用问题"><a href="#试用问题" class="headerlink" title="试用问题"></a>试用问题</h2><h3 id="图形界面直接启动程序始终无法连接上"><a href="#图形界面直接启动程序始终无法连接上" class="headerlink" title="图形界面直接启动程序始终无法连接上"></a>图形界面直接启动程序始终无法连接上</h3><p>问题现象：<br>试图使用该工具观察jupyter-notebook时，图形界面上使用launch启动后，始终报错连接不上(把程序改为/usr/bin/python3也一样)，而attach列表中也始终看不到任何进程(使用命令行工具/opt/nvidia/nsight-compute/2019.5.0/nv-nsight-cu-cli  –mode=launch 启动也一样)。</p>
+<p>问题解决：<br>nsight compute分析有几个先决条件：<br>1 必须由compute来启动程序<br>2 程序必须要走到调用cuda库的地方，compute才能看到并连接上<br>3 compute默认只监控其启动的主程序，如果是主程序的child启动cuda(jupyter-notebook就属于这类)，并且希望使用Interactive Profile模式，需要调用命令行工具nv-nsight-cu-cli  –mode=launch –target-processes all启动程序，然后再在图形界面上attach。<br>注：<br>Profile模式下有Target Process选项，选择all就无需使用cli了，如下图所示。</p>
+<img src="/2020/03/26/nvida-nsight/compute_profile.png" class="" title="nsight compute profile示意图">
+
+<p>问题分析过程：<br>由于图形界面上看不到任何有效的提示信息，转而考虑使用命令工具，看看有没有有用的提示。<br>使用如下方式启动nv-nsight-cu-cli  –mode=launch后再nv-nsight-cu-cli  –mode=attach  –hostname 127.0.0.1给出了一个有用的提示。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&#x3D;&#x3D;WARNING&#x3D;&#x3D; Profiling kernels launched by child processes requires the --target-processes all option</span><br></pre></td></tr></table></figure>
+<p>再看nv-nsight-cu-cli  的help信息，原来默认情况下compute只监控主进程不监控child。于是改为如下命令启动。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&#x2F;opt&#x2F;nvidia&#x2F;nsight-compute&#x2F;2019.5.0&#x2F;nv-nsight-cu-cli  --mode&#x3D;launch --target-processes all jupyter-notebook</span><br></pre></td></tr></table></figure>
+<p>在图形界面中attach仍然看不到任何进程。<br>考虑到compute需要连接cuda，可能是没有执行到cuda。<br>在浏览器中连接jupyter-notebook并启动一个工作脚本，<br>此时图形界面attach列表中就出现了进程。</p>
+<h3 id="采集性能时报没有权限，没有出现数据"><a href="#采集性能时报没有权限，没有出现数据" class="headerlink" title="采集性能时报没有权限，没有出现数据"></a>采集性能时报没有权限，没有出现数据</h3><p>参考<a href="https://developer.nvidia.com/nvidia-development-tools-solutions-ERR_NVGPUCTRPERM-permission-issue-performance-counters。" target="_blank" rel="noopener">https://developer.nvidia.com/nvidia-development-tools-solutions-ERR_NVGPUCTRPERM-permission-issue-performance-counters。</a><br>为了简单起见，在个人电脑上可以直接允许所有用户采集GPU 性能。<br>在/etc/modprobe.d新建一个文件，写入如下一行，并重启一下就可以了。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">options nvidia &quot;NVreg_RestrictProfilingToAdminUsers&#x3D;0&quot;</span><br></pre></td></tr></table></figure>
+<h2 id="试用感受"><a href="#试用感受" class="headerlink" title="试用感受"></a>试用感受</h2><p>compute是一个比较综合和强大的工具，与intel的vtune类似，它还提供了基本的优化建议。其示例界面如下图所示。</p>
+<img src="/2020/03/26/nvida-nsight/compute_overview.png" class="" title="nsight compute 功能示意图">
+<p>在nvidia gpu调优时应该会起到很好的辅助作用。</p>
+<h1 id="NVIDIA-Visual-Profiler"><a href="#NVIDIA-Visual-Profiler" class="headerlink" title="NVIDIA Visual Profiler"></a>NVIDIA Visual Profiler</h1><p>似乎无法处理较新的GPU，采集不到数据。<br>考虑到它似乎属于较为旧的工具，暂没有进一步分析不能使用的原因。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://mjblog.github.io/2020/03/26/nvida-nsight/" data-id="ckg246lq8000u52fa649ydqmf" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/AI/" rel="tag">AI</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+
+
+  <nav id="page-nav">
+    <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><a class="page-number" href="/page/3/">3</a><a class="extend next" rel="next" href="/page/2/">__(&#39;next&#39;) &amp;raquo;</a>
+  </nav>
+</section>
+        
+          <aside id="sidebar">
+  
+    
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">标签</h3>
+    <div class="widget">
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/AI/" rel="tag">AI</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/GRAALVM/" rel="tag">GRAALVM</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/IDE/" rel="tag">IDE</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/LLVM-STUDY/" rel="tag">LLVM_STUDY</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/env/" rel="tag">env</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">标签云</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/AI/" style="font-size: 20px;">AI</a> <a href="/tags/GRAALVM/" style="font-size: 10px;">GRAALVM</a> <a href="/tags/IDE/" style="font-size: 10px;">IDE</a> <a href="/tags/LLVM-STUDY/" style="font-size: 20px;">LLVM_STUDY</a> <a href="/tags/env/" style="font-size: 10px;">env</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">归档</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/09/">九月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/07/">七月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/06/">六月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/05/">五月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/04/">四月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/03/">三月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/02/">二月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/01/">一月 2020</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">最新文章</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2020/09/25/graal_license/">graalvm license分析</a>
+          </li>
+        
+          <li>
+            <a href="/2020/09/18/eclipse_theia/">eclipse theia 研究</a>
+          </li>
+        
+          <li>
+            <a href="/2020/07/28/first-test/">ubuntu 16.04下驱动TP-LINK TL-WDN6200H免驱版无线网卡</a>
+          </li>
+        
+          <li>
+            <a href="/2020/07/09/tvm_ir_debug/">tvm 构建结果调试</a>
+          </li>
+        
+          <li>
+            <a href="/2020/06/05/arduino_dev/">arduino开发体验</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2020 Ma Jiang<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+
+  
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+
+
+<script src="/js/script.js"></script>
+
+
+  </div>
+</body>
+</html>

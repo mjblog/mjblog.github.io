@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>Kaleidoscope debug info | mjblog</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="学习内容完成对 https:&#x2F;&#x2F;llvm.org&#x2F;docs&#x2F;tutorial&#x2F;MyFirstLanguageFrontend&#x2F;LangImpl09.html 的学习。 练习看懂原网页后，实现同样的功能。 扩展1 调试信息生成时，提到Kaleidoscope语言的abi接近C的abi。从哪里可以明确这一点？ 2  source_loc的实现是否合理？有无改进空间？string的存储？ 3 能否将co">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Kaleidoscope debug info">
+<meta property="og:url" content="http://mjblog.github.io/2020/03/10/llvm_tr9_debug_info/index.html">
+<meta property="og:site_name" content="mjblog">
+<meta property="og:description" content="学习内容完成对 https:&#x2F;&#x2F;llvm.org&#x2F;docs&#x2F;tutorial&#x2F;MyFirstLanguageFrontend&#x2F;LangImpl09.html 的学习。 练习看懂原网页后，实现同样的功能。 扩展1 调试信息生成时，提到Kaleidoscope语言的abi接近C的abi。从哪里可以明确这一点？ 2  source_loc的实现是否合理？有无改进空间？string的存储？ 3 能否将co">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2020-03-10T11:52:05.000Z">
+<meta property="article:modified_time" content="2020-07-28T02:15:27.734Z">
+<meta property="article:author" content="Ma Jiang">
+<meta property="article:tag" content="LLVM_STUDY">
+<meta name="twitter:card" content="summary">
+  
+    <link rel="alternate" href="/atom.xml" title="mjblog" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+  
+
+<meta name="generator" content="Hexo 4.2.1"></head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">mjblog</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="搜索"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://mjblog.github.io"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-llvm_tr9_debug_info" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2020/03/10/llvm_tr9_debug_info/" class="article-date">
+  <time datetime="2020-03-10T11:52:05.000Z" itemprop="datePublished">2020-03-10</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      Kaleidoscope debug info
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="学习内容"><a href="#学习内容" class="headerlink" title="学习内容"></a>学习内容</h2><p>完成对 <a href="https://llvm.org/docs/tutorial/MyFirstLanguageFrontend/LangImpl09.html" target="_blank" rel="noopener">https://llvm.org/docs/tutorial/MyFirstLanguageFrontend/LangImpl09.html</a> 的学习。</p>
+<h2 id="练习"><a href="#练习" class="headerlink" title="练习"></a>练习</h2><p>看懂原网页后，实现同样的功能。</p>
+<h2 id="扩展"><a href="#扩展" class="headerlink" title="扩展"></a>扩展</h2><p>1 调试信息生成时，提到Kaleidoscope语言的abi接近C的abi。从哪里可以明确这一点？</p>
+<p>2  source_loc的实现是否合理？有无改进空间？<br>string的存储？</p>
+<p>3 能否将core_lib中的operator 先放到parser中解析，完成后再解析输入的用户文件？通过合并ast后再codegen，应该可以静默的实现语言扩展的operator。</p>
+<p>4 var变量中的变量是否正确生成了调试信息</p>
+<h2 id="进展"><a href="#进展" class="headerlink" title="进展"></a>进展</h2><p>为减少工作了，剔除原示例悄悄添加的ast dump功能（文字没有介绍，代码新增了）。<br>实现了debug信息的添加，并修复了原实现中的逻辑错误。</p>
+<h3 id="实现"><a href="#实现" class="headerlink" title="实现"></a>实现</h3><p>实现中的主要改动如下：</p>
+<p>1 出于节约工作量考虑，删除了原示例中的AST的dump功能，暂未实现；</p>
+<p>2<br>原文实现时的调试信息发射有问题，会导致部分指令的调试信息错误。<br>如下binary op的发射代码所示，原示例在函数头部emitLocation，其信息会马上被随后的LHS/RHS codegen覆盖（他们也会emitLocation）。这样一来，真正属于operator的CreateFAdd指令会位于最后一个emitLocation指向的location(也就是RHS的location)。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="function">Value *<span class="title">BinaryExprAST::codegen</span><span class="params">()</span> </span>&#123;</span><br><span class="line">  KSDbgInfo.emitLocation(<span class="keyword">this</span>);</span><br><span class="line">......</span><br><span class="line">  Value *L = LHS-&gt;codegen();</span><br><span class="line">  Value *R = RHS-&gt;codegen();</span><br><span class="line">  <span class="keyword">if</span> (!L || !R)</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">nullptr</span>;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">switch</span> (Op) &#123;</span><br><span class="line">  <span class="keyword">case</span> <span class="string">'+'</span>:</span><br><span class="line">    <span class="keyword">return</span> Builder.CreateFAdd(L, R, <span class="string">"addtmp"</span>);</span><br><span class="line">...</span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure>
+<p>使用如下的方法编译llvm中的示例代码。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">cd llvm-project&#x2F;llvm&#x2F;examples&#x2F;Kaleidoscope&#x2F;Chapter9</span><br><span class="line"> g++ toy.cpp -I ..&#x2F;include&#x2F; -I ..&#x2F;..&#x2F;..&#x2F;..&#x2F;..&#x2F;install&#x2F;usr&#x2F;local&#x2F;include&#x2F; -L..&#x2F;..&#x2F;..&#x2F;..&#x2F;..&#x2F;install&#x2F;usr&#x2F;local&#x2F;lib &#96;..&#x2F;..&#x2F;..&#x2F;..&#x2F;..&#x2F;install&#x2F;usr&#x2F;local&#x2F;bin&#x2F;llvm-config --libs&#96; -pthread -ldl  -lz -ltinfo -fno-rtti -o toy</span><br></pre></td></tr></table></figure>
+<p>然后用下面的测试代码测试toy程序(输入后ctrl+D结束程序)</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">def binary , 1 (left  right) right</span><br><span class="line"></span><br><span class="line">extern kout(x)</span><br><span class="line">def te(y)</span><br><span class="line">kout(y),</span><br><span class="line">y&#x3D;5,</span><br><span class="line">kout(y)</span><br><span class="line"></span><br><span class="line">def main()</span><br><span class="line">	te(2)</span><br></pre></td></tr></table></figure>
+<p>可以获得其输出的LLVM-IR打印如下。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">define double @te(double %y) !dbg !13 &#123;</span><br><span class="line">entry:</span><br><span class="line">  %y1 &#x3D; alloca double</span><br><span class="line">  call void @llvm.dbg.declare(metadata double* %y1, metadata !17, metadata !DIExpression()), !dbg !18</span><br><span class="line">  store double %y, double* %y1</span><br><span class="line">  %y2 &#x3D; load double, double* %y1, !dbg !19</span><br><span class="line">  %calltmp &#x3D; call double @kout(double %y2), !dbg !19</span><br><span class="line">  store double 5.000000e+00, double* %y1, !dbg !20</span><br><span class="line">  %binop &#x3D; call double @&quot;binary,&quot;(double %calltmp, double 5.000000e+00), !dbg !20</span><br><span class="line">  %y3 &#x3D; load double, double* %y1, !dbg !21</span><br><span class="line">  %calltmp4 &#x3D; call double @kout(double %y3), !dbg !21</span><br><span class="line">  %binop5 &#x3D; call double @&quot;binary,&quot;(double %binop, double %calltmp4), !dbg !21</span><br><span class="line">  ret double %binop5, !dbg !21</span><br><span class="line">&#125;</span><br><span class="line">...</span><br><span class="line">!13 &#x3D; distinct !DISubprogram(name: &quot;te&quot;, scope: !2, </span><br><span class="line">!20 &#x3D; !DILocation(line: 6, column: 3, scope: !13)</span><br><span class="line">!21 &#x3D; !DILocation(line: 7, column: 6, scope: !13)</span><br></pre></td></tr></table></figure>
+<p>可以看到te函数中的两个’,’ operator，其对应的行号都指向了rhs的位置，完全和源代码对不上。<br>使用我们的实现编译代码（因为已经内置了’,’，去掉了其定义）。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">extern kout(x)</span><br><span class="line"></span><br><span class="line">def te(y)</span><br><span class="line">kout(y),</span><br><span class="line">y&#x3D;5,</span><br><span class="line">kout(y)</span><br><span class="line"></span><br><span class="line">def main()</span><br><span class="line">	te(2)</span><br></pre></td></tr></table></figure>
+<p>获得的输出如下。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">efine double @te(double %y) !dbg !3 &#123;</span><br><span class="line">entry:</span><br><span class="line">  %y1 &#x3D; alloca double</span><br><span class="line">  store double %y, double* %y1, !dbg !9</span><br><span class="line">  call void @llvm.dbg.declare(metadata double* %y1, metadata !8, metadata !DIExpression()), !dbg !10</span><br><span class="line">  %y2 &#x3D; load double, double* %y1, !dbg !11</span><br><span class="line">  %callkout &#x3D; call double @kout(double %y2), !dbg !12</span><br><span class="line">  store double 5.000000e+00, double* %y1, !dbg !13</span><br><span class="line">  %&quot;_binary_,_with_prio_1&quot; &#x3D; call double @&quot;_binary_,_with_prio_1&quot;(double %callkout, double 5.000000e+00), !dbg !12</span><br><span class="line">  %y3 &#x3D; load double, double* %y1, !dbg !14</span><br><span class="line">  %callkout4 &#x3D; call double @kout(double %y3), !dbg !15</span><br><span class="line">  %&quot;_binary_,_with_prio_15&quot; &#x3D; call double @&quot;_binary_,_with_prio_1&quot;(double %&quot;_binary_,_with_prio_1&quot;, double %callkout4), !dbg !13</span><br><span class="line">  ret double %&quot;_binary_,_with_prio_15&quot;, !dbg !13</span><br><span class="line">&#125;</span><br><span class="line">...</span><br><span class="line">!3 &#x3D; distinct !DISubprogram(name: &quot;te&quot;, scope: !1, file: !1, line: 3, type: !4, scopeLine: 3, flags: DIFlagPrototyped, spFlags: DISPFlagDefinition, unit: !0, retainedNodes: !7)</span><br><span class="line">...</span><br><span class="line">!12 &#x3D; !DILocation(line: 4, column: 8, scope: !3)</span><br><span class="line">!13 &#x3D; !DILocation(line: 5, column: 4, scope: !3)</span><br></pre></td></tr></table></figure>
+<p>可以看到，修正后’,’的位置(参考)可以与源代码吻合。<br>  %”<em>binary</em>,<em>with_prio_1” = call double @”_binary</em>,_with_prio_1”(double %callkout, double 5.000000e+00), !dbg !12 这里说明第一个’,’的location在!dbg !12中给出。<br>  而!12 = !DILocation(line: 4, column: 8, scope: !3)准确给出了，’,’在代码的第4行第8列(scope: !3可以继续看到其属于te函数)。</p>
+<p>3 为token也添加了location信息，ast的location从token中获取，不直接与lexer打交道层级更清晰。</p>
+<p>4 新增了调试信息发射的控制流程和开关变量</p>
+<p>5<br>在发射函数的IR时，我们的实现为了方便控制调试信息的发射，<br>将调试信息的发射拆分成了两块。args的调试信息在args的store指令之后发射。<br>这会导致verifyFunction是发生下面错误。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">Expected no forward declarations!</span><br><span class="line">!6 &#x3D; &lt;temporary!&gt; !&#123;&#125;</span><br><span class="line">  store double %x, double* %x1, !dbg !7</span><br><span class="line">  store double %y, double* %y2, !dbg !7</span><br><span class="line">  call void @llvm.dbg.declare(metadata double* %x1, metadata !8, metadata !DIExpression()), !dbg !9</span><br><span class="line">  call void @llvm.dbg.declare(metadata double* %y2, metadata !10, metadata !DIExpression()), !dbg !9</span><br></pre></td></tr></table></figure>
+<p>使用 def foo (x y) x+y即可复现。<br>看起来dbg.declare需要放到对应store指令的前面。<br>参考<a href="https://stackoverflow.com/questions/34236034/how-to-track-down-llvm-verifyfunction-error-expected-no-forward-declarations/60656058#60656058后，" target="_blank" rel="noopener">https://stackoverflow.com/questions/34236034/how-to-track-down-llvm-verifyfunction-error-expected-no-forward-declarations/60656058#60656058后，</a><br>在添加verifyFunction前添加finalizeSubprogram，可更正错误。</p>
+<h3 id="扩展问题"><a href="#扩展问题" class="headerlink" title="扩展问题"></a>扩展问题</h3><p>1 调试信息生成时，提到Kaleidoscope语言的abi接近C的abi。从哪里可以明确这一点？<br>语言目前没有明确设计ABI，在LLVM-IR的生成过程中，其实也不需要配置这些内容。当需要具体生成代码时，LLVM的处理流程会用默认值来工作。对于函数的 calling conventions 来说，可以用setCallingConv方法来专门进行设置。通过追踪设置函数可以看到，其初始值应该为0。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">  <span class="function"><span class="keyword">void</span> <span class="title">setCallingConv</span><span class="params">(CallingConv::ID CC)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">auto</span> ID = <span class="keyword">static_cast</span>&lt;<span class="keyword">unsigned</span>&gt;(CC);</span><br><span class="line">    assert(!(ID &amp; ~CallingConv::MaxID) &amp;&amp; <span class="string">"Unsupported calling convention"</span>);</span><br><span class="line">    setValueSubclassData((getSubclassDataFromValue() &amp; <span class="number">0xc00f</span>) | (ID &lt;&lt; <span class="number">4</span>));</span><br><span class="line">  &#125;</span><br><span class="line">---&gt;</span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">setValueSubclassData</span><span class="params">(<span class="keyword">unsigned</span> short D)</span> </span>&#123;</span><br><span class="line">    Value::setValueSubclassData(D);</span><br><span class="line">  &#125;</span><br><span class="line">---&gt;</span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">setValueSubclassData</span><span class="params">(<span class="keyword">unsigned</span> short D)</span> </span>&#123; SubclassData = D; &#125;</span><br><span class="line">---&gt;</span><br><span class="line">  <span class="comment">/// Hold arbitrary subclass data.</span></span><br><span class="line">  <span class="comment">///</span></span><br><span class="line">  <span class="comment">/// This member is defined by this class, but is not used for anything.</span></span><br><span class="line">  <span class="comment">/// Subclasses can use it to hold whatever state they find useful.  This</span></span><br><span class="line">  <span class="comment">/// field iweizhis initialized to zero by the ctor.</span></span><br><span class="line">  <span class="keyword">unsigned</span> short SubclassData;</span><br></pre></td></tr></table></figure>
+<p>  0值对应的意义可以在llvm/IR/CallingConv.h中找到</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/// A set of enums which specify the assigned numeric values for known llvm</span></span><br><span class="line"><span class="comment">/// calling conventions.</span></span><br><span class="line"><span class="comment">/// LLVM Calling Convention Representation</span></span><br><span class="line"><span class="keyword">enum</span> &#123;</span><br><span class="line">  <span class="comment">/// C - The default llvm calling convention, compatible with C.  This</span></span><br><span class="line">  <span class="comment">/// convention is the only calling convention that supports varargs calls.</span></span><br><span class="line">  <span class="comment">/// As with typical C calling conventions, the callee/caller have to</span></span><br><span class="line">  <span class="comment">/// tolerate certain amounts of prototype mismatch.</span></span><br><span class="line">  C = <span class="number">0</span>,</span><br></pre></td></tr></table></figure>
+<p>这样看起来，原文的说法是基本正确的。在没有设置ABI的情况下，LLVM应该是用了C的配置作为默认值。</p>
+<p>2  source_loc的实现是否合理？有无改进空间？<br>为了简单，source_loc当前存在大量的冗余信息。<br>至少其中大量重复的filename string应该合并到一个上，改用idx指向一个vector。<br>最终的方案可能是参考gcc等成熟编译器，将source_loc整个设计为一个idx，要取用的时候再组装成完整的信息。内部储存时，可以合并冗余的string，甚至还可以进一步采用压缩编码方式来记录行号和列号(例如使用基础值+偏移值的方式来记录)。</p>
+<p>3 能否将core_lib中的operator 先放到parser中解析，完成后再解析输入的用户文件？通过合并ast后再codegen，应该可以静默的实现语言扩展的operator。<br>可以，但是不能通过合并ast来实现。<br>当前用户自定义operator的功能需要lexer的支持，parse正式代码时lexer不知道新增了哪些operator，会导致unknown token的出现。<br>目前实现的方案是，在parser中静默导入了自定义operator的extern声明，这样用户可以像使用内置operator一样直接使用这些扩展operator。自定义operator的实现放到了core_support_lib中，封装脚本会链入实现。<br>当前实现的主要问题是，operator很多都是短小语句，应该inline优化的，但是拆开成库的形式后，只有lto优化才能达到效果。<br>后续可能的改进是，直接把def定义灌入parser，通过直接修改lexer的loc信息(或者先关掉调试信息输出生成operator定义部分，再codegen剩下的部分)，解决调试信息的冲突问题。</p>
+<p>4 var变量中的变量是否正确生成了调试信息<br>没有，原示例var和for中的变量都没有做declare，所以没有对应的调试信息。需要参考args中的处理方法，逐个添加。<br>出于工作量考虑，本次实现也暂时还未添加这些调试信息。</p>
+<h3 id="实现中遇到的问题"><a href="#实现中遇到的问题" class="headerlink" title="实现中遇到的问题"></a>实现中遇到的问题</h3><p>1 ranged loop 内部定义的变量，无法跨过循环体保存值。如下代码</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">auto</span> x : &#123;<span class="number">1</span>,<span class="number">2</span>,<span class="number">3</span>&#125;)</span><br><span class="line">                &#123;<span class="keyword">int</span> i = <span class="number">0</span>; <span class="built_in">cout</span> &lt;&lt; i++ &lt;&lt; <span class="string">":"</span> &lt;&lt; x &lt;&lt;<span class="built_in">endl</span>;&#125;</span><br><span class="line">        <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>输出的结果将是</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">0:1</span><br><span class="line">0:2</span><br><span class="line">0:3</span><br></pre></td></tr></table></figure>
+<p>而不是预期的1:1,2:2,3:3。并且，打开Wall -Wextra时也没有告警。。。</p>
+<p>2<br>实现时再次测试了using namespace std;在头文件中的作用范围</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="keyword">namespace</span> xx&#123;<span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;&#125;</span><br><span class="line"><span class="keyword">namespace</span> xx&#123;<span class="function"><span class="keyword">void</span> <span class="title">tt</span><span class="params">()</span> </span>&#123;<span class="built_in">string</span> x;&#125;&#125;</span><br><span class="line"><span class="keyword">namespace</span> xx1&#123;<span class="function"><span class="keyword">void</span> <span class="title">tt</span><span class="params">()</span> </span>&#123;<span class="built_in">string</span> x;&#125;&#125;</span><br></pre></td></tr></table></figure>
+<p>会报如下错误。说明头文件中的using会污染和其相同的命名空间。控制using namespace的作用范围仍然是一个有意义的功能。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">tt.cpp:4:26: error: ‘string’ was not declared in this scope</span><br><span class="line"> namespace xx1&#123;void tt() &#123;string x;&#125;&#125;</span><br></pre></td></tr></table></figure>
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://mjblog.github.io/2020/03/10/llvm_tr9_debug_info/" data-id="ckg246lqm001c52facwwg3xkv" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/LLVM-STUDY/" rel="tag">LLVM_STUDY</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2020/03/13/llvm_tr10_conclusion/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          Kaleidoscope conclusion
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2020/03/10/llvm_tr8_object_generation/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">Kaleidoscope object generation</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">标签</h3>
+    <div class="widget">
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/AI/" rel="tag">AI</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/GRAALVM/" rel="tag">GRAALVM</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/IDE/" rel="tag">IDE</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/LLVM-STUDY/" rel="tag">LLVM_STUDY</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/env/" rel="tag">env</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">标签云</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/AI/" style="font-size: 20px;">AI</a> <a href="/tags/GRAALVM/" style="font-size: 10px;">GRAALVM</a> <a href="/tags/IDE/" style="font-size: 10px;">IDE</a> <a href="/tags/LLVM-STUDY/" style="font-size: 20px;">LLVM_STUDY</a> <a href="/tags/env/" style="font-size: 10px;">env</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">归档</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/09/">九月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/07/">七月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/06/">六月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/05/">五月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/04/">四月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/03/">三月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/02/">二月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/01/">一月 2020</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">最新文章</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2020/09/25/graal_license/">graalvm license分析</a>
+          </li>
+        
+          <li>
+            <a href="/2020/09/18/eclipse_theia/">eclipse theia 研究</a>
+          </li>
+        
+          <li>
+            <a href="/2020/07/28/first-test/">ubuntu 16.04下驱动TP-LINK TL-WDN6200H免驱版无线网卡</a>
+          </li>
+        
+          <li>
+            <a href="/2020/07/09/tvm_ir_debug/">tvm 构建结果调试</a>
+          </li>
+        
+          <li>
+            <a href="/2020/06/05/arduino_dev/">arduino开发体验</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2020 Ma Jiang<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+
+  
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+
+
+<script src="/js/script.js"></script>
+
+
+  </div>
+</body>
+</html>

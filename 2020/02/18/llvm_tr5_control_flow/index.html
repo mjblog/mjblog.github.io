@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>Kaleidoscope control flow | mjblog</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="学习内容完成对 https:&#x2F;&#x2F;llvm.org&#x2F;docs&#x2F;tutorial&#x2F;MyFirstLanguageFrontend&#x2F;LangImpl05.html 的学习。 练习看懂原网页后，实现同样的功能。 扩展原示例中for引入了循环变量，但是仍然没有引入scope之类的概念，而是直接将所有变量名称放到function的NamedValues map(我们的实现是cur_func_args)中。这个">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Kaleidoscope control flow">
+<meta property="og:url" content="http://mjblog.github.io/2020/02/18/llvm_tr5_control_flow/index.html">
+<meta property="og:site_name" content="mjblog">
+<meta property="og:description" content="学习内容完成对 https:&#x2F;&#x2F;llvm.org&#x2F;docs&#x2F;tutorial&#x2F;MyFirstLanguageFrontend&#x2F;LangImpl05.html 的学习。 练习看懂原网页后，实现同样的功能。 扩展原示例中for引入了循环变量，但是仍然没有引入scope之类的概念，而是直接将所有变量名称放到function的NamedValues map(我们的实现是cur_func_args)中。这个">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2020-02-18T15:12:20.000Z">
+<meta property="article:modified_time" content="2020-07-28T02:15:27.731Z">
+<meta property="article:author" content="Ma Jiang">
+<meta property="article:tag" content="LLVM_STUDY">
+<meta name="twitter:card" content="summary">
+  
+    <link rel="alternate" href="/atom.xml" title="mjblog" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+  
+
+<meta name="generator" content="Hexo 4.2.1"></head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">mjblog</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="搜索"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://mjblog.github.io"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-llvm_tr5_control_flow" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2020/02/18/llvm_tr5_control_flow/" class="article-date">
+  <time datetime="2020-02-18T15:12:20.000Z" itemprop="datePublished">2020-02-18</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      Kaleidoscope control flow
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="学习内容"><a href="#学习内容" class="headerlink" title="学习内容"></a>学习内容</h2><p>完成对 <a href="https://llvm.org/docs/tutorial/MyFirstLanguageFrontend/LangImpl05.html" target="_blank" rel="noopener">https://llvm.org/docs/tutorial/MyFirstLanguageFrontend/LangImpl05.html</a> 的学习。</p>
+<h2 id="练习"><a href="#练习" class="headerlink" title="练习"></a>练习</h2><p>看懂原网页后，实现同样的功能。</p>
+<h2 id="扩展"><a href="#扩展" class="headerlink" title="扩展"></a>扩展</h2><p>原示例中for引入了循环变量，但是仍然没有引入scope之类的概念，而是直接将所有变量名称放到function的NamedValues map(我们的实现是cur_func_args)中。这个是否会产生命名冲突，是否一定需要建立分级的命名查找表？</p>
+<h2 id="进展"><a href="#进展" class="headerlink" title="进展"></a>进展</h2><p>完成了原示例的if和for添加。<br>实现过程中发现原示例的for逻辑有问题，参考if的写法做了重写。</p>
+<h3 id="实现"><a href="#实现" class="headerlink" title="实现"></a>实现</h3><p>大部分语言使用’,’ 作为顺序求值的符号，后续Kaleidoscope也会增加多语句的支持。因此实现时将原示例中的for表达式中的分隔符从”,” 改为了”:”，将”,”预留出来。</p>
+<p>实现时的主要变更是改写了for的语义，具体情况如下：<br>原示例中的for循环展开时，是先执行完成loop后再做结束检查，这和通常语言的for定义都冲突。<br>使用原示例的代码，如下循环仍然会打印出数字1</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">def forWrong()</span><br><span class="line">    for x &#x3D; 1: x &lt; 1: 1 in</span><br><span class="line">        print(x)</span><br></pre></td></tr></table></figure>
+<p>这很明显不是多数人理解的for语义。</p>
+<p>实现for的IR生成代码时，重写了其逻辑，修改后的逻辑框架如下：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">preheader_bb:</span><br><span class="line">	计算induction var(指示变量)的初始值</span><br><span class="line">	goto to end_check</span><br><span class="line">end_check:</span><br><span class="line">	计算end expr的值end_val是否为true</span><br><span class="line">	if (end_val)</span><br><span class="line">		goto loop</span><br><span class="line">	else</span><br><span class="line">		goto afterloop</span><br><span class="line"></span><br><span class="line">loop:</span><br><span class="line">	计算循环体body expr的值</span><br><span class="line">	induction var +&#x3D; step</span><br><span class="line">	goto end_check</span><br><span class="line"></span><br><span class="line">after_loop:</span><br><span class="line">	xxxx后续指令</span><br></pre></td></tr></table></figure>
+<p>修改后的for工作逻辑与c等语言保持了一致。</p>
+<h3 id="扩展问题"><a href="#扩展问题" class="headerlink" title="扩展问题"></a>扩展问题</h3><p>在展开for表达式时，原示例代码先保存了for指示变量可能会覆盖的变量名，离开for展开流程时，再恢复原始值（如果没有重名，那就把for定义的指示变量从名称查找map named_var中移除）。这样看来，遵循底层覆盖上层的原则，并且不提供访问上层被覆盖值的机制，那么确实无需专门定义scope的概念。<br>如下示例：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">def xt(i)</span><br><span class="line">    for i &#x3D; 0 : i &lt; 5 : 1 in</span><br><span class="line">        print(i)</span><br></pre></td></tr></table></figure>
+<p>即使在for表达式后，还可以添加其他语句。那么其他语句也可以正常访问到入参i的值。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://mjblog.github.io/2020/02/18/llvm_tr5_control_flow/" data-id="ckg246lq6000n52fa6zih94wh" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/LLVM-STUDY/" rel="tag">LLVM_STUDY</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2020/02/21/llvm_tr6_user_defined_operator/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          Kaleidoscope user defined operator
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2020/02/14/llvm_tr4_optimizer/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">Kaleidoscope optmizer</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">标签</h3>
+    <div class="widget">
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/AI/" rel="tag">AI</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/GRAALVM/" rel="tag">GRAALVM</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/IDE/" rel="tag">IDE</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/LLVM-STUDY/" rel="tag">LLVM_STUDY</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/env/" rel="tag">env</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">标签云</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/AI/" style="font-size: 20px;">AI</a> <a href="/tags/GRAALVM/" style="font-size: 10px;">GRAALVM</a> <a href="/tags/IDE/" style="font-size: 10px;">IDE</a> <a href="/tags/LLVM-STUDY/" style="font-size: 20px;">LLVM_STUDY</a> <a href="/tags/env/" style="font-size: 10px;">env</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">归档</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/09/">九月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/07/">七月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/06/">六月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/05/">五月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/04/">四月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/03/">三月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/02/">二月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/01/">一月 2020</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">最新文章</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2020/09/25/graal_license/">graalvm license分析</a>
+          </li>
+        
+          <li>
+            <a href="/2020/09/18/eclipse_theia/">eclipse theia 研究</a>
+          </li>
+        
+          <li>
+            <a href="/2020/07/28/first-test/">ubuntu 16.04下驱动TP-LINK TL-WDN6200H免驱版无线网卡</a>
+          </li>
+        
+          <li>
+            <a href="/2020/07/09/tvm_ir_debug/">tvm 构建结果调试</a>
+          </li>
+        
+          <li>
+            <a href="/2020/06/05/arduino_dev/">arduino开发体验</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2020 Ma Jiang<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+
+  
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+
+
+<script src="/js/script.js"></script>
+
+
+  </div>
+</body>
+</html>

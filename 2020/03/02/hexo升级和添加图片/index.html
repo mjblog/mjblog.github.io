@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>hexo升级和插入图片 | mjblog</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="插入图片失败参考https:&#x2F;&#x2F;blog.csdn.net&#x2F;u010996565&#x2F;article&#x2F;details&#x2F;89196612 等文章的方法。 1npm install hexo-asset-image --save 然后在文本中插入 12&lt;img src&#x3D;&quot;&#x2F;images&#x2F;图片名&quot;  width&#x3D;&quot;50&quot;">
+<meta property="og:type" content="article">
+<meta property="og:title" content="hexo升级和插入图片">
+<meta property="og:url" content="http://mjblog.github.io/2020/03/02/hexo%E5%8D%87%E7%BA%A7%E5%92%8C%E6%B7%BB%E5%8A%A0%E5%9B%BE%E7%89%87/index.html">
+<meta property="og:site_name" content="mjblog">
+<meta property="og:description" content="插入图片失败参考https:&#x2F;&#x2F;blog.csdn.net&#x2F;u010996565&#x2F;article&#x2F;details&#x2F;89196612 等文章的方法。 1npm install hexo-asset-image --save 然后在文本中插入 12&lt;img src&#x3D;&quot;&#x2F;images&#x2F;图片名&quot;  width&#x3D;&quot;50&quot;">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2020-03-02T03:12:42.000Z">
+<meta property="article:modified_time" content="2020-07-28T02:15:27.727Z">
+<meta property="article:author" content="Ma Jiang">
+<meta property="article:tag" content="AI">
+<meta name="twitter:card" content="summary">
+  
+    <link rel="alternate" href="/atom.xml" title="mjblog" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+  
+
+<meta name="generator" content="Hexo 4.2.1"></head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">mjblog</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="搜索"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://mjblog.github.io"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-hexo升级和添加图片" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2020/03/02/hexo%E5%8D%87%E7%BA%A7%E5%92%8C%E6%B7%BB%E5%8A%A0%E5%9B%BE%E7%89%87/" class="article-date">
+  <time datetime="2020-03-02T03:12:42.000Z" itemprop="datePublished">2020-03-02</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      hexo升级和插入图片
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h1 id="插入图片失败"><a href="#插入图片失败" class="headerlink" title="插入图片失败"></a>插入图片失败</h1><p>参考<a href="https://blog.csdn.net/u010996565/article/details/89196612" target="_blank" rel="noopener">https://blog.csdn.net/u010996565/article/details/89196612</a> 等文章的方法。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">npm install hexo-asset-image --save</span><br></pre></td></tr></table></figure>
+<p>然后在文本中插入</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">&lt;img src&#x3D;&quot;&#x2F;images&#x2F;图片名&quot;  width&#x3D;&quot;50&quot; height&#x3D;&quot;50&quot;&gt;</span><br><span class="line">![](image图片名)</span><br></pre></td></tr></table></figure>
+<p>均无法正确显示图片。<br>hexo sever启动的终端可以看到如下提示</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">update link as:--&gt;&#x2F;.com&#x2F;&#x2F;xxxx.png</span><br></pre></td></tr></table></figure>
+<p>打开图片的地址也是/.com//xxxx.png。<br>搜索到如下的网页介绍了类似的问题。<br><a href="https://blog.csdn.net/xjm850552586/article/details/84101345" target="_blank" rel="noopener">https://blog.csdn.net/xjm850552586/article/details/84101345</a><br>但是其提供的方案也无法生效。<br>考虑到安装 hexo-asset-image时曾经提到需要hexo4.0以上版本，而当前hexo版本是3.9，所以考虑先行升级版本</p>
+<h1 id="升级hexo"><a href="#升级hexo" class="headerlink" title="升级hexo"></a>升级hexo</h1><p>参考如下链接<br><a href="https://www.dazhuanlan.com/2020/01/29/5e3165c116e0f/?__cf_chl_jschl_tk__=e7caf23cde91dcc1f9fc6e1006b88d0bf63de758-1584498843-0-AQ7fucDfahofVnETCllMEC0jJ8Wrecp_5-NxLutNm_NE07_6SkOP9aYE2mlgJv6oQ9Z78RVSuvf1uZBXN-AwXQ898WXTdcE5uf90w-_XCgWONaii4YIUO62_6vLfMSqvz4miZBzOpMYwmaop6pjkWnQWyhJIsJ-LkHyQXZPBRAteDLBEWZ1-gkaq3aXBT4DZl6-I2wJ_R1WFiBqHDlBlrr2treoeNxPspJpjB0L5Qzd1-8JtGPUprKEBt2KCKCjAXtWL9NZ6TJb93L6wrwpWsJdY45QkNxfwTYq6NPOPd4H3suwbWr1P_FY2lWzbk7NfwQ" target="_blank" rel="noopener">https://www.dazhuanlan.com/2020/01/29/5e3165c116e0f/?__cf_chl_jschl_tk__=e7caf23cde91dcc1f9fc6e1006b88d0bf63de758-1584498843-0-AQ7fucDfahofVnETCllMEC0jJ8Wrecp_5-NxLutNm_NE07_6SkOP9aYE2mlgJv6oQ9Z78RVSuvf1uZBXN-AwXQ898WXTdcE5uf90w-_XCgWONaii4YIUO62_6vLfMSqvz4miZBzOpMYwmaop6pjkWnQWyhJIsJ-LkHyQXZPBRAteDLBEWZ1-gkaq3aXBT4DZl6-I2wJ_R1WFiBqHDlBlrr2treoeNxPspJpjB0L5Qzd1-8JtGPUprKEBt2KCKCjAXtWL9NZ6TJb93L6wrwpWsJdY45QkNxfwTYq6NPOPd4H3suwbWr1P_FY2lWzbk7NfwQ</a><br>使用如下步骤，将hexo升级到了4.2.0<br>1 清除node的cache</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">npm cache clean -f</span><br></pre></td></tr></table></figure>
+<p>2 安装node版本管理工具 n</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">npm install -g n</span><br></pre></td></tr></table></figure>
+<p>3 安装最新稳定版本的node</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">n stable</span><br></pre></td></tr></table></figure>
+<p>// 安装最新版本使用 n latest<br>// 安装指定版本的使用 n {version}，例如 n 11.2.0<br>// 删除指定版本的node使用 n rm {version}，例如 n rm 11.2.0<br>4 更新npm版本</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">npm install npm@latest -g</span><br></pre></td></tr></table></figure>
+<p>5 进入blog目录，然后执行</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">npm outdated</span><br></pre></td></tr></table></figure>
+<p>6  根据第5步输出，手工记录各个组件的最新版本号，然后逐一在package.json配置文件中修改版本号到最新版本。</p>
+<p>7 更新模块</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">npm install --save</span><br></pre></td></tr></table></figure>
+<p>8 确认升级结果</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">hexo -v</span><br></pre></td></tr></table></figure>
+
+<h1 id="升级后的问题解决"><a href="#升级后的问题解决" class="headerlink" title="升级后的问题解决"></a>升级后的问题解决</h1><p>升级后图片仍然无法正常显示。<br>异常现象变为，路径正常时，网页上就直接显示路径文本，而不是显示图片。<br>而使用部分博客提到的语法，则生成的网页中直接就是空白（查看html文件，整段内容直接被忽略了）。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&#123;% asset_img slug [title] %&#125;</span><br></pre></td></tr></table></figure>
+<p>考虑到部分博客提到hexo4.0把很多插件并入了核心代码，担心插件中有冲突，于是使用下面的命令卸载掉第三方插件。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">npm remove hexo-asset-link --save</span><br><span class="line">npm remove hexo-asset-image --save</span><br></pre></td></tr></table></figure>
+<p>然后再在文件中使用markdown的语法，就能正确显示图片了。<br>并且主页中的图片也能正常显示，应该是hexo4.0把image link并入核心代码后做了改进（pacakge.json中显示多了一个hexo-image-link组件），解决了markdown语法的问题。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">![Alt Text](图片文件 &quot;Title Text&quot;)</span><br></pre></td></tr></table></figure>
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://mjblog.github.io/2020/03/02/hexo%E5%8D%87%E7%BA%A7%E5%92%8C%E6%B7%BB%E5%8A%A0%E5%9B%BE%E7%89%87/" data-id="ckg246lq1000a52fa8muj5q2j" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/AI/" rel="tag">AI</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2020/03/02/llvm_tr7_mutable_variables/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          Kaleidoscope mutable variable
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2020/03/02/elf_go/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">ELFGO 编译和测试</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">标签</h3>
+    <div class="widget">
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/AI/" rel="tag">AI</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/GRAALVM/" rel="tag">GRAALVM</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/IDE/" rel="tag">IDE</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/LLVM-STUDY/" rel="tag">LLVM_STUDY</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/env/" rel="tag">env</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">标签云</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/AI/" style="font-size: 20px;">AI</a> <a href="/tags/GRAALVM/" style="font-size: 10px;">GRAALVM</a> <a href="/tags/IDE/" style="font-size: 10px;">IDE</a> <a href="/tags/LLVM-STUDY/" style="font-size: 20px;">LLVM_STUDY</a> <a href="/tags/env/" style="font-size: 10px;">env</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">归档</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/09/">九月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/07/">七月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/06/">六月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/05/">五月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/04/">四月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/03/">三月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/02/">二月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/01/">一月 2020</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">最新文章</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2020/09/25/graal_license/">graalvm license分析</a>
+          </li>
+        
+          <li>
+            <a href="/2020/09/18/eclipse_theia/">eclipse theia 研究</a>
+          </li>
+        
+          <li>
+            <a href="/2020/07/28/first-test/">ubuntu 16.04下驱动TP-LINK TL-WDN6200H免驱版无线网卡</a>
+          </li>
+        
+          <li>
+            <a href="/2020/07/09/tvm_ir_debug/">tvm 构建结果调试</a>
+          </li>
+        
+          <li>
+            <a href="/2020/06/05/arduino_dev/">arduino开发体验</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2020 Ma Jiang<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+
+  
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+
+
+<script src="/js/script.js"></script>
+
+
+  </div>
+</body>
+</html>

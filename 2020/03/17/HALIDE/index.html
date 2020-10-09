@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>HALIDE | mjblog</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="介绍参考 https:&#x2F;&#x2F;halide-lang.org&#x2F; 和 http:&#x2F;&#x2F;stellar.mit.edu&#x2F;S&#x2F;course&#x2F;6&#x2F;sp15&#x2F;6.815&#x2F;courseMaterial&#x2F;topics&#x2F;topic2&#x2F;lectureNotes&#x2F;14_Halide_print&#x2F;14_Halide_print.pdf。Halide 的核心思想是把图像处理(可以理解为矩阵运算)的算法(需要计算什么内容)和调度">
+<meta property="og:type" content="article">
+<meta property="og:title" content="HALIDE">
+<meta property="og:url" content="http://mjblog.github.io/2020/03/17/HALIDE/index.html">
+<meta property="og:site_name" content="mjblog">
+<meta property="og:description" content="介绍参考 https:&#x2F;&#x2F;halide-lang.org&#x2F; 和 http:&#x2F;&#x2F;stellar.mit.edu&#x2F;S&#x2F;course&#x2F;6&#x2F;sp15&#x2F;6.815&#x2F;courseMaterial&#x2F;topics&#x2F;topic2&#x2F;lectureNotes&#x2F;14_Halide_print&#x2F;14_Halide_print.pdf。Halide 的核心思想是把图像处理(可以理解为矩阵运算)的算法(需要计算什么内容)和调度">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://mjblog.github.io/2020/03/17/HALIDE/halide_work.png">
+<meta property="article:published_time" content="2020-03-17T09:41:32.000Z">
+<meta property="article:modified_time" content="2020-07-28T02:15:27.701Z">
+<meta property="article:author" content="Ma Jiang">
+<meta property="article:tag" content="AI">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://mjblog.github.io/2020/03/17/HALIDE/halide_work.png">
+  
+    <link rel="alternate" href="/atom.xml" title="mjblog" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+  
+
+<meta name="generator" content="Hexo 4.2.1"></head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">mjblog</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="搜索"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://mjblog.github.io"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-HALIDE" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2020/03/17/HALIDE/" class="article-date">
+  <time datetime="2020-03-17T09:41:32.000Z" itemprop="datePublished">2020-03-17</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      HALIDE
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h1 id="介绍"><a href="#介绍" class="headerlink" title="介绍"></a>介绍</h1><p>参考 <a href="https://halide-lang.org/" target="_blank" rel="noopener">https://halide-lang.org/</a> 和 <a href="http://stellar.mit.edu/S/course/6/sp15/6.815/courseMaterial/topics/topic2/lectureNotes/14_Halide_print/14_Halide_print.pdf。" target="_blank" rel="noopener">http://stellar.mit.edu/S/course/6/sp15/6.815/courseMaterial/topics/topic2/lectureNotes/14_Halide_print/14_Halide_print.pdf。</a><br>Halide 的核心思想是把图像处理(可以理解为矩阵运算)的算法(需要计算什么内容)和调度(如何优化执行计算)分开。</p>
+<h2 id="WHY"><a href="#WHY" class="headerlink" title="WHY"></a>WHY</h2><p>大规模的矩阵运算性能优化空间很大，但是目前已有的人工优化和编译器优化都有一些问题。<br>人工优化，有两种范式，一种是针对具体的场景手工优化，一种是提供BLAS, IPP, MKL, OpenCV这类高度优化的库。前一种效率太低(场景众多，还要针对不同的后端硬件，优化工作量太大)，后者则只能提供局部最优的模块，无法在全局进行调度和融化优化。<br>编译器优化，可以看见完整的运算pipeline，但是优化的效果相对手动优化差了很多(就是一个最简单的矩阵乘法，编译器的输出都可能比手工优化要慢数倍)。同时，编译器中的很多核心优化决策都没有开放外部控制（比较典型的是，连循环展开的次数，GCC等编译器都是最近几年才通过#pragma unroll等方式提供了支持，更不要说直接控制cache block的大小等等），这导致在编译器的基础上人工再调优(纠正编译器的错误优化决策)很困难。<br>综合以上信息，高效和高质量的全局优化，还是要靠编译器。Halide的创造者也是沿着这个思路解决问题。</p>
+<h2 id="WHAT"><a href="#WHAT" class="headerlink" title="WHAT"></a>WHAT</h2><p>Halide 是一种DSL(领域语言)，也是该DSL的编译器。<br>它的核心思想是把运算的逻辑和运算的过程分离。将运算过程剥离出后，再将各个典型优化决策的控制变量和控制逻辑暴露出来，以便人工或者黑盒优化算法(如遗传算法等)能持续调整优化决策，达到更好的性能。<br>它主页中的示例代码很好的说明了其思想，如下所示。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="function">Func <span class="title">blur_3x3</span><span class="params">(Func input)</span> </span>&#123;</span><br><span class="line">  Func blur_x, blur_y;</span><br><span class="line">  Var x, y, xi, yi;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// The algorithm - no storage or order</span></span><br><span class="line">  blur_x(x, y) = (input(x<span class="number">-1</span>, y) + input(x, y) + input(x+<span class="number">1</span>, y))/<span class="number">3</span>;</span><br><span class="line">  blur_y(x, y) = (blur_x(x, y<span class="number">-1</span>) + blur_x(x, y) + blur_x(x, y+<span class="number">1</span>))/<span class="number">3</span>;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// The schedule - defines order, locality; implies storage</span></span><br><span class="line">  blur_y.tile(x, y, xi, yi, <span class="number">256</span>, <span class="number">32</span>)</span><br><span class="line">        .vectorize(xi, <span class="number">8</span>).parallel(y);</span><br><span class="line">  blur_x.compute_at(blur_y, x).vectorize(x, <span class="number">8</span>);</span><br><span class="line"></span><br><span class="line">  <span class="keyword">return</span> blur_y;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>上面代码将blur的运算逻辑，与具体运算的实施过程进行了分离。用很简单的几个方法就指定了tile/vectorize等重要优化，以及其对应的参数。直观看起来，代码很简洁，并且要修改优化的类型和参数，工作量也很小。<br>而要迫使编译器实现同样的优化，需要写下面一大段代码。<br>并且，这样的代码由于直接使用intel 的SIMD原语，可移植性大幅度下降。<br>更加严重的是，想要微调各项优化参数(为了针对不同的硬件做优化)，都需要对代码做大幅度的修改，工作量很大。<br>而上面的Halide代码，只需修改几个入参就可以完成优化决策的调整。哪怕Halide不提供内置的autotuner，使用一个简单的python脚本接入opentuner等黑盒优化框架也都会非常简单（毕竟只是改几个参数而已）。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">box_filter_3x3</span><span class="params">(<span class="keyword">const</span> Image &amp;in, Image &amp;blury)</span> </span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    __m128i one_third = _mm_set1_epi16(<span class="number">21846</span>);</span><br><span class="line">    <span class="meta">#<span class="meta-keyword">pragma</span> omp parallel for</span></span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> yTile = <span class="number">0</span>; yTile &lt; in.<span class="built_in">height</span>(); yTile += <span class="number">32</span>) &#123;</span><br><span class="line">        __m128i a, b, c, sum, avg;</span><br><span class="line">        __m128iblurx[(<span class="number">256</span>/<span class="number">8</span>)*(<span class="number">32</span>+<span class="number">2</span>)]; <span class="comment">// allocate tile blurx array</span></span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> xTile = <span class="number">0</span>; xTile &lt; in.<span class="built_in">width</span>(); xTile += <span class="number">256</span>)&#123;</span><br><span class="line">            __m128i *blurxPtr = blurx;</span><br><span class="line">            <span class="keyword">for</span> (<span class="keyword">int</span> y = <span class="number">-1</span>; y &lt; <span class="number">32</span>+<span class="number">1</span>; y++) &#123;</span><br><span class="line">                        <span class="keyword">const</span> <span class="keyword">uint16_t</span> *inPtr = &amp;(in[yTile+y][xTile]);</span><br><span class="line">                        <span class="keyword">for</span> (<span class="keyword">int</span> x = <span class="number">0</span>; x &lt; <span class="number">256</span>; x += <span class="number">8</span>)&#123;</span><br><span class="line">                             a = _mm_loadu_si128((__m128i*)(inPtr<span class="number">-1</span>));</span><br><span class="line">                             b = _mm_loadu_si128((__m128i*)(inPtr+<span class="number">1</span>));</span><br><span class="line">                             c = _mm_load_si128((__m128i*)(inPtr));</span><br><span class="line">                             sum = _mm_add_epi16(_mm_add_epi16(a, b), c);</span><br><span class="line">                             avg = _mm_mulhi_epi16(sum, one_third);</span><br><span class="line">                             _mm_store_si128(blurxPtr++, avg);</span><br><span class="line">                             inPtr += <span class="number">8</span>;</span><br><span class="line">                             &#125;&#125;</span><br><span class="line">                             blurxPtr = blurx;</span><br><span class="line">                             <span class="keyword">for</span> (<span class="keyword">int</span> y = <span class="number">0</span>; y &lt; <span class="number">32</span>; y++) &#123;</span><br><span class="line">                                 __m128i *outPtr = (__m128i *)(&amp;(blury[yTile+y][xTile]));</span><br><span class="line">                                 <span class="keyword">for</span> (<span class="keyword">int</span> x = <span class="number">0</span>; x &lt; <span class="number">256</span>; x += <span class="number">8</span>) &#123;</span><br><span class="line">                                            a = _mm_load_si128(blurxPtr+(<span class="number">2</span>*<span class="number">256</span>)/<span class="number">8</span>);</span><br><span class="line">                                            b = _mm_load_si128(blurxPtr+<span class="number">256</span>/<span class="number">8</span>);</span><br><span class="line">                                            c = _mm_load_si128(blurxPtr++);</span><br><span class="line">                                            sum = _mm_add_epi16(_mm_add_epi16(a, b), c);</span><br><span class="line">                                            avg = _mm_mulhi_epi16(sum, one_third);</span><br><span class="line">                                            _mm_store_si128(outPtr++, avg);</span><br><span class="line">                                            &#125;&#125;&#125;&#125;&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="HOW"><a href="#HOW" class="headerlink" title="HOW"></a>HOW</h2><p>Halide介绍ppt中的一页示意图很好地展示了它的工作过程。</p>
+<img src="/2020/03/17/HALIDE/halide_work.png" class="" title="Halide 示意图">
+<p>图中飘逸的寥寥几笔注释已经把核心的工作原理讲清楚了。<br>如果对编译技术比较熟悉，看完注释后最核心的几个疑问应该就豁然开朗了。<br>简单的说，Halide语言没有独立的语法定义，也就不需要独立的lexer和parser。<br>它利用了C++语言的元编程能力，直接构造出了Halide语言的中间表达IR。<br>具体情况，随后一节会有详细的分析。</p>
+<h1 id="语言实现分析"><a href="#语言实现分析" class="headerlink" title="语言实现分析"></a>语言实现分析</h1><p>为了分析Halide编译器的具体实现，下载并编译了Halide的代码(使用Ubuntu18.04自带的clang/llvm8，按照官方命令编译，比较简单)。<br>然后编译、运行和调试其tutorial目录中的各个示例。<br>可以对其实现有一个大致的了解。</p>
+<h2 id="语言定义"><a href="#语言定义" class="headerlink" title="语言定义"></a>语言定义</h2><p>从最简单的示例入手，理解整体概念更容易。<br>参考下面代码注释。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//这个示例用Halide完成了一个矩阵</span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">int</span> argc, <span class="keyword">char</span> **argv)</span> </span>&#123;</span><br><span class="line"><span class="comment">/*这里声明了三个核心概念</span></span><br><span class="line"><span class="comment">Func 是一系列运算(expr)的合集</span></span><br><span class="line"><span class="comment">Var 表达运算中涉及的变量</span></span><br><span class="line"><span class="comment">Expr 表达单个运算过程</span></span><br><span class="line"><span class="comment">*/</span></span><br><span class="line">    Halide::Func gradient;</span><br><span class="line">    Halide::Var x, y;</span><br><span class="line">    Halide::Expr e = x + y;</span><br><span class="line"><span class="comment">//这里才完成了函数定义 f(x,y)  = x+ y</span></span><br><span class="line">    gradient(x, y) = e;</span><br><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment">上面的声明式定义，其实已经体现出Halide是一个新的语言了。</span></span><br><span class="line"><span class="comment">有几个比较细节的点：</span></span><br><span class="line"><span class="comment">1 注意到我们没有对Var x和y进行赋值，就直接在expr中使用它们了。</span></span><br><span class="line"><span class="comment">可以这样做的原因是，它们只是对应二维数组的两个轴向而已，并不代表具体的值。</span></span><br><span class="line"><span class="comment">2 Halide::Expr e = x + y; 中的'='和'+'显然都不是常规语义。这一句实际上构建了一个Halide expr IR节点，op为+，LHS是x，RHS是y；</span></span><br><span class="line"><span class="comment">3 gradient(x, y) = e; 把expr关联到函数上，同样对应了IR上的操作。</span></span><br><span class="line"><span class="comment">*/</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">//调用realize完成了编译和运行，并得到了结果</span></span><br><span class="line">    Halide::Buffer&lt;<span class="keyword">int32_t</span>&gt; output = gradient.realize(<span class="number">800</span>, <span class="number">600</span>);</span><br><span class="line">    <span class="comment">//下面只是校验Halide和通常的运算结果一致</span></span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> j = <span class="number">0</span>; j &lt; output.<span class="built_in">height</span>(); j++) &#123;</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; output.<span class="built_in">width</span>(); i++) &#123;</span><br><span class="line">            <span class="keyword">if</span> (output(i, j) != i + j) &#123;</span><br><span class="line">                <span class="built_in">printf</span>(<span class="string">"Something went wrong!\n"</span></span><br><span class="line">                       <span class="string">"Pixel %d, %d was supposed to be %d, but instead it's %d\n"</span>,</span><br><span class="line">                       i, j, i + j, output(i, j));</span><br><span class="line">                <span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"Success!\n"</span>);</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>总结一下，Halide的核心概念就是Func、Var和Expr。它没有文本源代码的格式，直接是寄生在C++上。Func、Var和Expr都是C++的class。在完成声明和赋值的同时，利用对=、+和()的重载，完成了Halide的IR构建。</p>
+<h2 id="编译、调试和源码分析"><a href="#编译、调试和源码分析" class="headerlink" title="编译、调试和源码分析"></a>编译、调试和源码分析</h2><h3 id="编译准备"><a href="#编译准备" class="headerlink" title="编译准备"></a>编译准备</h3><p>Halide的编译只需要依赖LLVM，在ubuntu18.04上安装llvm8就可以了。<br>clone下Halide代码后，进入目录后执行如下命令，可构建出带有调试信息的版本。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">mkdir build</span><br><span class="line">cd build</span><br><span class="line">export CXXFLAGS&#x3D;&quot;-O0 -g3&quot;</span><br><span class="line">export OPTIMIZE&#x3D;&quot;-O0&quot;</span><br><span class="line">make -e -f ..&#x2F;Makefile -j 8</span><br></pre></td></tr></table></figure>
+<h3 id="编译示例并调试"><a href="#编译示例并调试" class="headerlink" title="编译示例并调试"></a>编译示例并调试</h3><h4 id="Halide-前端"><a href="#Halide-前端" class="headerlink" title="Halide 前端"></a>Halide 前端</h4><p>在上一步构建完成的build目录中，继续执行如下命令。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">cd distrib&#x2F;tutorial&#x2F;</span><br><span class="line">g++ lesson_01*.cpp -g -I ..&#x2F;include -L ..&#x2F;bin -lHalide -lpthread -ldl -o lesson_01 -std&#x3D;c++11 -g3</span><br><span class="line">gdb .&#x2F;lesson_01</span><br></pre></td></tr></table></figure>
+<p>这个lesson01就是前面语言定义一节中已经给出过的示例代码。<br>由于Function和Var的定义都没有传参，可以跳过，直接单步跟踪expr的赋值。这里给出的结果就非常典型了。<br>首先变量x和y被转换为了Expr。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">15518	    &#x2F;** A Var can be treated as an Expr of type Int(32) *&#x2F;</span><br><span class="line">15519	    operator const Expr &amp;() const &#123;</span><br><span class="line">15520	        return e;</span><br><span class="line">15521	    &#125;</span><br></pre></td></tr></table></figure>
+<p>然后Expr的operator+，就调用了Internal::Add::make构建了Expr这个IR。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">1139	Expr operator+(Expr a, Expr b) &#123;</span><br><span class="line">1140	    user_assert(a.defined() &amp;&amp; b.defined()) &lt;&lt; &quot;operator+ of undefined Expr\n&quot;;</span><br><span class="line">1141	    Internal::match_types(a, b);</span><br><span class="line">1142	    return Internal::Add::make(std::move(a), std::move(b));</span><br><span class="line">1143	&#125;</span><br><span class="line">---&gt;</span><br><span class="line">21	Expr Add::make(Expr a, Expr b) &#123;</span><br><span class="line">22	    internal_assert(a.defined()) &lt;&lt; &quot;Add of undefined\n&quot;;</span><br><span class="line">23	    internal_assert(b.defined()) &lt;&lt; &quot;Add of undefined\n&quot;;</span><br><span class="line">24	    internal_assert(a.type() &#x3D;&#x3D; b.type()) &lt;&lt; &quot;Add of mismatched types\n&quot;;</span><br><span class="line">25	</span><br><span class="line">(gdb) </span><br><span class="line">26	    Add *node &#x3D; new Add;</span><br><span class="line">27	    node-&gt;type &#x3D; a.type();</span><br><span class="line">28	    node-&gt;a &#x3D; std::move(a);</span><br><span class="line">29	    node-&gt;b &#x3D; std::move(b);</span><br><span class="line">30	    return node;</span><br><span class="line">31	&#125;</span><br></pre></td></tr></table></figure>
+<p>调试到这里已经基本能确认Halide前端的工作原理了，通过operator重载，Halide直接构造了IR的，跳过了Lexer和Parser部分。<br>下一个问题是，Halide的IR如何，或者在什么时机进行Codegen。</p>
+<h4 id="Halide的代码生成流程"><a href="#Halide的代码生成流程" class="headerlink" title="Halide的代码生成流程"></a>Halide的代码生成流程</h4><p>如前所述，Halide中通过realize方法完成了代码的编译和运行。接着调试上面程序的gradient.realize调用。<br>可以看到如下的调用链条。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">#0  Halide::Internal::lower (output_funcs&#x3D;std::vector of length 1, capacity 1 &#x3D; &#123;...&#125;, pipeline_name&#x3D;&quot;f0&quot;, t&#x3D;..., args&#x3D;std::vector of length 1, capacity 1 &#x3D; &#123;...&#125;, </span><br><span class="line">    linkage_type&#x3D;Halide::LinkageType::ExternalPlusMetadata, requirements&#x3D;std::vector of length 0, capacity 0, trace_pipeline&#x3D;false, </span><br><span class="line">    custom_passes&#x3D;std::vector of length 0, capacity 0) at &#x2F;media&#x2F;majiang&#x2F;c6b38ac3-8b8a-4613-8259-dddbffe2f4cb&#x2F;majiang&#x2F;opensource&#x2F;Halide&#x2F;src&#x2F;Lower.cpp:87</span><br><span class="line">#1  0x00007ffff3cb7b6b in Halide::Pipeline::compile_to_module (this&#x3D;0x7fffffffd920, args&#x3D;std::vector of length 1, capacity 1 &#x3D; &#123;...&#125;, fn_name&#x3D;&quot;f0&quot;, target&#x3D;..., </span><br><span class="line">    linkage_type&#x3D;Halide::LinkageType::ExternalPlusMetadata) at &#x2F;media&#x2F;majiang&#x2F;c6b38ac3-8b8a-4613-8259-dddbffe2f4cb&#x2F;majiang&#x2F;opensource&#x2F;Halide&#x2F;src&#x2F;Pipeline.cpp:506</span><br><span class="line">#2  0x00007ffff3cb819b in Halide::Pipeline::compile_jit (this&#x3D;0x7fffffffd920, target_arg&#x3D;...)</span><br><span class="line">    at &#x2F;media&#x2F;majiang&#x2F;c6b38ac3-8b8a-4613-8259-dddbffe2f4cb&#x2F;majiang&#x2F;opensource&#x2F;Halide&#x2F;src&#x2F;Pipeline.cpp:573</span><br><span class="line">#3  0x00007ffff3cbbda7 in Halide::Pipeline::realize (this&#x3D;0x7fffffffd920, outputs&#x3D;..., t&#x3D;..., param_map&#x3D;...)</span><br><span class="line">    at &#x2F;media&#x2F;majiang&#x2F;c6b38ac3-8b8a-4613-8259-dddbffe2f4cb&#x2F;majiang&#x2F;opensource&#x2F;Halide&#x2F;src&#x2F;Pipeline.cpp:1099</span><br><span class="line">#4  0x00007ffff3cb98b0 in Halide::Pipeline::realize (this&#x3D;0x7fffffffd920, sizes&#x3D;std::vector of length 2, capacity 2 &#x3D; &#123;...&#125;, target&#x3D;..., param_map&#x3D;...)</span><br><span class="line">    at &#x2F;media&#x2F;majiang&#x2F;c6b38ac3-8b8a-4613-8259-dddbffe2f4cb&#x2F;majiang&#x2F;opensource&#x2F;Halide&#x2F;src&#x2F;Pipeline.cpp:703</span><br><span class="line">#5  0x00007ffff3ac078c in Halide::Func::realize (this&#x3D;0x7fffffffdbf0, sizes&#x3D;std::vector of length 0, capacity 0, target&#x3D;..., param_map&#x3D;...)</span><br><span class="line">    at &#x2F;media&#x2F;majiang&#x2F;c6b38ac3-8b8a-4613-8259-dddbffe2f4cb&#x2F;majiang&#x2F;opensource&#x2F;Halide&#x2F;src&#x2F;Func.cpp:2922</span><br><span class="line">#6  0x00007ffff3ac0a7d in Halide::Func::realize (this&#x3D;0x7fffffffdbf0, x_size&#x3D;800, y_size&#x3D;600, target&#x3D;..., param_map&#x3D;...)</span><br><span class="line">    at &#x2F;media&#x2F;majiang&#x2F;c6b38ac3-8b8a-4613-8259-dddbffe2f4cb&#x2F;majiang&#x2F;opensource&#x2F;Halide&#x2F;src&#x2F;Func.cpp:2937</span><br><span class="line">#7  0x000055555555d56a in main (argc&#x3D;1, argv&#x3D;0x7fffffffdd98) at lesson_01_basics.cpp:78</span><br></pre></td></tr></table></figure>
+<p>看到lower，老司机应该已经心领神会找到门路了。一般lower意味着高层表达向硬件层级扩展，表达的内容将越发具体完整。</p>
+<p>lower函数的过程，可以看到大致有两个主要的工作，第一个是补充最终程序需要的系列流程，如初始化环境，建立循环，已经插入一些等等；第二个是进行各项高层优化（优化越接近源码，执行起来越简单。）。但是lower部分看到结尾，仍然没有向另外一种IR或者机器指令转换。<br>从lower返回后，在compile_jit函数中继续向下调试，可以最终找到如下堆栈回溯中，Halide完成了IR到LLVM-IR的codegen过程(当然如果结合代码分析，查找LLVM的相关流程，找到这里会更快)。<br>#0  Halide::Internal::CodeGen_LLVM::compile (this=0x5555557b60e0, input=…)<br>    at /media/majiang/c6b38ac3-8b8a-4613-8259-dddbffe2f4cb/majiang/opensource/Halide/src/CodeGen_LLVM.cpp:637<br>#1  0x00007ffff399a42c in Halide::codegen_llvm (module=…, context=…)<br>    at /media/majiang/c6b38ac3-8b8a-4613-8259-dddbffe2f4cb/majiang/opensource/Halide/src/CodeGen_LLVM.cpp:46<br>#2  0x00007ffff3c326e1 in Halide::compile_module_to_llvm_module (module=…, context=…)<br>    at /media/majiang/c6b38ac3-8b8a-4613-8259-dddbffe2f4cb/majiang/opensource/Halide/src/LLVM_Output.cpp:381<br>#3  0x00007ffff3c13c91 in Halide::Internal::JITModule::JITModule (this=0x7fffffffbf90, m=…, fn=…, dependencies=std::vector of length 0, capacity 0)<br>    at /media/majiang/c6b38ac3-8b8a-4613-8259-dddbffe2f4cb/majiang/opensource/Halide/src/JITModule.cpp:251<br>#4  0x00007ffff3cb86dd in Halide::Pipeline::compile_jit (this=0x7fffffffd920, target_arg=…)<br>    at /media/majiang/c6b38ac3-8b8a-4613-8259-dddbffe2f4cb/majiang/opensource/Halide/src/Pipeline.cpp:607<br>#5  0x00007ffff3cbbda7 in Halide::Pipeline::realize (this=0x7fffffffd920, outputs=…, t=…, param_map=…)<br>    at /media/majiang/c6b38ac3-8b8a-4613-8259-dddbffe2f4cb/majiang/opensource/Halide/src/Pipeline.cpp:1099<br>#6  0x00007ffff3cb98b0 in Halide::Pipeline::realize (this=0x7fffffffd920, sizes=std::vector of length 2, capacity 2 = {…}, target=…, param_map=…)<br>    at /media/majiang/c6b38ac3-8b8a-4613-8259-dddbffe2f4cb/majiang/opensource/Halide/src/Pipeline.cpp:703<br>#7  0x00007ffff3ac078c in Halide::Func::realize (this=0x7fffffffdbf0, sizes=std::vector of length 0, capacity 0, target=…, param_map=…)<br>    at /media/majiang/c6b38ac3-8b8a-4613-8259-dddbffe2f4cb/majiang/opensource/Halide/src/Func.cpp:2922<br>#8  0x00007ffff3ac0a7d in Halide::Func::realize (this=0x7fffffffdbf0, x_size=800, y_size=600, target=…, param_map=…)<br>    at /media/majiang/c6b38ac3-8b8a-4613-8259-dddbffe2f4cb/majiang/opensource/Halide/src/Func.cpp:2937<br>#9  0x000055555555d56a in main (argc=1, argv=0x7fffffffdd98) at lesson_01_basics.cpp:78<br>后面的流程更加直接一些，CodeGen_LLVM.cpp包含了主要的转换内容，compile_func中的    f.body.accept(this); 发起了LLVM-IR的发射动作。<br>后面就是CodeGen_LLVM.cpp中的一堆visit函数完成了针对不同类型Halide IR的LLVMIR代码生成。</p>
+<h1 id="遗留的学习"><a href="#遗留的学习" class="headerlink" title="遗留的学习"></a>遗留的学习</h1><p>Halide自带的autotuner如何工作？</p>
+<h1 id="有意思的一些编程技巧"><a href="#有意思的一些编程技巧" class="headerlink" title="有意思的一些编程技巧"></a>有意思的一些编程技巧</h1><p>1 把可变参数的输入转成vector处理</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">template</span>&lt;<span class="keyword">typename</span>... Args&gt;</span><br><span class="line">HALIDE_NO_USER_CODE_INLINE <span class="keyword">typename</span> <span class="built_in">std</span>::enable_if&lt;Internal::all_are_convertible&lt;Var, Args...&gt;::value, FuncRef&gt;::type</span><br><span class="line"><span class="keyword">operator</span>()(Args &amp;&amp;... args) <span class="keyword">const</span> &#123;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">vector</span>&lt;Var&gt; collected_args&#123;<span class="built_in">std</span>::forward&lt;Args&gt;(args)...&#125;;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">this</span>-&gt;<span class="keyword">operator</span>()(collected_args);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>2 在父类中访问子类成员<br><a href="https://en.wikipedia.org/wiki/Curiously_recurring_template_pattern" target="_blank" rel="noopener">https://en.wikipedia.org/wiki/Curiously_recurring_template_pattern</a></p>
+<p>Typically, the base class template will take advantage of the fact that member function bodies (definitions) are not instantiated until long after their declarations, and will use members of the derived class within its own member functions, via the use of a cast; e.g.:</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">template</span> &lt;<span class="class"><span class="keyword">class</span> <span class="title">T</span>&gt; </span></span><br><span class="line"><span class="class"><span class="title">struct</span> <span class="title">Base</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">interface</span><span class="params">()</span></span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="comment">// ...</span></span><br><span class="line">        <span class="keyword">static_cast</span>&lt;T*&gt;(<span class="keyword">this</span>)-&gt;implementation();</span><br><span class="line">        <span class="comment">// ...</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">static</span> <span class="keyword">void</span> <span class="title">static_func</span><span class="params">()</span></span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="comment">// ...</span></span><br><span class="line">        T::static_sub_func();</span><br><span class="line">        <span class="comment">// ...</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">Derived</span> :</span> Base&lt;Derived&gt;</span><br><span class="line">&#123;</span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">implementation</span><span class="params">()</span></span>;</span><br><span class="line">    <span class="function"><span class="keyword">static</span> <span class="keyword">void</span> <span class="title">static_sub_func</span><span class="params">()</span></span>;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://mjblog.github.io/2020/03/17/HALIDE/" data-id="ckg246lqu001g52fa1xxz0a3x" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/AI/" rel="tag">AI</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2020/03/20/TVM/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          TVM
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2020/03/16/nvidia_compiler/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">nvidia gpu编译器</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">标签</h3>
+    <div class="widget">
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/AI/" rel="tag">AI</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/GRAALVM/" rel="tag">GRAALVM</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/IDE/" rel="tag">IDE</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/LLVM-STUDY/" rel="tag">LLVM_STUDY</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/env/" rel="tag">env</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">标签云</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/AI/" style="font-size: 20px;">AI</a> <a href="/tags/GRAALVM/" style="font-size: 10px;">GRAALVM</a> <a href="/tags/IDE/" style="font-size: 10px;">IDE</a> <a href="/tags/LLVM-STUDY/" style="font-size: 20px;">LLVM_STUDY</a> <a href="/tags/env/" style="font-size: 10px;">env</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">归档</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/09/">九月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/07/">七月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/06/">六月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/05/">五月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/04/">四月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/03/">三月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/02/">二月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/01/">一月 2020</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">最新文章</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2020/09/25/graal_license/">graalvm license分析</a>
+          </li>
+        
+          <li>
+            <a href="/2020/09/18/eclipse_theia/">eclipse theia 研究</a>
+          </li>
+        
+          <li>
+            <a href="/2020/07/28/first-test/">ubuntu 16.04下驱动TP-LINK TL-WDN6200H免驱版无线网卡</a>
+          </li>
+        
+          <li>
+            <a href="/2020/07/09/tvm_ir_debug/">tvm 构建结果调试</a>
+          </li>
+        
+          <li>
+            <a href="/2020/06/05/arduino_dev/">arduino开发体验</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2020 Ma Jiang<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+
+  
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+
+
+<script src="/js/script.js"></script>
+
+
+  </div>
+</body>
+</html>

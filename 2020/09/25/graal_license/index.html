@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>graalvm license分析 | mjblog</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="1 背景由于graalvm的社区版本整体是作为GPLV2发布，希望了解graalvm的详细license情况，确定是否有开源风险。 2 入口资料2.1 官网介绍https:&#x2F;&#x2F;www.graalvm.org&#x2F;faq&#x2F; 有专门的说明。 GraalVM Community Edition is open source software built from the sources available">
+<meta property="og:type" content="article">
+<meta property="og:title" content="graalvm license分析">
+<meta property="og:url" content="http://mjblog.github.io/2020/09/25/graal_license/index.html">
+<meta property="og:site_name" content="mjblog">
+<meta property="og:description" content="1 背景由于graalvm的社区版本整体是作为GPLV2发布，希望了解graalvm的详细license情况，确定是否有开源风险。 2 入口资料2.1 官网介绍https:&#x2F;&#x2F;www.graalvm.org&#x2F;faq&#x2F; 有专门的说明。 GraalVM Community Edition is open source software built from the sources available">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2020-09-25T03:24:26.000Z">
+<meta property="article:modified_time" content="2020-10-09T11:33:30.063Z">
+<meta property="article:author" content="Ma Jiang">
+<meta property="article:tag" content="GRAALVM">
+<meta name="twitter:card" content="summary">
+  
+    <link rel="alternate" href="/atom.xml" title="mjblog" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+  
+
+<meta name="generator" content="Hexo 4.2.1"></head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">mjblog</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="搜索"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://mjblog.github.io"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-graal_license" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2020/09/25/graal_license/" class="article-date">
+  <time datetime="2020-09-25T03:24:26.000Z" itemprop="datePublished">2020-09-25</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      graalvm license分析
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="1-背景"><a href="#1-背景" class="headerlink" title="1 背景"></a>1 背景</h2><p>由于graalvm的社区版本整体是作为GPLV2发布，希望了解graalvm的详细license情况，确定是否有开源风险。</p>
+<h2 id="2-入口资料"><a href="#2-入口资料" class="headerlink" title="2 入口资料"></a>2 入口资料</h2><h3 id="2-1-官网介绍"><a href="#2-1-官网介绍" class="headerlink" title="2.1 官网介绍"></a>2.1 官网介绍</h3><p><a href="https://www.graalvm.org/faq/" target="_blank" rel="noopener">https://www.graalvm.org/faq/</a> 有专门的说明。</p>
+<p>GraalVM Community Edition is open source software built from the sources available on GitHub and distributed under version 2 of the GNU General Public License with the “Classpath” Exception, which are the same terms as for Java. We also recommend checking the licenses of the individual GraalVM components (which are generally derivative of the license of a particular language). <font color=red size=5> GraalVM Community is free to use for any purpose and comes with no strings attached, but also no guarantees or support. </font></p>
+<p>这里有几个主要的信息点：<br>1 社区版本整体为GPLV2 with  “Classpath” Exception，与 JAVA的jdk一样；<br>2 社区版本不限制用途(可以商用)，也不会要求特殊的回报（当然也没有质量保证和技术支持保证）；<br>3 每一个componets有不同的license</p>
+<h3 id="2-2-发布包和代码中的LICENSE文件"><a href="#2-2-发布包和代码中的LICENSE文件" class="headerlink" title="2.2 发布包和代码中的LICENSE文件"></a>2.2 发布包和代码中的LICENSE文件</h3><p>oracle提供的graalvm社区版本下载包(20.1.0版本)中有LICENSE文件对各个组件做了粗略说明。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">          Product License  - GraalVM Community Edition</span><br><span class="line"></span><br><span class="line">GraalVM Community Edition consists of multiple modules. The software as a</span><br><span class="line">whole, is released under version 2 of the GNU General Public License with the</span><br><span class="line">“Classpath” Exception. Certain modules of GraalVM Community Edition are released</span><br><span class="line">under separate and&#x2F;or additional licenses, as follows: Graal.js and Graal</span><br><span class="line">Node.js are released under the Universal Permissive License (UPL) Version 1.0;</span><br><span class="line">Sulong – LLVM is released under a 3-clause BSD license.</span><br><span class="line"></span><br><span class="line">The text of the foregoing licenses is reproduced below.</span><br><span class="line"></span><br><span class="line">Copyright (c) 2015, 2019, Oracle and&#x2F;or its affiliates. All rights reserved.</span><br></pre></td></tr></table></figure>
+<p>其中有一些没有提及的组件，从<a href="https://github.com/oracle/graal" target="_blank" rel="noopener">https://github.com/oracle/graal</a> 下载源代码。<br>查看README.md文件，其中有如下说明。<br>Each GraalVM component is licensed:</p>
+<ul>
+<li><a href="/truffle/">Truffle Framework</a> and its dependency <a href="/sdk/">GraalVM SDK</a> are licensed under the <a href="truffle/LICENSE.md">Universal Permissive License</a>.</li>
+<li><a href="/tools/">Tools</a> project is licensed under the <a href="tools/LICENSE">GPL 2 with Classpath exception</a>.</li>
+<li><a href="/regex/">TRegex</a> project is licensed under the <a href="regex/LICENSE.md">Universal Permissive License</a>.</li>
+<li><a href="/compiler/">GraalVM compiler</a> is licensed under the <a href="compiler/LICENSE.md">GPL 2 with Classpath exception</a>.</li>
+<li><a href="/substratevm/">Substrate VM</a> is licensed under the <a href="substratevm/LICENSE">GPL 2 with Classpath exception</a>.</li>
+<li><a href="/sulong/">Sulong</a> is licensed under <a href="sulong/LICENSE">3-clause BSD</a>.</li>
+<li><a href="/wasm/">GraalWasm</a> is licensed under the <a href="wasm/LICENSE">Universal Permissive License</a>.</li>
+<li><a href="/vm/">VM</a> is licensed under the <a href="vm/LICENSE_GRAALVM_CE">GPL 2 with Classpath exception</a>.</li>
+<li><a href="/vscode/">VS Code</a> extensions are distributed under the <a href="/vscode/graalvm/LICENSE.txt">UPL 1.0 license</a>.</li>
+</ul>
+<p>进一步验证LICENSE整体说明，可以在代码仓库中用如下的脚本命令：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span> x <span class="keyword">in</span> `grep  <span class="string">"designates"</span> ./ -RI -L |grep <span class="string">'\.java'</span>| grep -v generated |grep -v /<span class="built_in">test</span>/ |grep -v \.class` ; <span class="keyword">do</span> grep <span class="string">'GENERATED CONTENT - DO NOT EDIT'</span> <span class="variable">$x</span> -L ; <span class="keyword">done</span></span><br></pre></td></tr></table></figure>
+<h2 id="3-license影响分析"><a href="#3-license影响分析" class="headerlink" title="3 license影响分析"></a>3 license影响分析</h2><p>graalvm社区版本使整体是GPLV2 with classpath exception， 本次分析开源license的主要目的是：识别代码被传染开源的风险 和 专利纠纷的风险。</p>
+<h3 id="3-1-传染性分析"><a href="#3-1-传染性分析" class="headerlink" title="3.1 传染性分析"></a>3.1 传染性分析</h3><h4 id="3-1-1-Graal架构分析"><a href="#3-1-1-Graal架构分析" class="headerlink" title="3.1.1 Graal架构分析"></a>3.1.1 Graal架构分析</h4><p>为了明确graal的license会对用户代码产生何种影响，需要对其架构进行基础的分析。从其官方介绍中摘抄架构并标注如下。</p>
+
+
+
+<h4 id="3-1-2-传染性分析结论"><a href="#3-1-2-传染性分析结论" class="headerlink" title="3.1.2 传染性分析结论"></a>3.1.2 传染性分析结论</h4><p>参考如上节的架构图，graalvm底层部分由于有多个GPLV2的组件，毫无疑问compiler/vm部分的改进代码肯定需要开源。<br>但是，由于compiler/vm与上层的js/java代码不直接链接，而是数据处理的关系，所以上层的代码无需开源。<br>我们需要保护的资产绝大部分在上层的js/java代码中，graalvm的GPL传染风险不大。</p>
+<h3 id="3-2-专利纠纷分析"><a href="#3-2-专利纠纷分析" class="headerlink" title="3.2 专利纠纷分析"></a>3.2 专利纠纷分析</h3><p>参考上一部分的架构图，目前关心的组件主要有GPLV2(compiler/vm)、UPL(truffle/js)和BSD(sulong)三种协议。下面逐一进行分析。</p>
+<h4 id="3-2-1-GPLV2协议分析"><a href="#3-2-1-GPLV2协议分析" class="headerlink" title="3.2.1 GPLV2协议分析"></a>3.2.1 GPLV2协议分析</h4><p>GPLV2没有针对patent做专门说明，但是提到了两点：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">6. Each time you redistribute the Program (or any work based on the Program), the recipient automatically receives a license from the original licensor to copy, distribute or modify the Program subject to these terms and conditions. You may not impose any further restrictions on the recipients&#39; exercise of the rights granted herein. You are not responsible for enforcing compliance by third parties to this License.</span><br><span class="line"></span><br><span class="line">7. If, as a consequence of a court judgment or allegation of patent infringement or for any other reason (not limited to patent issues), conditions are imposed on you (whether by court order, agreement or otherwise) that contradict the conditions of this License, they do not excuse you from the conditions of this License. If you cannot distribute so as to satisfy simultaneously your obligations under this License and any other pertinent obligations, then as a consequence you may not distribute the Program at all. For example, if a patent license would not permit royalty-free redistribution of the Program by all those who receive copies directly or indirectly through you, then the only way you could satisfy both it and this License would be to refrain entirely from distribution of the Program.</span><br></pre></td></tr></table></figure>
+<p>也即：分发代码的人已经将专利进行了授权；如果有专利问题，则不能进行gpl软件发布。<br>整体来说，这两条免除了我们与GPLV2软件所有者产生专利纠纷的风险。但是第三方专利纠纷的风险仍然存在，例如A发布了GPL软件X，我们使用了X，第三方声称X侵犯了其专利，则我们和A都需要承担专利侵权的损失。</p>
+<h4 id="3-2-2-UPL协议分析"><a href="#3-2-2-UPL协议分析" class="headerlink" title="3.2.2 UPL协议分析"></a>3.2.2 UPL协议分析</h4><p>参考<a href="https://oss.oracle.com/licenses/upl/，" target="_blank" rel="noopener">https://oss.oracle.com/licenses/upl/，</a> UPL是非常开放友好的开源协议。<br>The most important features and things to understand about the UPL are the following:</p>
+<ul>
+<li>Clear patent protection. The UPL is a broad permissive license including both a copyright license and an express patent license, covering at least a version licensed by someone under the license (for example a distributor) and/or a version someone contributed to even if they never distribute the whole. (The reason the latter is needed is discussed below.) By virtue of the unambiguous patent license, the UPL is materially clearer with respect to the rights licensed and likely broader than either the MIT or BSD licenses.</li>
+<li>Clear &amp; simplified relicensing. The UPL expressly permits sublicensing under either the UPL or under other terms, which clearly allows someone to relicense code received under the UPL either on copyleft terms, on proprietary terms, or otherwise, thus permitting maximum flexibility in reuse.</li>
+<li>Reduced overhead in source files. The UPL expressly permits use of the license without including a full copy of the text, which is useful for JavaScript or other cases where minimizing space consumed by licenses is desired - see below for our recommendation of how to apply the license or include proper attribution without the full text.</li>
+<li>It can be used as a contributor agreement. Finally, the UPL may be used as a contributor license agreement licensing both the software itself and also contributor patents for use in one or more “Larger Works.” The Larger Works licensed in this fashion are designated by the use of a separate file accompanying the license, akin to the NOTICE file that accompanies the Apache License, Version 2.0. The Larger Works file can be used to control for both contributions to other works (for example, we could specify MySQL in a Larger Works file for a work, which would then license contributor patents for MySQL as well as the contribution), to set patent license scope for specific versions (for example, we could specify the approved reference implementation of JSR-xxx including Maintenance Releases to ensure that all contributors to an RI are licensing both the final version of the RI and qualified updates under the JCP program), or both.<br>总结来说，UPL不仅允许任意重用代码(包括商业使用)，而且明确提供了专利授权和保护，法律风险非常低。</li>
+</ul>
+<h4 id="3-2-3-3-Clause-BSD协议分析"><a href="#3-2-3-3-Clause-BSD协议分析" class="headerlink" title="3.2.3 3-Clause BSD协议分析"></a>3.2.3 3-Clause BSD协议分析</h4><p>BSD协议非常简单和自由，基本上没有对使用者做用途上的约束。<br>但是BSD协议没有提供任何专利方面的保护，产生专利纠纷的可能性要远高于前面的UPL和GPL。<br>这部分只能依靠graal项目的所有者oracle提供保护（当然，原理上oracle也可以作为原告。。。）。</p>
+<h2 id="4-总结"><a href="#4-总结" class="headerlink" title="4 总结"></a>4 总结</h2><h3 id="4-1-协议分析结论"><a href="#4-1-协议分析结论" class="headerlink" title="4.1 协议分析结论"></a>4.1 协议分析结论</h3><p>总体来看graalvm的开源传染风险与openjdk项目类似，作为核心资产的上层代码不会被传染开源。<br>专利方面，如果不使用sulong项目(接入llvm-ir的前端，主要用于接入c/c++/rust等静态语言)，专利纠纷风险不大。</p>
+<h3 id="4-2-后续风险讨论"><a href="#4-2-后续风险讨论" class="headerlink" title="4.2 后续风险讨论"></a>4.2 后续风险讨论</h3><p>对开源软件来说，分析代码所有者和所有者的意图，其实要比开源协议本身更加重要，因为代码所有者随时有权调整协议。<br>从oralce当前的安排来看，graalvm将使用与openjdk类似的盈利策略。社区版使用GPL协议开放核心功能(并且通过classpath exception确保不传染用户的代码)，商业版本提供更高的性能和更好的支持获取利润(商业版本授权非常昂贵，以cpu数计费，每月单个cpu接近20美元，参考<a href="https://www.oracle.com/ng/a/ocom/docs/corporate/pricing/graalvm-price-list.pdf)。" target="_blank" rel="noopener">https://www.oracle.com/ng/a/ocom/docs/corporate/pricing/graalvm-price-list.pdf)。</a><br>这套运行策略在openjdk上已经运行较长时间，预期oracle会保护并支持graal项目基于该模式发展。<br>如果oracle 对该模式提供保护，事实上无论GPL传染风险(oralce不会故意去传染用户代码，破坏这种运作模式)和专利纠纷(oracle不会作为专利原告，并且会为bsd协议的组件提供保护)的风险都是非常小的。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://mjblog.github.io/2020/09/25/graal_license/" data-id="ckg248pvx001m52faevdsh534" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/GRAALVM/" rel="tag">GRAALVM</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+  
+    <a href="/2020/09/18/eclipse_theia/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">eclipse theia 研究</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">标签</h3>
+    <div class="widget">
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/AI/" rel="tag">AI</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/GRAALVM/" rel="tag">GRAALVM</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/IDE/" rel="tag">IDE</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/LLVM-STUDY/" rel="tag">LLVM_STUDY</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/env/" rel="tag">env</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">标签云</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/AI/" style="font-size: 20px;">AI</a> <a href="/tags/GRAALVM/" style="font-size: 10px;">GRAALVM</a> <a href="/tags/IDE/" style="font-size: 10px;">IDE</a> <a href="/tags/LLVM-STUDY/" style="font-size: 20px;">LLVM_STUDY</a> <a href="/tags/env/" style="font-size: 10px;">env</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">归档</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/09/">九月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/07/">七月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/06/">六月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/05/">五月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/04/">四月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/03/">三月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/02/">二月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/01/">一月 2020</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">最新文章</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2020/09/25/graal_license/">graalvm license分析</a>
+          </li>
+        
+          <li>
+            <a href="/2020/09/18/eclipse_theia/">eclipse theia 研究</a>
+          </li>
+        
+          <li>
+            <a href="/2020/07/28/first-test/">ubuntu 16.04下驱动TP-LINK TL-WDN6200H免驱版无线网卡</a>
+          </li>
+        
+          <li>
+            <a href="/2020/07/09/tvm_ir_debug/">tvm 构建结果调试</a>
+          </li>
+        
+          <li>
+            <a href="/2020/06/05/arduino_dev/">arduino开发体验</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2020 Ma Jiang<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+
+  
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+
+
+<script src="/js/script.js"></script>
+
+
+  </div>
+</body>
+</html>

@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>tvm graph_runtime 分析 | mjblog</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="runtime总体逻辑runtime总体逻辑是：读出编译好的运算图(包含了二进制代码和描述信息)；根据运算图信息为各个存储节点分配储存；构建可执行OP的函数体(实际是调用已经编译好的代码)；逐个执行可执行的OP。 代码逻辑用户编译和运行深度学习模型的典型python代码片段如下所示 123456with relay.build_config(opt_level&#x3D;3):    graph, lib,">
+<meta property="og:type" content="article">
+<meta property="og:title" content="tvm graph_runtime 分析">
+<meta property="og:url" content="http://mjblog.github.io/2020/05/09/tvm-runtime/index.html">
+<meta property="og:site_name" content="mjblog">
+<meta property="og:description" content="runtime总体逻辑runtime总体逻辑是：读出编译好的运算图(包含了二进制代码和描述信息)；根据运算图信息为各个存储节点分配储存；构建可执行OP的函数体(实际是调用已经编译好的代码)；逐个执行可执行的OP。 代码逻辑用户编译和运行深度学习模型的典型python代码片段如下所示 123456with relay.build_config(opt_level&#x3D;3):    graph, lib,">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2020-05-09T03:43:18.000Z">
+<meta property="article:modified_time" content="2020-07-28T02:15:27.745Z">
+<meta property="article:author" content="Ma Jiang">
+<meta property="article:tag" content="AI">
+<meta name="twitter:card" content="summary">
+  
+    <link rel="alternate" href="/atom.xml" title="mjblog" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+  
+
+<meta name="generator" content="Hexo 4.2.1"></head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">mjblog</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="搜索"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://mjblog.github.io"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-tvm-runtime" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2020/05/09/tvm-runtime/" class="article-date">
+  <time datetime="2020-05-09T03:43:18.000Z" itemprop="datePublished">2020-05-09</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      tvm graph_runtime 分析
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h1 id="runtime总体逻辑"><a href="#runtime总体逻辑" class="headerlink" title="runtime总体逻辑"></a>runtime总体逻辑</h1><p>runtime总体逻辑是：读出编译好的运算图(包含了二进制代码和描述信息)；根据运算图信息为各个存储节点分配储存；构建可执行OP的函数体(实际是调用已经编译好的代码)；逐个执行可执行的OP。</p>
+<h2 id="代码逻辑"><a href="#代码逻辑" class="headerlink" title="代码逻辑"></a>代码逻辑</h2><p>用户编译和运行深度学习模型的典型python代码片段如下所示</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">with</span> relay.build_config(opt_level=<span class="number">3</span>):</span><br><span class="line">    graph, lib, params = relay.build(net, target=target_n, params=params)</span><br><span class="line"></span><br><span class="line">ctx = [cpu_ctx, gpu_ctx]</span><br><span class="line">module = graph_runtime.create(graph, lib, ctx)</span><br><span class="line">module.run()</span><br></pre></td></tr></table></figure>
+<p>在python端调用graph_runtime.create，会走到GraphRuntimeCreate，然后再到<br>GraphRuntime::Init创建runtime结构，并返回Module结构给python。python端通过module.run()方法来运行模型。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="function">Module <span class="title">GraphRuntimeCreate</span><span class="params">(<span class="keyword">const</span> <span class="built_in">std</span>::<span class="built_in">string</span>&amp; sym_json,</span></span></span><br><span class="line"><span class="function"><span class="params">                          <span class="keyword">const</span> tvm::runtime::Module&amp; m,</span></span></span><br><span class="line"><span class="function"><span class="params">                          <span class="keyword">const</span> <span class="built_in">std</span>::<span class="built_in">vector</span>&lt;TVMContext&gt;&amp; ctxs)</span> </span>&#123;</span><br><span class="line">  <span class="keyword">auto</span> exec = make_object&lt;GraphRuntime&gt;();</span><br><span class="line">  exec-&gt;Init(sym_json, m, ctxs);</span><br><span class="line">  <span class="keyword">return</span> Module(exec);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">GraphRuntime::Init</span><span class="params">(<span class="keyword">const</span> <span class="built_in">std</span>::<span class="built_in">string</span>&amp; graph_json,</span></span></span><br><span class="line"><span class="function"><span class="params">                        tvm::runtime::Module <span class="keyword">module</span>,</span></span></span><br><span class="line"><span class="function"><span class="params">                        <span class="keyword">const</span> <span class="built_in">std</span>::<span class="built_in">vector</span>&lt;TVMContext&gt;&amp; ctxs)</span> </span>&#123;</span><br><span class="line">  <span class="function"><span class="built_in">std</span>::<span class="built_in">istringstream</span> <span class="title">is</span><span class="params">(graph_json)</span></span>;</span><br><span class="line">  <span class="function">dmlc::JSONReader <span class="title">reader</span><span class="params">(&amp;is)</span></span>;</span><br><span class="line">  <span class="keyword">this</span>-&gt;Load(&amp;reader);</span><br><span class="line">  module_ = <span class="keyword">module</span>;</span><br><span class="line">  ctxs_ = ctxs;</span><br><span class="line">  <span class="keyword">this</span>-&gt;SetupStorage();</span><br><span class="line">  <span class="keyword">this</span>-&gt;SetupOpExecs();</span><br><span class="line">  <span class="keyword">for</span> (<span class="keyword">size_t</span> i = <span class="number">0</span>; i &lt; input_nodes_.<span class="built_in">size</span>(); i++) &#123;</span><br><span class="line">    <span class="keyword">const</span> <span class="keyword">uint32_t</span> nid = input_nodes_[i];</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">string</span>&amp; name = nodes_[nid].name;</span><br><span class="line">    input_map_[name] = i;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>GraphRuntime::Init所做的主要工作包括两个部分，第一个是从json格式的string中读取出编译好的运算图(this-&gt;Load(&amp;reader))，第二个是初始化运行环境(SetupStorage和SetupOpExecs)。<br>Load比较简单不展开。<br>SetupStorage的核心逻辑是从json读出需要存空间的各个矩阵信息，然后为其在对应的计算设备上分配内存(通过调用NDArray::Empty(shape, DLDataType{kDLFloat, 32, 1}, ctx)))。需要注意的点是，每一个设备上实际上只进行一次分配(分配最大所需的储存)。<br>SetupOpExecs的核心逻辑是把构建 OP函数体(实际功能前面已经编译好了，这里的函数体实际上只是去调用)和其所需要的参数args结构。</p>
+<h2 id="不支持OP级别的并行"><a href="#不支持OP级别的并行" class="headerlink" title="不支持OP级别的并行"></a>不支持OP级别的并行</h2><p>当前tvm的graph_runtime就是一个简单的静态执行器。<br>比较典型的示例点就是下面的run函数。它的逻辑只是串行地逐个运行OP的函数体。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">GraphRuntime::Run</span><span class="params">()</span> </span>&#123;</span><br><span class="line">  <span class="comment">// setup the array and requirements.</span></span><br><span class="line">  <span class="keyword">for</span> (<span class="keyword">size_t</span> i = <span class="number">0</span>; i &lt; op_execs_.<span class="built_in">size</span>(); ++i) &#123;</span><br><span class="line">    <span class="keyword">if</span> (op_execs_[i]) op_execs_[i]();</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>并且，由于每一个OP都是同步执行的（也就是必须等待执行结果出来后，OP函数体才返回），所以runtime的顶层是不具备并行能力的。<br>理论上，tvm runtime当前不能支持cpu和gpu同时执行计算。（除非在一个OP植入异构执行代码，但是当前又没有构造对应OP的方法?）</p>
+<h2 id="多线程运行是由生成的函数来调用的。"><a href="#多线程运行是由生成的函数来调用的。" class="headerlink" title="多线程运行是由生成的函数来调用的。"></a>多线程运行是由生成的函数来调用的。</h2><p>cuda运算和copy操作都是直接执行，没有调用多线程执行。<br>#0  TVMBackendParallelLaunch (flambda=0x7ff20bc98a20, cdata=0x7fffce203b60, num_task=0) at /home/majiang/hd/opensource/tvm/src/runtime/thread_pool.cc:398<br>#1  0x00007ff20bc98688 in ?? ()<br>#2  0x00007ff1dbf3ab4e in tvm::runtime::&lt;lambda(tvm::runtime::TVMArgs, tvm::runtime::TVMRetValue<em>)&gt;::operator()(tvm::runtime::TVMArgs, tvm::runtime::TVMRetValue *) const (<br>    __closure=0x3664bf0, args=…, rv=0x7fffce203eb0) at /home/majiang/hd/opensource/tvm/src/runtime/library_module.cc:88<br>#3  0x00007ff1dbf3bfbc in std::_Function_handler&lt;void(tvm::runtime::TVMArgs, tvm::runtime::TVMRetValue</em>), tvm::runtime::WrapPackedFunc(TVMBackendPackedCFunc, const tvm::runtime::ObjectPtr<a href="tvm::runtime::Object">tvm::runtime::Object</a>&amp;)::&lt;lambda(tvm::runtime::TVMArgs, tvm::runtime::TVMRetValue<em>)&gt; &gt;::<em>M</em>invoke(const std::_Any_data &amp;, tvm::runtime::TVMArgs &amp;&amp;, tvm::runtime::TVMRetValue *&amp;&amp;) (__functor=…, __args#0=…, __args#1=@0x7fffce203e10: 0x7fffce203eb0) at /usr/include/c++/7/bits/std_function.h:316<br>#4  0x00007ff1db3b52ec in std::function&lt;void (tvm::runtime::TVMArgs, tvm::runtime::TVMRetValue</em>)&gt;::operator()(tvm::runtime::TVMArgs, tvm::runtime::TVMRetValue*) const (<br>    this=0x36e8f10, <strong>args#0=…, __args#1=0x7fffce203eb0) at /usr/include/c++/7/bits/std_function.h:706<br>#5  0x00007ff1db3b4e32 in tvm::runtime::PackedFunc::CallPacked (this=0x36e8f10, args=…, rv=0x7fffce203eb0)<br>    at /home/majiang/hd/opensource/tvm/include/tvm/runtime/packed_func.h:1040<br>#6  0x00007ff1dbfa6c55 in tvm::runtime::GraphRuntime::&lt;lambda()&gt;::operator()(void) const (</strong>closure=0x36e8f00)<br>    at /home/majiang/hd/opensource/tvm/src/runtime/graph/graph_runtime.cc:402<br>#7  0x00007ff1dbfaa837 in std::_Function_handler&lt;void(), tvm::runtime::GraphRuntime::CreateTVMOp(const tvm::runtime::TVMOpParam&amp;, const std::vector<DLTensor>&amp;, size_t)::&lt;lambda()&gt; &gt;::<em>M</em>invoke(const std::_Any_data &amp;) (__functor=…) at /usr/include/c++/7/bits/std_function.h:316<br>#8  0x00007ff1db439068 in std::function&lt;void ()&gt;::operator()() const (this=0x392ff70) at /usr/include/c++/7/bits/std_function.h:706<br>#9  0x00007ff1dbfa2fb9 in tvm::runtime::GraphRuntime::Run (this=0x4076790) at /home/majiang/hd/opensource/tvm/src/runtime/graph/graph_runtime.cc:56</p>
+<h2 id=""><a href="#" class="headerlink" title=""></a></h2>
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://mjblog.github.io/2020/05/09/tvm-runtime/" data-id="ckg246lq9000y52fa3en5gtb1" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/AI/" rel="tag">AI</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2020/05/18/tvm_android_deploy/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          不编译apk直接在android上部署tvm编译结果
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2020/04/10/clang-tidy_in_vscode/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">vscode中使用clang-tidy</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">标签</h3>
+    <div class="widget">
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/AI/" rel="tag">AI</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/GRAALVM/" rel="tag">GRAALVM</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/IDE/" rel="tag">IDE</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/LLVM-STUDY/" rel="tag">LLVM_STUDY</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/env/" rel="tag">env</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">标签云</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/AI/" style="font-size: 20px;">AI</a> <a href="/tags/GRAALVM/" style="font-size: 10px;">GRAALVM</a> <a href="/tags/IDE/" style="font-size: 10px;">IDE</a> <a href="/tags/LLVM-STUDY/" style="font-size: 20px;">LLVM_STUDY</a> <a href="/tags/env/" style="font-size: 10px;">env</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">归档</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/09/">九月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/07/">七月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/06/">六月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/05/">五月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/04/">四月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/03/">三月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/02/">二月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/01/">一月 2020</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">最新文章</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2020/09/25/graal_license/">graalvm license分析</a>
+          </li>
+        
+          <li>
+            <a href="/2020/09/18/eclipse_theia/">eclipse theia 研究</a>
+          </li>
+        
+          <li>
+            <a href="/2020/07/28/first-test/">ubuntu 16.04下驱动TP-LINK TL-WDN6200H免驱版无线网卡</a>
+          </li>
+        
+          <li>
+            <a href="/2020/07/09/tvm_ir_debug/">tvm 构建结果调试</a>
+          </li>
+        
+          <li>
+            <a href="/2020/06/05/arduino_dev/">arduino开发体验</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2020 Ma Jiang<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+
+  
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+
+
+<script src="/js/script.js"></script>
+
+
+  </div>
+</body>
+</html>

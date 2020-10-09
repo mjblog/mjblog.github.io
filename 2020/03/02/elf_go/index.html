@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>ELFGO 编译和测试 | mjblog</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="编译过程下载代码从https:&#x2F;&#x2F;github.com&#x2F;pytorch&#x2F;ELF 下载代码 在ELF的根目录下git submodule sync &amp;&amp; git submodule update --init --recursive获取第三方代码使用docker方式进行构建为减少对本地系统的冲击，可以使用docker 方式构建。 先进入ELF的根目录。 在编译前，需要对Dockerf">
+<meta property="og:type" content="article">
+<meta property="og:title" content="ELFGO 编译和测试">
+<meta property="og:url" content="http://mjblog.github.io/2020/03/02/elf_go/index.html">
+<meta property="og:site_name" content="mjblog">
+<meta property="og:description" content="编译过程下载代码从https:&#x2F;&#x2F;github.com&#x2F;pytorch&#x2F;ELF 下载代码 在ELF的根目录下git submodule sync &amp;&amp; git submodule update --init --recursive获取第三方代码使用docker方式进行构建为减少对本地系统的冲击，可以使用docker 方式构建。 先进入ELF的根目录。 在编译前，需要对Dockerf">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2020-03-02T03:12:42.000Z">
+<meta property="article:modified_time" content="2020-07-28T02:15:27.726Z">
+<meta property="article:author" content="Ma Jiang">
+<meta property="article:tag" content="AI">
+<meta name="twitter:card" content="summary">
+  
+    <link rel="alternate" href="/atom.xml" title="mjblog" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+  
+
+<meta name="generator" content="Hexo 4.2.1"></head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">mjblog</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="搜索"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://mjblog.github.io"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-elf_go" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2020/03/02/elf_go/" class="article-date">
+  <time datetime="2020-03-02T03:12:42.000Z" itemprop="datePublished">2020-03-02</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      ELFGO 编译和测试
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h1 id="编译过程"><a href="#编译过程" class="headerlink" title="编译过程"></a>编译过程</h1><h2 id="下载代码"><a href="#下载代码" class="headerlink" title="下载代码"></a>下载代码</h2><pre><code>从https://github.com/pytorch/ELF 下载代码
+在ELF的根目录下git submodule sync &amp;&amp; git submodule update --init --recursive获取第三方代码</code></pre><h2 id="使用docker方式进行构建"><a href="#使用docker方式进行构建" class="headerlink" title="使用docker方式进行构建"></a>使用docker方式进行构建</h2><pre><code>为减少对本地系统的冲击，可以使用docker 方式构建。
+先进入ELF的根目录。
+在编译前，需要对Dockerfile做一些小调整。
+在原来的conda install后新增如下一行
+RUN conda install pytorch torchvision cudatoolkit=10.0 -c pytorch
+然后使用如下命令进行构建 (为了下载提速，挂了代理)
+sudo docker build --network host  --build-arg HTTP_PROXY=socks5://127.0.0.1:1080 --build-arg HTTPS_PROXY=socks5://127.0.0.1:1080 -t elf_go:vtrunk .</code></pre><h1 id="运行时问题解决"><a href="#运行时问题解决" class="headerlink" title="运行时问题解决"></a>运行时问题解决</h1><h2 id="启动制作好的image，拷贝到host中，以便使用GPU"><a href="#启动制作好的image，拷贝到host中，以便使用GPU" class="headerlink" title="启动制作好的image，拷贝到host中，以便使用GPU"></a>启动制作好的image，拷贝到host中，以便使用GPU</h2><pre><code>sudo docker images 查看刚刚构建出的镜像id
+启动如下的示例命令启动image，然后将我们需要的内容拷贝到host上</code></pre><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">sudo docker  run  -dit  --name elf_go  $&#123;your_image_id&#125;</span><br><span class="line">sudo docker cp elf_go:&#x2F;go-elf $&#123;your_host_elf_dir&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="准备host机的路径"><a href="#准备host机的路径" class="headerlink" title="准备host机的路径"></a>准备host机的路径</h2><pre><code>由于docker构建时使用了root用户，构建出的binary依赖了一些根路径下的目录。有很多办法可以解决这类问题。
+治本的方案是修改编译体系，去除这些对根目录的依赖，将一个用户可控制目录作为根目录(或者使用相对路径)。但是修改的工作量比较大。
+规避的办法也有一些，使用patchelf可以修改一些搜索路径，也可以考虑使用fakeroot等技术重定向文件访问的路径。修改的工作量还是略大。
+这里用最粗暴的方法，用mount bind来建立一个满足访问要求的映射路径。
+先行建立所需的路径。</code></pre><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">sudo mkdir -p &#x2F;root&#x2F;miniconda3</span><br><span class="line">sudo mkdir &#x2F;go-elf</span><br></pre></td></tr></table></figure>
+<pre><code>进入到我们拷贝路径${your_host_elf_dir}，使用如下命令完成映射</code></pre><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">sudo mount -o bind .&#x2F;miniconda3&#x2F; &#x2F;root&#x2F;miniconda3</span><br><span class="line">sudo mount -o bind .&#x2F;go-elf  &#x2F;go-elf</span><br></pre></td></tr></table></figure>
+<p>最后设置搜索路径</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">export PATH&#x3D;$PATH:&#x2F;root&#x2F;miniconda3&#x2F;bin</span><br></pre></td></tr></table></figure>
+<h2 id="下载v2版本模型"><a href="#下载v2版本模型" class="headerlink" title="下载v2版本模型"></a>下载v2版本模型</h2><pre><code>主线elf版本只能使用v2版本的模型，Dockerfile中下载的v0版本无法使用。可从</code></pre><p><a href="https://dl.fbaipublicfiles.com/elfopengo/pretrained_models/pretrained-go-19x19-v2.bin" target="_blank" rel="noopener">https://dl.fbaipublicfiles.com/elfopengo/pretrained_models/pretrained-go-19x19-v2.bin</a> 下载后，放入${your_host_elf_dir}/go-elf/ELF中。</p>
+<h2 id="适配python版本"><a href="#适配python版本" class="headerlink" title="适配python版本"></a>适配python版本</h2><pre><code>elf构建时docker内使用的python版本可能和host中的不一致。需要修改/go-elf/ELF/scripts/elfgames/go/gtp.sh中的启动命令，确保使用(dockerfile构建时)conda中安装的python版本。</code></pre><figure class="highlight diff"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">majiang@majiang-All-Series:~/hd/opensource/ELF_GO/builded_env/go-elf/ELF/scripts/elfgames/go$ git diff gtp.sh </span><br><span class="line">diff --git a/scripts/elfgames/go/gtp.sh b/scripts/elfgames/go/gtp.sh</span><br><span class="line">index 0ca7aba..3291ade 100755</span><br><span class="line"><span class="comment">--- a/scripts/elfgames/go/gtp.sh</span></span><br><span class="line"><span class="comment">+++ b/scripts/elfgames/go/gtp.sh</span></span><br><span class="line"><span class="meta">@@ -9,7 +9,7 @@</span></span><br><span class="line"> MODEL=$1</span><br><span class="line"> shift</span><br><span class="line"> </span><br><span class="line"><span class="deletion">-game=elfgames.go.game model=df_pred model_file=elfgames.go.df_model3 python3 df_console.py --mode online --keys_in_reply V rv \</span></span><br><span class="line"><span class="addition">+game=elfgames.go.game model=df_pred model_file=elfgames.go.df_model3 python3.7 df_console.py --mode online --keys_in_reply V rv \</span></span><br><span class="line">     --use_mcts --mcts_verbose_time --mcts_use_prior --mcts_persistent_tree --load $MODEL \</span><br><span class="line">     --server_addr localhost --port 1234 \</span><br><span class="line">     --replace_prefix resnet.module,resnet init_conv.module,init_conv \</span><br></pre></td></tr></table></figure>
+<pre><code>如果出现python版本不匹配问题，可能出现一些莫名其妙的模块找不到错误，如下所示。</code></pre><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ModuleNotFoundError: No module named &#39;torch._C&#39;</span><br></pre></td></tr></table></figure>
+<pre><code>其原因是，python的动态库对python版本有依赖，参考https://github.com/pytorch/pytorch/issues/574。host机器的python3如果不是conda所用的python3.7就会出现找不到库问题。</code></pre><h2 id="启动elf自带的脚本"><a href="#启动elf自带的脚本" class="headerlink" title="启动elf自带的脚本"></a>启动elf自带的脚本</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">cd &#x2F;go-elf&#x2F;ELF&#x2F;scripts</span><br><span class="line">source devmode_set_pythonpath.sh</span><br><span class="line">cd &#x2F;go-elf&#x2F;ELF&#x2F;scripts&#x2F;elfgames&#x2F;go&#x2F;</span><br><span class="line">.&#x2F;gtp.sh ..&#x2F;..&#x2F;..&#x2F;pretrained-go-19x19-v2.bin --loglevel off --gpu 0 --num_block 20 --dim 256 --mcts_puct 1.50 --batchsize 256 --mcts_rollout_per_batch 16 --mcts_threads 2 --mcts_rollout_per_thread 8192 --resign_thres 0.05 --mcts_virtual_loss 1</span><br></pre></td></tr></table></figure>
+<h2 id="解决代码问题"><a href="#解决代码问题" class="headerlink" title="解决代码问题"></a>解决代码问题</h2><h3 id="v-pin-memory-处的cuda-out-of-memory问题"><a href="#v-pin-memory-处的cuda-out-of-memory问题" class="headerlink" title="v.pin_memory()处的cuda out of memory问题"></a>v.pin_memory()处的cuda out of memory问题</h3><p>加了print (v)语句。go-elf/ELF/src_py/elf/utils_elf.py 44行<br>            print (v)<br>            if gpu is not None:<br>                with torch.cuda.device(gpu):<br>                    v = v.pin_memory()<br>            v.fill_(1)<br>似乎是偶发故障，后续没有再复现</p>
+<h3 id="启动后使用genmove-B开始下棋，utils-elf-py-210出现了数据维度不匹配的问题"><a href="#启动后使用genmove-B开始下棋，utils-elf-py-210出现了数据维度不匹配的问题" class="headerlink" title="启动后使用genmove B开始下棋，utils_elf.py 210出现了数据维度不匹配的问题"></a>启动后使用genmove B开始下棋，utils_elf.py 210出现了数据维度不匹配的问题</h3><p>genmove B会有异常，经过检查可能是下面utils_elf.py 210出现了数据维度不匹配的问题，修改接口后解决。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">#bk[:] &#x3D; v.squeeze_()</span><br><span class="line">bk[:] &#x3D; v.squeeze()</span><br></pre></td></tr></table></figure>
+<p>错误现象</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">&gt; &#x2F;go-elf&#x2F;ELF&#x2F;src_py&#x2F;elf&#x2F;utils_elf.py(192)copy_from()</span><br><span class="line">-&gt; for k, v in this_src.items():</span><br><span class="line">(Pdb) y</span><br><span class="line">*** NameError: name &#39;y&#39; is not defined</span><br><span class="line">(Pdb) q</span><br><span class="line">Traceback (most recent call last):</span><br><span class="line">  File &quot;df_console.py&quot;, line 86, in &lt;module&gt;</span><br><span class="line">    main()</span><br><span class="line">  File &quot;df_console.py&quot;, line 79, in main</span><br><span class="line">    GC.run()</span><br><span class="line">  File &quot;&#x2F;home&#x2F;majiang&#x2F;hd&#x2F;opensource&#x2F;ELF_GO&#x2F;builded_env&#x2F;go-elf&#x2F;ELF&#x2F;src_py&#x2F;elf&#x2F;utils_elf.py&quot;, line 436, in run</span><br><span class="line">    self._call(smem, *args, **kwargs)</span><br><span class="line">  File &quot;&#x2F;home&#x2F;majiang&#x2F;hd&#x2F;opensource&#x2F;ELF_GO&#x2F;builded_env&#x2F;go-elf&#x2F;ELF&#x2F;src_py&#x2F;elf&#x2F;utils_elf.py&quot;, line 404, in _call</span><br><span class="line">    keys_extra, keys_missing &#x3D; sel_reply.copy_from(reply)</span><br><span class="line">  File &quot;&#x2F;home&#x2F;majiang&#x2F;hd&#x2F;opensource&#x2F;ELF_GO&#x2F;builded_env&#x2F;go-elf&#x2F;ELF&#x2F;src_py&#x2F;elf&#x2F;utils_elf.py&quot;, line 192, in copy_from</span><br><span class="line">    for k, v in this_src.items():</span><br><span class="line">  File &quot;&#x2F;home&#x2F;majiang&#x2F;hd&#x2F;opensource&#x2F;ELF_GO&#x2F;builded_env&#x2F;go-elf&#x2F;ELF&#x2F;src_py&#x2F;elf&#x2F;utils_elf.py&quot;, line 192, in copy_from</span><br><span class="line">    for k, v in this_src.items():</span><br><span class="line">  File &quot;&#x2F;home&#x2F;majiang&#x2F;hd&#x2F;opensource&#x2F;ELF_GO&#x2F;builded_env&#x2F;miniconda3&#x2F;lib&#x2F;python3.7&#x2F;bdb.py&quot;, line 88, in trace_dispatch</span><br><span class="line">    return self.dispatch_line(frame)</span><br><span class="line">  File &quot;&#x2F;home&#x2F;majiang&#x2F;hd&#x2F;opensource&#x2F;ELF_GO&#x2F;builded_env&#x2F;miniconda3&#x2F;lib&#x2F;python3.7&#x2F;bdb.py&quot;, line 113, in dispatch_line</span><br><span class="line">    if self.quitting: raise BdbQuit</span><br></pre></td></tr></table></figure>
+<h1 id="GTP协议问题"><a href="#GTP协议问题" class="headerlink" title="GTP协议问题"></a>GTP协议问题</h1><p>gtp脚本启动后可以在文本界面下使用GTP协议的指令下棋了。<br>但是sabaki围棋前端界面无法正常与eflgo进行GTP通信。<br>查看GTP协议，是ELFGO的额外打印干扰了协议解析。<br>参考<a href="https://github.com/pytorch/ELF/compare/master...Narsil:master，调整了console_lib.py" target="_blank" rel="noopener">https://github.com/pytorch/ELF/compare/master...Narsil:master，调整了console_lib.py</a> 中的</p>
+<figure class="highlight diff"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">    def print_msg(self, ret, msg):</span><br><span class="line"><span class="deletion">-        print("\n%s %s\n\n" % (("=" if ret else "?"), msg))</span></span><br><span class="line"><span class="addition">+        print("%s %s\n\n" % (("=" if ret else "?"), msg))</span></span><br></pre></td></tr></table></figure>
+<p>启动gtp脚本时，可以添加–loglevel off选项关闭大量额外打印。</p>
+<h1 id="封装脚本"><a href="#封装脚本" class="headerlink" title="封装脚本"></a>封装脚本</h1><p>为了sabaki等前端能比较方便的启动ELFGO后端，可以使用如下的封装脚本一次完成启动。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash">!/bin/bash</span></span><br><span class="line"><span class="meta">#</span><span class="bash"><span class="built_in">set</span> -x</span></span><br><span class="line">cur_shell_dir="$( cd "$( dirname "$&#123;BASH_SOURCE[0]&#125;" )" &amp;&amp; pwd )"</span><br><span class="line">cd $&#123;cur_shell_dir&#125;</span><br><span class="line"></span><br><span class="line">cd ../../../../../</span><br><span class="line">sudo mount -o bind ./miniconda3/ /root/miniconda3</span><br><span class="line">sudo mount -o bind ./go-elf  /go-elf</span><br><span class="line">cd -</span><br><span class="line"></span><br><span class="line">export PATH=$PATH:/root/miniconda3/bin</span><br><span class="line">cd ../../</span><br><span class="line">source devmode_set_pythonpath.sh</span><br><span class="line">cd -</span><br><span class="line">./gtp.sh ../../../pretrained-go-19x19-v2.bin --loglevel off --gpu 0 --num_block 20 --dim 256 --mcts_puct 1.50 --batchsize 256 --mcts_rollout_per_batch 16 --mcts_threads 2 --mcts_rollout_per_thread 8192 --resign_thres 0.05 --mcts_virtual_loss 1</span><br></pre></td></tr></table></figure>
+
+<h1 id="遗留问题"><a href="#遗留问题" class="headerlink" title="遗留问题"></a>遗留问题</h1><p>在sabaki中，当前elfgo还是只能 执黑。如果执白还是会卡死，可能协议文本的输出还有问题。<br>另外，说明中提到elfgo只能走贴7.5目的规则。</p>
+<h1 id="另一个围棋AI，可以给出胜率估计的leela-zero"><a href="#另一个围棋AI，可以给出胜率估计的leela-zero" class="headerlink" title="另一个围棋AI，可以给出胜率估计的leela-zero"></a>另一个围棋AI，可以给出胜率估计的leela-zero</h1><p>下载并解压Lizzie.0.7.2.Mac-Linux.zip，然后进入解压后的目录</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">export http_proxy&#x3D;&quot;socks5:&#x2F;&#x2F;127.0.0.1:1080&quot;</span><br><span class="line">export https_proxy&#x3D;&quot;socks5:&#x2F;&#x2F;127.0.0.1:1080&quot;</span><br><span class="line">git clone https:&#x2F;&#x2F;github.com&#x2F;gcp&#x2F;leela-zero</span><br><span class="line">cd leela-zero</span><br><span class="line">git submodule update --init --recursive</span><br><span class="line">sudo apt install libboost-dev libboost-program-options-dev libopenblas-dev opencl-headers ocl-icd-libopencl1 ocl-icd-opencl-dev zlib1g-dev</span><br><span class="line">sudo apt install cmake g++ libboost-dev libboost-program-options-dev libboost-filesystem-dev opencl-headers ocl-icd-libopencl1 ocl-icd-opencl-dev zlib1g-dev</span><br><span class="line">mkdir build</span><br><span class="line">cmake ..&#x2F;</span><br><span class="line">...</span><br><span class="line">CMake Warning at CMakeLists.txt:129 (message):</span><br><span class="line">  Qt is not found, build for &#96;autogtp&#96; and &#96;validation&#96; is disabled</span><br><span class="line">...</span><br><span class="line">cmake --build .</span><br><span class="line">cd ..&#x2F;..&#x2F;</span><br><span class="line">cp .&#x2F;leela-zero&#x2F;build&#x2F;leelaz .&#x2F;</span><br><span class="line">chmod +x  .&#x2F;lizzie.jar</span><br><span class="line">.&#x2F;lizzie.jar</span><br></pre></td></tr></table></figure>
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://mjblog.github.io/2020/03/02/elf_go/" data-id="ckg246lqk001652fae5ieb3jw" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/AI/" rel="tag">AI</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2020/03/02/hexo%E5%8D%87%E7%BA%A7%E5%92%8C%E6%B7%BB%E5%8A%A0%E5%9B%BE%E7%89%87/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          hexo升级和插入图片
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2020/02/21/llvm_tr6_user_defined_operator/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">Kaleidoscope user defined operator</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">标签</h3>
+    <div class="widget">
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/AI/" rel="tag">AI</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/GRAALVM/" rel="tag">GRAALVM</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/IDE/" rel="tag">IDE</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/LLVM-STUDY/" rel="tag">LLVM_STUDY</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/env/" rel="tag">env</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">标签云</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/AI/" style="font-size: 20px;">AI</a> <a href="/tags/GRAALVM/" style="font-size: 10px;">GRAALVM</a> <a href="/tags/IDE/" style="font-size: 10px;">IDE</a> <a href="/tags/LLVM-STUDY/" style="font-size: 20px;">LLVM_STUDY</a> <a href="/tags/env/" style="font-size: 10px;">env</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">归档</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/09/">九月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/07/">七月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/06/">六月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/05/">五月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/04/">四月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/03/">三月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/02/">二月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/01/">一月 2020</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">最新文章</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2020/09/25/graal_license/">graalvm license分析</a>
+          </li>
+        
+          <li>
+            <a href="/2020/09/18/eclipse_theia/">eclipse theia 研究</a>
+          </li>
+        
+          <li>
+            <a href="/2020/07/28/first-test/">ubuntu 16.04下驱动TP-LINK TL-WDN6200H免驱版无线网卡</a>
+          </li>
+        
+          <li>
+            <a href="/2020/07/09/tvm_ir_debug/">tvm 构建结果调试</a>
+          </li>
+        
+          <li>
+            <a href="/2020/06/05/arduino_dev/">arduino开发体验</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2020 Ma Jiang<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+
+  
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+
+
+<script src="/js/script.js"></script>
+
+
+  </div>
+</body>
+</html>

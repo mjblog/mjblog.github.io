@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>TVM | mjblog</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="简介TVM是一套端到端的深度学习编译系统。它的主要特性如下图所示。  第一，它支持将多种前端模型( Keras, MXNet, PyTorch, Tensorflow, CoreML, DarkNet等)编译到多种后端硬件上(包括传统的CPU&#x2F;GPU，还包括FPGA、TPU等专用加速硬件)。第二，它提供了一整套自动优化基础设施，能够帮助用户快速在一个新的硬件体系下建立起较高的性能。 独到之处TVM">
+<meta property="og:type" content="article">
+<meta property="og:title" content="TVM">
+<meta property="og:url" content="http://mjblog.github.io/2020/03/20/TVM/index.html">
+<meta property="og:site_name" content="mjblog">
+<meta property="og:description" content="简介TVM是一套端到端的深度学习编译系统。它的主要特性如下图所示。  第一，它支持将多种前端模型( Keras, MXNet, PyTorch, Tensorflow, CoreML, DarkNet等)编译到多种后端硬件上(包括传统的CPU&#x2F;GPU，还包括FPGA、TPU等专用加速硬件)。第二，它提供了一整套自动优化基础设施，能够帮助用户快速在一个新的硬件体系下建立起较高的性能。 独到之处TVM">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://mjblog.github.io/2020/03/20/TVM/tvm-stack.png">
+<meta property="og:image" content="http://mjblog.github.io/2020/03/20/TVM/tvm_detail.png">
+<meta property="og:image" content="http://mjblog.github.io/2020/03/20/TVM/extensive_tensorization.png">
+<meta property="og:image" content="http://mjblog.github.io/2020/03/20/TVM/tvm_autotune.png">
+<meta property="article:published_time" content="2020-03-20T02:07:29.000Z">
+<meta property="article:modified_time" content="2020-07-28T02:15:27.704Z">
+<meta property="article:author" content="Ma Jiang">
+<meta property="article:tag" content="AI">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://mjblog.github.io/2020/03/20/TVM/tvm-stack.png">
+  
+    <link rel="alternate" href="/atom.xml" title="mjblog" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+  
+
+<meta name="generator" content="Hexo 4.2.1"></head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">mjblog</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="搜索"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://mjblog.github.io"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-TVM" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2020/03/20/TVM/" class="article-date">
+  <time datetime="2020-03-20T02:07:29.000Z" itemprop="datePublished">2020-03-20</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      TVM
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h1 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h1><p>TVM是一套端到端的深度学习编译系统。<br>它的主要特性如下图所示。</p>
+<img src="/2020/03/20/TVM/tvm-stack.png" class="" title="TVM 示意图">
+<p>第一，它支持将多种前端模型( Keras, MXNet, PyTorch, Tensorflow, CoreML, DarkNet等)编译到多种后端硬件上(包括传统的CPU/GPU，还包括FPGA、TPU等专用加速硬件)。<br>第二，它提供了一整套自动优化基础设施，能够帮助用户快速在一个新的硬件体系下建立起较高的性能。</p>
+<h1 id="独到之处"><a href="#独到之处" class="headerlink" title="独到之处"></a>独到之处</h1><p>TVM 相对它的前辈如(Halide)，有两个创新的点值得关注。</p>
+<img src="/2020/03/20/TVM/tvm_detail.png" class="" title="TVM 处理过程">
+<p>其一：<br>section4部分引入了一个可扩展的tensor compute primitives  (就是硬件支持的用于特定矩阵运算的原语)描述方法。这使得TVM能快速支持新的硬件加速指令。<br>如下图所示。</p>
+<img src="/2020/03/20/TVM/extensive_tensorization.png" class="" title="TVM 可扩展的张量化">
+<p>使用类似RISC的思路，只需要提供少量细粒度的基本步骤，就可以通过组合配置建模出复杂的硬件加速指令。</p>
+<p>其二：<br>TVM提供的autotuner相当强大。</p>
+<img src="/2020/03/20/TVM/tvm_autotune.png" class="" title="TVM 自动调优系统">
+
+<p>TVM支持常规的黑盒自动优化，也就是使用黑盒优化算法反复到硬件上运行程序获得性能。<br>也支持基于预测的自动优化，在这种模式下，TVM根据硬件上获得的性能测试结果，训练出了一个性能预测模型。使用这个预测模型，TVM能实现快速的调优空间探索(论文中的效果比黑盒算法好)。因为模型预测很快，耗时低于1ms，而真实运行测试可能需要多耗费几十倍的时间。并且模型能持续从硬件中学习，而黑盒优化算法每次都必须从头开始。</p>
+<h1 id="TVM和其他项目的关系"><a href="#TVM和其他项目的关系" class="headerlink" title="TVM和其他项目的关系"></a>TVM和其他项目的关系</h1><p><a href="https://github.com/apache/incubator-tvm/blob/master/docs/faq.rst" target="_blank" rel="noopener">https://github.com/apache/incubator-tvm/blob/master/docs/faq.rst</a></p>
+<h2 id="和Halide关系"><a href="#和Halide关系" class="headerlink" title="和Halide关系"></a>和Halide关系</h2><p><a href="https://github.com/apache/incubator-tvm/issues/682" target="_blank" rel="noopener">https://github.com/apache/incubator-tvm/issues/682</a><br><a href="http://docs.tvmlang.org/faq.html#tvm-s-relation-to-other-ir-dsl-projects" target="_blank" rel="noopener">http://docs.tvmlang.org/faq.html#tvm-s-relation-to-other-ir-dsl-projects</a> answers the difference from existing projects, including Halide. In short, we specifically focus on deep learning, and optimize for multiple hardware backends (GPUs and other accelerators).</p>
+<p>The major challenge is to make the schedule space complete enough to cover the state of art kernels for hardware back-ends we want to support, specifically gpu and other hardwares. The second challenge is to build the dsl representation to cover things we care about in deep learning(e.g. recurrence). The other issues include the ease of deployment and interpolation.</p>
+<p>These challenges are not well addressed by existing frameworks(including Halide) and requires rethink and design of the stack as opposed to simply reuse an existing one.</p>
+<p>You can also find that the TVM’s IR itself is evolving, and we continuously learn new lessons from hand optimization and tuning for various backends.</p>
+<h2 id="和MLIR的关系"><a href="#和MLIR的关系" class="headerlink" title="和MLIR的关系"></a>和MLIR的关系</h2><p>参考<a href="https://discuss.tvm.ai/t/google-lasted-work-mlir-primer/1721/15" target="_blank" rel="noopener">https://discuss.tvm.ai/t/google-lasted-work-mlir-primer/1721/15</a><br>中TVM作者的如下回复。</p>
+<p>Interpretation of MLIR’s Vision</p>
+<p>I think what you answered reflects MLIR’s vision. Make the abstract class of IR and derive dialects. But not necessarily provide specific pass for the dialect, so if X-IR is a dialect of MLIR, then there are dialect specific passes that is needed in the pass.</p>
+<p>Polyhedral dialect is a dialect in MLIR. In the current case, the polyhedral IR is part of the mlir codebase, which gives the view of “native”, but non-the-less it is a dialect just like the other automatic optimization dialect. The fact that it is part of the native code base does give an opinionated view of what what automatic optimization should be like in MLIR ecosystem. I think it is still very much an open problem, TVM has done a lot in this direction, and we can collectively innovate on this area.<br>How TVM can work with MLIR</p>
+<p>First of all, MLIR won’t make TVM obsolete. In the contrary, it can help TVM stack by providing insights in IR design and possibly some lowering infrastructure.The community will keep improving our current IR infrastructure toward a better unified TVM-IR infra. We will try to define TVM dialects in MLIR to see if it makes sense to allow bi-directional translation between MLIR and TVM-IR, this way we can take benefit of some of the infra provided by MLIR and make TVM work together with MLIR’s ecosystem.</p>
+<h1 id="一些初步的认知"><a href="#一些初步的认知" class="headerlink" title="一些初步的认知"></a>一些初步的认知</h1><p>从已有的信息看，针对新的硬件体系或者新的运算逻辑，TVM应该是一个不错的选择。<br>初步查看的结果，其文档比较丰富，如果使用python接口编程，易用性也不错。</p>
+<h1 id="调试"><a href="#调试" class="headerlink" title="调试"></a>调试</h1><h2 id="使用O0-g构建"><a href="#使用O0-g构建" class="headerlink" title="使用O0 -g构建"></a>使用O0 -g构建</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cmake ..&#x2F; -DCMAKE_BUILD_TYPE&#x3D;Debug</span><br></pre></td></tr></table></figure>
+<h2 id="获取各个op的运行时间"><a href="#获取各个op的运行时间" class="headerlink" title="获取各个op的运行时间"></a>获取各个op的运行时间</h2><p>只需使用debug_runtime替代普通runtime即可</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> tvm.contrib.debugger <span class="keyword">import</span> debug_runtime <span class="keyword">as</span> graph_runtime</span><br></pre></td></tr></table></figure>
+<p>具体实现可参考src/runtime/graph/debug/graph_runtime_debug.cc中的RunIndividual函数。其实核心就是对每一个op运行计时。<br>输出的有价值信息主要包括两类：<br>a 是在后台输出按执行顺序排列的op运行时间(如果是notebook，这个信息不会出现在浏览器中，会出现在启动notebook的终端)<br>b 是在notebook中打印按耗时占比排序的op执行时间</p>
+<h2 id="获取各个pass执行后的IR"><a href="#获取各个pass执行后的IR" class="headerlink" title="获取各个pass执行后的IR"></a>获取各个pass执行后的IR</h2><h2 id="使用git-bisect定位问题"><a href="#使用git-bisect定位问题" class="headerlink" title="使用git bisect定位问题"></a>使用git bisect定位问题</h2><p>在tvm的目录下：<br>使用git bisect start开始二分查找<br>然后使用git bisect good $commit_id和git bisect bad ${commit_id}指定搜索区间。<br>就可以反复使用 cd build;cmake ../ -DCMAKE_BUILD_TYPE=Debug ; make -j 6构建并运行tvm，观察行为是否正常。<br>如果正常就git bisect good，如果异常就git bisect bad；如果中途某个版本遇到其他问题(例如还有其他bug干扰)，可以使用git bisect skip。<br>找到问题后，使用git bisect reset还原。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://mjblog.github.io/2020/03/20/TVM/" data-id="ckg246lpc000052faduy16qf6" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/AI/" rel="tag">AI</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2020/03/26/nvida-nsight/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          nvidia 性能分析工具
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2020/03/17/HALIDE/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">HALIDE</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">标签</h3>
+    <div class="widget">
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/AI/" rel="tag">AI</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/GRAALVM/" rel="tag">GRAALVM</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/IDE/" rel="tag">IDE</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/LLVM-STUDY/" rel="tag">LLVM_STUDY</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/env/" rel="tag">env</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">标签云</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/AI/" style="font-size: 20px;">AI</a> <a href="/tags/GRAALVM/" style="font-size: 10px;">GRAALVM</a> <a href="/tags/IDE/" style="font-size: 10px;">IDE</a> <a href="/tags/LLVM-STUDY/" style="font-size: 20px;">LLVM_STUDY</a> <a href="/tags/env/" style="font-size: 10px;">env</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">归档</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/09/">九月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/07/">七月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/06/">六月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/05/">五月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/04/">四月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/03/">三月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/02/">二月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/01/">一月 2020</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">最新文章</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2020/09/25/graal_license/">graalvm license分析</a>
+          </li>
+        
+          <li>
+            <a href="/2020/09/18/eclipse_theia/">eclipse theia 研究</a>
+          </li>
+        
+          <li>
+            <a href="/2020/07/28/first-test/">ubuntu 16.04下驱动TP-LINK TL-WDN6200H免驱版无线网卡</a>
+          </li>
+        
+          <li>
+            <a href="/2020/07/09/tvm_ir_debug/">tvm 构建结果调试</a>
+          </li>
+        
+          <li>
+            <a href="/2020/06/05/arduino_dev/">arduino开发体验</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2020 Ma Jiang<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+
+  
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+
+
+<script src="/js/script.js"></script>
+
+
+  </div>
+</body>
+</html>

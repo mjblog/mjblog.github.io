@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>Kaleidoscope object generation | mjblog</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="学习内容完成对 https:&#x2F;&#x2F;llvm.org&#x2F;docs&#x2F;tutorial&#x2F;MyFirstLanguageFrontend&#x2F;LangImpl08.html 的学习。 练习看懂原网页后，实现同样的功能。 扩展1 原示例使用了通用的机器模型进行编译，能否实现针对本地机器的更细粒度优化？ 2 能否以较低代价实现支持交叉编译? 进展完成了原示例中的功能。新增了功能：针对native机器的细粒度优化（打开">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Kaleidoscope object generation">
+<meta property="og:url" content="http://mjblog.github.io/2020/03/10/llvm_tr8_object_generation/index.html">
+<meta property="og:site_name" content="mjblog">
+<meta property="og:description" content="学习内容完成对 https:&#x2F;&#x2F;llvm.org&#x2F;docs&#x2F;tutorial&#x2F;MyFirstLanguageFrontend&#x2F;LangImpl08.html 的学习。 练习看懂原网页后，实现同样的功能。 扩展1 原示例使用了通用的机器模型进行编译，能否实现针对本地机器的更细粒度优化？ 2 能否以较低代价实现支持交叉编译? 进展完成了原示例中的功能。新增了功能：针对native机器的细粒度优化（打开">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2020-03-10T02:42:54.000Z">
+<meta property="article:modified_time" content="2020-07-28T02:15:27.733Z">
+<meta property="article:author" content="Ma Jiang">
+<meta property="article:tag" content="LLVM_STUDY">
+<meta name="twitter:card" content="summary">
+  
+    <link rel="alternate" href="/atom.xml" title="mjblog" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+  
+
+<meta name="generator" content="Hexo 4.2.1"></head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">mjblog</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="搜索"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://mjblog.github.io"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-llvm_tr8_object_generation" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2020/03/10/llvm_tr8_object_generation/" class="article-date">
+  <time datetime="2020-03-10T02:42:54.000Z" itemprop="datePublished">2020-03-10</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      Kaleidoscope object generation
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="学习内容"><a href="#学习内容" class="headerlink" title="学习内容"></a>学习内容</h2><p>完成对 <a href="https://llvm.org/docs/tutorial/MyFirstLanguageFrontend/LangImpl08.html" target="_blank" rel="noopener">https://llvm.org/docs/tutorial/MyFirstLanguageFrontend/LangImpl08.html</a> 的学习。</p>
+<h2 id="练习"><a href="#练习" class="headerlink" title="练习"></a>练习</h2><p>看懂原网页后，实现同样的功能。</p>
+<h2 id="扩展"><a href="#扩展" class="headerlink" title="扩展"></a>扩展</h2><p>1 原示例使用了通用的机器模型进行编译，能否实现针对本地机器的更细粒度优化？</p>
+<p>2 能否以较低代价实现支持交叉编译?</p>
+<h2 id="进展"><a href="#进展" class="headerlink" title="进展"></a>进展</h2><p>完成了原示例中的功能。<br>新增了功能：针对native机器的细粒度优化（打开本地cpu支持的特性）。<br>新增了基于环境变量的选项控制功能：默认生成object文件后，可以用选项控制保留LLVM-IR中间文件。</p>
+<h3 id="实现"><a href="#实现" class="headerlink" title="实现"></a>实现</h3><p>实现的两个主要变更：<br>1<br>原示例基于通用cpu的特性来生成代码，优化没有充分利用本地cpu的能力。本次实现改为了基于native去探测本地cpu的能力，选择最合适的指令（相当于使用l了-march=native）。具体实现过程使用了llvm/CodeGen/CommandFlags.inc中的getCPUStr函数来探测cpu。但是该inc文件似乎并不是一个稳定的开放接口文件，在工程内多次包含启动时会有冲突，同时其设置内部变量的方法也比较粗暴。实现时通过将其隔离到单个cpp文件来规避了该问题，可能并不是最好的解决方法。</p>
+<p>2<br>添加object文件生成功能后，按照编译器的通常约定，将默认输出从LLVM-IR修改为object文件。同时，为了调试编译器本身的逻辑，查看编译过程中生成的LLVM-IR也是很有帮助的。<br>为了支持这样的控制逻辑，添加了一个基于环境变量的选项控制框架。实现代码如下。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">control_flags</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line">	<span class="keyword">template</span> &lt;<span class="keyword">typename</span> T&gt;</span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">flag_item</span></span></span><br><span class="line"><span class="class">	&#123;</span></span><br><span class="line">		T flag_val;</span><br><span class="line">		<span class="keyword">const</span> <span class="keyword">char</span>* input_env;</span><br><span class="line">		<span class="keyword">const</span> <span class="keyword">char</span>* description;</span><br><span class="line">		flag_item(T default_val, <span class="keyword">const</span> <span class="keyword">char</span>* env, <span class="keyword">const</span> <span class="keyword">char</span>* des) :</span><br><span class="line">			input_env(env), description(des)</span><br><span class="line">		&#123;</span><br><span class="line">			<span class="keyword">const</span> <span class="keyword">char</span> *env_val = getenv(input_env);</span><br><span class="line">			<span class="keyword">if</span> (env_val != <span class="literal">nullptr</span>)</span><br><span class="line">			&#123;</span><br><span class="line">				<span class="built_in">stringstream</span> tmp;</span><br><span class="line">				tmp &lt;&lt; env_val;</span><br><span class="line">				tmp &gt;&gt; flag_val;</span><br><span class="line">			&#125;</span><br><span class="line">			<span class="keyword">else</span></span><br><span class="line">				flag_val = default_val;</span><br><span class="line">		&#125;</span><br><span class="line">		flag_item()&#123;&#125;</span><br><span class="line">		<span class="function"><span class="keyword">operator</span> <span class="title">T</span><span class="params">()</span> </span>&#123;<span class="keyword">return</span> flag_val;&#125;</span><br><span class="line">	&#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> DECL_FLAG(flag_type, flag_name, default_val, input_env, des) \</span></span><br><span class="line">	flag_item&lt;flag_type&gt; flag_name;</span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">"flags.def"</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">undef</span> DECL_FLAG</span></span><br><span class="line">	control_flags()</span><br><span class="line">	&#123;</span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> DECL_FLAG(flag_type, flag_name, default_val, input_env, des) \</span></span><br><span class="line">	flag_item&lt;flag_type&gt; flag_name#<span class="meta">#cons(default_val, input_env, des);\</span></span><br><span class="line">	flag_name = flag_name##cons;</span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">"flags.def"</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">undef</span> DECL_FLAG</span></span><br><span class="line">	&#125;</span><br><span class="line">&#125;global_flags;</span><br></pre></td></tr></table></figure>
+<p>其基本思路很简单，借鉴自golang编译器的实践。从环境变量中获取输入，避开繁琐的输入选项解析。再利用sstream提供的通用类型转换功能，可以完成大多数情况下的flag数值设置。后续只需要按需增加callback函数做输入的合法性检查即可。<br>在此框架下添加控制选项只需新增如下一行即可。引用flags时，只需将定义一个全局变量 control_flags global_flag，然后引用global_flag.save_temps等名称即可。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//变量类型，变量名称，变量默认值，用于控制该变量的环境变量名称，变量作用描述</span></span><br><span class="line">DECL_FLAG(<span class="keyword">bool</span>, save_temps, <span class="literal">false</span>, <span class="string">"save_temps"</span>, <span class="string">"keep intermediate files"</span>)</span><br></pre></td></tr></table></figure>
+<h3 id="扩展问题"><a href="#扩展问题" class="headerlink" title="扩展问题"></a>扩展问题</h3><p>1 原示例使用了通用的机器模型进行编译，能否实现针对本地机器的更细粒度优化？<br>使用llvm提供的机制即可自动探测本地cpu的能力，细节可参考实现1中的描述。</p>
+<p>2 能否以较低代价实现支持交叉编译?<br>llvm框架中交叉编译是默认配置，本地配置只不过一种特化场景。因此，要支持交叉编译非常容易，只需要新增一个入参指定目标代码的三元组TargetTriple(如x86_64-linux-gnu)即可。但是考虑到新增这个特性后，需要一并添加正确性检查，修改optimizer中的逻辑，工作量稍大。在完成主体工作前，可以稍缓一点实现。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://mjblog.github.io/2020/03/10/llvm_tr8_object_generation/" data-id="ckg246lq7000p52fa4mtiajbw" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/LLVM-STUDY/" rel="tag">LLVM_STUDY</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2020/03/10/llvm_tr9_debug_info/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          Kaleidoscope debug info
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2020/03/02/llvm_tr7_mutable_variables/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">Kaleidoscope mutable variable</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">标签</h3>
+    <div class="widget">
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/AI/" rel="tag">AI</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/GRAALVM/" rel="tag">GRAALVM</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/IDE/" rel="tag">IDE</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/LLVM-STUDY/" rel="tag">LLVM_STUDY</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/env/" rel="tag">env</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">标签云</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/AI/" style="font-size: 20px;">AI</a> <a href="/tags/GRAALVM/" style="font-size: 10px;">GRAALVM</a> <a href="/tags/IDE/" style="font-size: 10px;">IDE</a> <a href="/tags/LLVM-STUDY/" style="font-size: 20px;">LLVM_STUDY</a> <a href="/tags/env/" style="font-size: 10px;">env</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">归档</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/09/">九月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/07/">七月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/06/">六月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/05/">五月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/04/">四月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/03/">三月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/02/">二月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/01/">一月 2020</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">最新文章</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2020/09/25/graal_license/">graalvm license分析</a>
+          </li>
+        
+          <li>
+            <a href="/2020/09/18/eclipse_theia/">eclipse theia 研究</a>
+          </li>
+        
+          <li>
+            <a href="/2020/07/28/first-test/">ubuntu 16.04下驱动TP-LINK TL-WDN6200H免驱版无线网卡</a>
+          </li>
+        
+          <li>
+            <a href="/2020/07/09/tvm_ir_debug/">tvm 构建结果调试</a>
+          </li>
+        
+          <li>
+            <a href="/2020/06/05/arduino_dev/">arduino开发体验</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2020 Ma Jiang<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+
+  
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+
+
+<script src="/js/script.js"></script>
+
+
+  </div>
+</body>
+</html>

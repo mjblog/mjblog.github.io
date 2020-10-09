@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>arduino开发体验 | mjblog</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="背景了解一下物联网的现状和开发过程。 甲醛浓度传感器制作硬件准备为了简单便宜，考虑使用成熟而廉价的arduino， uno版本30块左右。但是考虑到后续接入网络的方便，选择商家的套装，包含了各种传感器和传输辅助部件。甲醛浓度传感器为了简单，选择可直接从串口上报数据的商品。 硬件连接也比较简单，传感器商家会给接线图，照着接就可以了，如下图。   注意传感器的Tx接到arduno的Rx，Rx接到Tx就">
+<meta property="og:type" content="article">
+<meta property="og:title" content="arduino开发体验">
+<meta property="og:url" content="http://mjblog.github.io/2020/06/05/arduino_dev/index.html">
+<meta property="og:site_name" content="mjblog">
+<meta property="og:description" content="背景了解一下物联网的现状和开发过程。 甲醛浓度传感器制作硬件准备为了简单便宜，考虑使用成熟而廉价的arduino， uno版本30块左右。但是考虑到后续接入网络的方便，选择商家的套装，包含了各种传感器和传输辅助部件。甲醛浓度传感器为了简单，选择可直接从串口上报数据的商品。 硬件连接也比较简单，传感器商家会给接线图，照着接就可以了，如下图。   注意传感器的Tx接到arduno的Rx，Rx接到Tx就">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://mjblog.github.io/2020/06/05/arduino_dev/connect.jpg">
+<meta property="og:image" content="http://mjblog.github.io/2020/06/05/arduino_dev/WebIde.png">
+<meta property="og:image" content="http://mjblog.github.io/2020/06/05/arduino_dev/dev_plans.png">
+<meta property="article:published_time" content="2020-06-05T03:35:29.000Z">
+<meta property="article:modified_time" content="2020-07-28T02:15:27.711Z">
+<meta property="article:author" content="Ma Jiang">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://mjblog.github.io/2020/06/05/arduino_dev/connect.jpg">
+  
+    <link rel="alternate" href="/atom.xml" title="mjblog" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+  
+
+<meta name="generator" content="Hexo 4.2.1"></head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">mjblog</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="搜索"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://mjblog.github.io"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-arduino_dev" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2020/06/05/arduino_dev/" class="article-date">
+  <time datetime="2020-06-05T03:35:29.000Z" itemprop="datePublished">2020-06-05</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      arduino开发体验
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h1 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h1><p>了解一下物联网的现状和开发过程。</p>
+<h1 id="甲醛浓度传感器制作"><a href="#甲醛浓度传感器制作" class="headerlink" title="甲醛浓度传感器制作"></a>甲醛浓度传感器制作</h1><h2 id="硬件准备"><a href="#硬件准备" class="headerlink" title="硬件准备"></a>硬件准备</h2><p>为了简单便宜，考虑使用成熟而廉价的arduino， uno版本30块左右。<br>但是考虑到后续接入网络的方便，选择商家的套装，包含了各种传感器和传输辅助部件。<br>甲醛浓度传感器为了简单，选择可直接从串口上报数据的商品。</p>
+<p>硬件连接也比较简单，传感器商家会给接线图，照着接就可以了，如下图。</p>
+<img src="/2020/06/05/arduino_dev/connect.jpg" class="" title="连线示意图">
+
+<p>注意传感器的Tx接到arduno的Rx，Rx接到Tx就可以了。<br>另外，如果物联网板子只有一个串口并且串口已经被用来做与pc机器之间的连接（例如我的这个uno），不要将传感器的串口直接对接到板子的串口上（可以使用其他通用针脚，然后用软串口机制来读取数据）。<br>否则会因为相互干扰出现很多莫名其妙的问题。例如程序烧写失败，传感器读不出数据等等。</p>
+<h2 id="软件"><a href="#软件" class="headerlink" title="软件"></a>软件</h2><p>arduino软件开发环境很成熟，可以直接选择最方便的Web方式进行开发。<br>到<a href="https://create.arduino.cc/" target="_blank" rel="noopener">https://create.arduino.cc/</a> 申请一个免费的账户，再到<a href="https://create.arduino.cc/getting-started/plugin/install" target="_blank" rel="noopener">https://create.arduino.cc/getting-started/plugin/install</a> 去下载连接uno的浏览器插件并安装,<br>然后启动插件(其实就是一个go语言编写的转发代理，安装后在桌面上有一个Arduino Create Agent 的图标可供快速启动)。<br>随后就可以进入<a href="https://create.arduino.cc/editor/" target="_blank" rel="noopener">https://create.arduino.cc/editor/</a> 的WebIde界面。<br>在这个主界面下，可以完成整套软件开发的过程，包括代码编写、编译、烧写，也可以查看串口的输出（和进行串口输入），如下图所示。</p>
+<img src="/2020/06/05/arduino_dev/WebIde.png" class="" title="连线示意图">
+
+<p>整个Ide界面比较直观，Example和Library中已经有大量代码，许多应用场景都有可以借鉴的示例。唯一个稍微有点隐晦的是，串口输入输出是在侧边菜单的Monitor中。</p>
+<p>按照传感器厂商给出的说明，传感器的输出是8个byte的数据+1个byte的校验，可以使用如下的示例程序将传感器周期性上报的数据打印出来。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;SoftwareSerial.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="built_in">SoftwareSerial</span> <span class="title">mySerial</span><span class="params">(<span class="number">2</span>, <span class="number">4</span>)</span></span>; <span class="comment">// RX, TX (Rx和Tx针脚注意与接线图中的连线对应)</span></span><br><span class="line"> </span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">setup</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">  <span class="built_in">Serial</span>.<span class="built_in">begin</span>(<span class="number">9600</span>);</span><br><span class="line">  <span class="keyword">while</span> (!<span class="built_in">Serial</span>) &#123;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="built_in">Serial</span>.<span class="built_in">println</span>(<span class="string">"Goodnight moon!"</span>);</span><br><span class="line"> </span><br><span class="line">  mySerial.<span class="built_in">begin</span>(<span class="number">9600</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">loop</span><span class="params">()</span> </span>&#123;</span><br><span class="line">  <span class="keyword">int</span> len = <span class="number">9</span>;</span><br><span class="line">  <span class="keyword">String</span> result;</span><br><span class="line">  <span class="keyword">while</span> (len)</span><br><span class="line">  &#123;</span><br><span class="line">      <span class="keyword">if</span>(mySerial.<span class="built_in">available</span>())</span><br><span class="line">      &#123;</span><br><span class="line">        <span class="keyword">String</span> stringOne = <span class="keyword">String</span>(mySerial.<span class="built_in">read</span>(), HEX);</span><br><span class="line">        <span class="built_in">Serial</span>.<span class="built_in">println</span>(stringOne);</span><br><span class="line">        result += stringOne;</span><br><span class="line">        --len;</span><br><span class="line">      &#125;</span><br><span class="line">      <span class="built_in">delay</span>(<span class="number">1</span>);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="built_in">Serial</span>.<span class="built_in">println</span>(result.length());</span><br><span class="line">  </span><br><span class="line">  <span class="keyword">for</span> (<span class="keyword">int</span> i=<span class="number">0</span>;i&lt;<span class="number">9</span>;i++)</span><br><span class="line">    <span class="built_in">Serial</span>.<span class="built_in">print</span>(result[i]);</span><br><span class="line">  <span class="built_in">Serial</span>.<span class="built_in">println</span>(<span class="string">" Hello Arduino "</span>);</span><br><span class="line">  <span class="built_in">delay</span>(<span class="number">1000</span>); </span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>剩下的事情就是将收集到的数据上报到云端了，可参考<a href="https://create.arduino.cc/projecthub/133030/iot-cloud-getting-started-c93255" target="_blank" rel="noopener">https://create.arduino.cc/projecthub/133030/iot-cloud-getting-started-c93255</a> 中的说明。这个步骤各个云供应商不完全一样，但是总体流程都差不多。大致都是需要将单板联网，然后将数据通过指定格式上报到云端，云端通过定义好的数据格式解析并展示。</p>
+<h1 id="总体感受"><a href="#总体感受" class="headerlink" title="总体感受"></a>总体感受</h1><h2 id="硬件"><a href="#硬件" class="headerlink" title="硬件"></a>硬件</h2><p>IOT的硬件成本已经比较低了。50块左右就能买到直接通过2g/4g网络连接到云端的物联网模块。通常IOT应用的数据量不大，数据流量现在也很便宜，所以持续维护的成本也不高。</p>
+<h2 id="软件-1"><a href="#软件-1" class="headerlink" title="软件"></a>软件</h2><p>整个软件栈已经比较完整成熟了。大部分复杂的功能逻辑已经被很好地封装到厂商提供的API内了，并且从单板到云端都有大量示例可控借鉴。<br>甚至连商业模式都比较成熟了，如下图所示。arduino的收费模式设计得非常平衡，确保个人实验时可以访问绝大部分功能，感受到方便好用而愿意付费。而商业使用时又不太可能免费占便宜。</p>
+<img src="/2020/06/05/arduino_dev/dev_plans.png" class="" title="arduino收费模式">
+<h2 id="个人历程感受"><a href="#个人历程感受" class="headerlink" title="个人历程感受"></a>个人历程感受</h2><p>纯软件开发做IOT应用，最困难和耗时的还是和硬件相关的琐碎部分。<br>本次体验中，分析和解决硬件串口冲突导致的各种问题（烧写失败，传感器无法输出）耗费了最主要的时间。其余的所有步骤总共加起来也没有耗费多少时间。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://mjblog.github.io/2020/06/05/arduino_dev/" data-id="ckg246lpv000152fa2k49h2f4" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2020/07/09/tvm_ir_debug/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          tvm 构建结果调试
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2020/05/20/phoronix-2020-05/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">phoronix 扫描2020-05</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">标签</h3>
+    <div class="widget">
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/AI/" rel="tag">AI</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/GRAALVM/" rel="tag">GRAALVM</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/IDE/" rel="tag">IDE</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/LLVM-STUDY/" rel="tag">LLVM_STUDY</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/env/" rel="tag">env</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">标签云</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/AI/" style="font-size: 20px;">AI</a> <a href="/tags/GRAALVM/" style="font-size: 10px;">GRAALVM</a> <a href="/tags/IDE/" style="font-size: 10px;">IDE</a> <a href="/tags/LLVM-STUDY/" style="font-size: 20px;">LLVM_STUDY</a> <a href="/tags/env/" style="font-size: 10px;">env</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">归档</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/09/">九月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/07/">七月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/06/">六月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/05/">五月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/04/">四月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/03/">三月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/02/">二月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/01/">一月 2020</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">最新文章</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2020/09/25/graal_license/">graalvm license分析</a>
+          </li>
+        
+          <li>
+            <a href="/2020/09/18/eclipse_theia/">eclipse theia 研究</a>
+          </li>
+        
+          <li>
+            <a href="/2020/07/28/first-test/">ubuntu 16.04下驱动TP-LINK TL-WDN6200H免驱版无线网卡</a>
+          </li>
+        
+          <li>
+            <a href="/2020/07/09/tvm_ir_debug/">tvm 构建结果调试</a>
+          </li>
+        
+          <li>
+            <a href="/2020/06/05/arduino_dev/">arduino开发体验</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2020 Ma Jiang<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+
+  
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+
+
+<script src="/js/script.js"></script>
+
+
+  </div>
+</body>
+</html>

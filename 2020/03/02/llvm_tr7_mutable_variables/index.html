@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>Kaleidoscope mutable variable | mjblog</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="学习内容完成对 https:&#x2F;&#x2F;llvm.org&#x2F;docs&#x2F;tutorial&#x2F;MyFirstLanguageFrontend&#x2F;LangImpl07.html 的学习。 练习看懂原网页后，实现同样的功能。 扩展1 使用CreateAlloca在function的头部创建栈空间，是否会导致不必要的额外栈空间占用？ 进展完成了原示例的功能，添加了对应的简单测试。以库的方式添加了’,’和’!&#x3D;’等核心的o">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Kaleidoscope mutable variable">
+<meta property="og:url" content="http://mjblog.github.io/2020/03/02/llvm_tr7_mutable_variables/index.html">
+<meta property="og:site_name" content="mjblog">
+<meta property="og:description" content="学习内容完成对 https:&#x2F;&#x2F;llvm.org&#x2F;docs&#x2F;tutorial&#x2F;MyFirstLanguageFrontend&#x2F;LangImpl07.html 的学习。 练习看懂原网页后，实现同样的功能。 扩展1 使用CreateAlloca在function的头部创建栈空间，是否会导致不必要的额外栈空间占用？ 进展完成了原示例的功能，添加了对应的简单测试。以库的方式添加了’,’和’!&#x3D;’等核心的o">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2020-03-02T13:15:01.000Z">
+<meta property="article:modified_time" content="2020-07-28T02:15:27.733Z">
+<meta property="article:author" content="Ma Jiang">
+<meta property="article:tag" content="LLVM_STUDY">
+<meta name="twitter:card" content="summary">
+  
+    <link rel="alternate" href="/atom.xml" title="mjblog" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+  
+
+<meta name="generator" content="Hexo 4.2.1"></head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">mjblog</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="搜索"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://mjblog.github.io"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-llvm_tr7_mutable_variables" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2020/03/02/llvm_tr7_mutable_variables/" class="article-date">
+  <time datetime="2020-03-02T13:15:01.000Z" itemprop="datePublished">2020-03-02</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      Kaleidoscope mutable variable
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="学习内容"><a href="#学习内容" class="headerlink" title="学习内容"></a>学习内容</h2><p>完成对 <a href="https://llvm.org/docs/tutorial/MyFirstLanguageFrontend/LangImpl07.html" target="_blank" rel="noopener">https://llvm.org/docs/tutorial/MyFirstLanguageFrontend/LangImpl07.html</a> 的学习。</p>
+<h2 id="练习"><a href="#练习" class="headerlink" title="练习"></a>练习</h2><p>看懂原网页后，实现同样的功能。</p>
+<h2 id="扩展"><a href="#扩展" class="headerlink" title="扩展"></a>扩展</h2><p>1 使用CreateAlloca在function的头部创建栈空间，是否会导致不必要的额外栈空间占用？</p>
+<h2 id="进展"><a href="#进展" class="headerlink" title="进展"></a>进展</h2><p>完成了原示例的功能，添加了对应的简单测试。<br>以库的方式添加了’,’和’!=’等核心的operator，尚未自动添加到源代码中。<br>一种可行的简单方式是以源代码方式直接把这些operator的def直接include到代码的头部，然后再编译。但是，需要考虑这样操作对源代码行号的干扰。<br>等待后续生成调试信息的章节一并考虑。</p>
+<h3 id="实现"><a href="#实现" class="headerlink" title="实现"></a>实现</h3><p>实现时做了如下两个主要的改进:<br>1 var中变量默认数值设置为0，原示例是在LLVM-IR 生成时构造的。从逻辑上看，这个应该是语法层面的规定，不应该放到codegen的流程中决定。本次实现时，在parser中parse_var时将未初始化的变量value设置为了0。codegen时只管按值生成就可以了。<br>2 在处理var中的变量shadow前面已定义变量的情况时。原示例为了简单，是直接把var中声明的所有变量都缓冲到了OldBindings中，如果没有shadow，则把nullptr缓冲到OldBindings中。生成完body后，直接把OldBindings中的所有条目写回NamedValues中。如下片段所示。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">  <span class="built_in">std</span>::<span class="built_in">vector</span>&lt;AllocaInst *&gt; OldBindings;</span><br><span class="line">  OldBindings.push_back(NamedValues[VarName]);</span><br><span class="line">  <span class="comment">// Remember this binding.</span></span><br><span class="line">  NamedValues[VarName] = Alloca;</span><br><span class="line">....body_gen....</span><br><span class="line">  <span class="comment">// Pop all our variables from scope.</span></span><br><span class="line">  <span class="keyword">for</span> (<span class="keyword">unsigned</span> i = <span class="number">0</span>, e = VarNames.<span class="built_in">size</span>(); i != e; ++i)</span><br><span class="line">    NamedValues[VarNames[i].first] = OldBindings[i];</span><br></pre></td></tr></table></figure>
+<p>本次实现使用了更安全的find来替代[] operator，同时改进了缓存结构。<br>通过存储named_var中被shadow变量alloca字段的地址，消除了恢复<br>named_var时的map查找动作，如下片段所示。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">	<span class="built_in">vector</span>&lt;<span class="built_in">std</span>::pair&lt;AllocaInst **, AllocaInst *&gt;&gt; saved_name_vec;</span><br><span class="line">....</span><br><span class="line">		<span class="keyword">if</span> (<span class="keyword">auto</span> it = named_var.<span class="built_in">find</span>(var_name); it != named_var.<span class="built_in">end</span>())</span><br><span class="line">		&#123;</span><br><span class="line">			saved_name_vec.push_back(</span><br><span class="line">				<span class="built_in">std</span>::make_pair(&amp;(it-&gt;second), it-&gt;second));</span><br><span class="line">			it-&gt;second = var_allocas[i];</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="keyword">else</span></span><br><span class="line">			named_var[var_name] = var_allocas[i];</span><br><span class="line">	&#125;</span><br><span class="line">...bodygen....</span><br><span class="line"><span class="comment">//恢复named_var</span></span><br><span class="line">	<span class="keyword">for</span> (<span class="keyword">size_t</span> i = <span class="number">0</span>; i &lt; saved_name_vec.<span class="built_in">size</span>(); ++i)</span><br><span class="line">	&#123;</span><br><span class="line">		<span class="keyword">auto</span> old_alloca_addr = saved_name_vec[i].first;</span><br><span class="line">		*old_alloca_addr = saved_name_vec[i].second;</span><br><span class="line">	&#125;</span><br></pre></td></tr></table></figure>
+
+<p>3 实现测试时发现了原示例中存在内存泄漏的可能，如下代码所示。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="function">Value *<span class="title">IfExprAST::codegen</span><span class="params">()</span> </span>&#123;</span><br><span class="line">  ....</span><br><span class="line">  <span class="comment">// Create blocks for the then and else cases.  Insert the 'then' block at the</span></span><br><span class="line">  <span class="comment">// end of the function.</span></span><br><span class="line">  BasicBlock *ThenBB = BasicBlock::Create(TheContext, <span class="string">"then"</span>, TheFunction);</span><br><span class="line">  BasicBlock *ElseBB = BasicBlock::Create(TheContext, <span class="string">"else"</span>);</span><br><span class="line">  BasicBlock *MergeBB = BasicBlock::Create(TheContext, <span class="string">"ifcont"</span>);</span><br><span class="line">....</span><br><span class="line">  Value *ThenV = Then-&gt;codegen();</span><br><span class="line">  <span class="keyword">if</span> (!ThenV)</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">nullptr</span>;</span><br></pre></td></tr></table></figure>
+<p>上面代码片段中，ElseBB和MergeBB创建后没有立即挂入function的链表中。如果函数在类似于ThenV的异常流程中return了，则没有人能释放掉这两个指针了。我们的实现中也有类似问题。<br>要比较完整的修复该问题，有两个点需要同时考虑：<br>首先，BB创建后都立即挂到Function中去是否会有不良影响？如果没有，创建就挂上是最好的解决方案；<br>如果不能立即挂上，除了在函数内考虑释放资源外，还要考虑    ir_builder.CreateBr(merge_bb);等语句在异常发生时可能引用悬空指针的问题。需要重排对这些指针的引用，将其都放到末尾。</p>
+<h3 id="扩展问题"><a href="#扩展问题" class="headerlink" title="扩展问题"></a>扩展问题</h3><p>1 使用CreateAlloca在function的头部创建栈空间，是否会导致不必要的额外栈空间占用？<br>使用如下的c语言片段进行了测试。发现clang生成代码时也会把alloca都放到头部，并且生成的x86-64和mips64的代码也都是一次在头部把sp预留够。<br>这里的权衡可能是动态扩展栈变量无法节约多少内存，但是会浪费操作sp的指令，另外也使得分析stack frame变得更为困难，得不偿失。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">extern</span> <span class="keyword">int</span> x ;</span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">test</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">        <span class="keyword">char</span> buf[<span class="number">1024</span>] = &#123;<span class="number">2</span>&#125;;</span><br><span class="line">        <span class="keyword">if</span> (x)</span><br><span class="line">        &#123;</span><br><span class="line">                <span class="keyword">char</span> nb[<span class="number">1024</span>]= &#123;<span class="number">1</span>&#125;;</span><br><span class="line">        &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="实现中遇到的问题"><a href="#实现中遇到的问题" class="headerlink" title="实现中遇到的问题"></a>实现中遇到的问题</h3><p>1 map 的operator[]会改写原map<br>在改写for代码生成流程中，named_var map 记录和恢复idt var的部分时，<br>注意到了下面一对代码。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">	<span class="keyword">auto</span> old_val = named_var[idt_name];</span><br><span class="line">	named_var[idt_name] = idt_var;</span><br><span class="line">.....</span><br><span class="line">	<span class="keyword">if</span> (old_val != <span class="literal">nullptr</span>)</span><br><span class="line">		named_var[idt_name] = old_val;</span><br><span class="line">	<span class="keyword">else</span></span><br><span class="line">		named_var.erase(idt_name);</span><br></pre></td></tr></table></figure>
+<p>这段逻辑是直接从原示例中拷贝过来的。<br>重构时注意到named_var[idt_name]的初始值问题。<br>当idt_name这个key不在map中时，读取其value的语义是比较模糊的。<br>参考<a href="https://en.cppreference.com/w/cpp/container/map/operator_at" target="_blank" rel="noopener">https://en.cppreference.com/w/cpp/container/map/operator_at</a> ， 发现[]这个operator竟然会静默的insert，即使这个operator是用在取右值的动作中。<br>用下面的示例，可以较为直观展示出这个出人意料的行为。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;map&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="built_in">map</span>&lt;<span class="keyword">int</span>, <span class="keyword">int</span>*&gt; t1;</span><br><span class="line">	<span class="built_in">cout</span> &lt;&lt; <span class="string">"size before access:"</span> &lt;&lt; t1.<span class="built_in">size</span>() &lt;&lt; <span class="built_in">endl</span>;</span><br><span class="line">	<span class="built_in">cout</span> &lt;&lt; <span class="string">"uninitialized pointer is: "</span> &lt;&lt; t1[<span class="number">0</span>] &lt;&lt; <span class="built_in">endl</span>;</span><br><span class="line">	<span class="built_in">cout</span> &lt;&lt; <span class="string">"size after access:"</span> &lt;&lt; t1.<span class="built_in">size</span>() &lt;&lt; <span class="built_in">endl</span>;</span><br><span class="line">	<span class="built_in">cout</span> &lt;&lt; <span class="string">"count after access:"</span> &lt;&lt; t1.count(<span class="number">0</span>) &lt;&lt; <span class="built_in">endl</span>;</span><br><span class="line">	<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这个程序的输出如下。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">size before access:0</span><br><span class="line">uninitialized pointer is: 0</span><br><span class="line">size after access:1</span><br><span class="line">count after access:1</span><br></pre></td></tr></table></figure>
+<p>可以看到使用[]访问map时，确实会有insert的动作，并且当key不在map中时，返回的vale是一个默认初始化的值。<br>在这样的语义下，原示例的代码片段虽然不会导致严重的逻辑错误，但是仍有两个明显的问题。<br>第一，引入了冗余的insert动作，拖慢了编译器工作速度。<br>第二，在退出清理map时，如果初始key不存在就不会erase。这样一来map中会残留一个错误的映射项目idt_var –&gt; nullptr。后续流程如果直接使用count这类存在性接口去测试，会得到错误的结果。这是一个潜在的错误来源。</p>
+<p>2 std::move作用于const vector不生效<br>如下测试代码</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;vector&gt;</span></span></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;</span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">testc_ref</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt; inner;</span><br><span class="line">    testc_ref(<span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt;&amp; in) : inner(<span class="built_in">std</span>::<span class="built_in">move</span>(in)) &#123;&#125;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">testc_move</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt; inner;</span><br><span class="line">    testc_move(<span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt; in) : inner(<span class="built_in">std</span>::<span class="built_in">move</span>(in)) &#123;&#125;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">testc_const_ref</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt; inner;</span><br><span class="line">    testc_const_ref(<span class="keyword">const</span> <span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt;&amp; in) : inner(<span class="built_in">std</span>::<span class="built_in">move</span>(in)) &#123;&#125;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="function"><span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt; <span class="title">mytest</span><span class="params">(<span class="number">100000</span>, <span class="number">1</span>)</span></span>;</span><br><span class="line">    <span class="built_in">cout</span> &lt;&lt; <span class="string">"org:"</span> &lt;&lt; &amp;(mytest[<span class="number">0</span>]) &lt;&lt; <span class="built_in">endl</span>;</span><br><span class="line">    <span class="function">testc_move <span class="title">t1</span><span class="params">(mytest)</span></span>;</span><br><span class="line">    <span class="built_in">cout</span> &lt;&lt; <span class="string">"t1:"</span>&lt;&lt; &amp;(t1.inner[<span class="number">0</span>]) &lt;&lt; <span class="built_in">endl</span>;</span><br><span class="line">    <span class="built_in">cout</span> &lt;&lt; &amp;(mytest[<span class="number">0</span>]) &lt;&lt; <span class="built_in">endl</span>;</span><br><span class="line"></span><br><span class="line">    <span class="function">testc_move <span class="title">t2</span><span class="params">(<span class="built_in">std</span>::<span class="built_in">move</span>(mytest))</span></span>;</span><br><span class="line">    <span class="built_in">cout</span> &lt;&lt; <span class="string">"t2:"</span>&lt;&lt; &amp;(t2.inner[<span class="number">0</span>]) &lt;&lt; <span class="built_in">endl</span>;</span><br><span class="line">    <span class="built_in">cout</span> &lt;&lt; &amp;(mytest[<span class="number">0</span>]) &lt;&lt; <span class="built_in">endl</span>;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt; <span class="title">mytest1</span><span class="params">(<span class="number">100000</span>, <span class="number">1</span>)</span></span>;</span><br><span class="line">    <span class="built_in">cout</span> &lt;&lt; <span class="string">"org:"</span> &lt;&lt; &amp;(mytest1[<span class="number">0</span>]) &lt;&lt; <span class="built_in">endl</span>;</span><br><span class="line">    <span class="function">testc_ref <span class="title">t3</span><span class="params">(mytest1)</span></span>;</span><br><span class="line">    <span class="built_in">cout</span> &lt;&lt; <span class="string">"t3:"</span>&lt;&lt; &amp;(t3.inner[<span class="number">0</span>]) &lt;&lt; <span class="built_in">endl</span>;</span><br><span class="line">    <span class="built_in">cout</span> &lt;&lt; &amp;(mytest1[<span class="number">0</span>]) &lt;&lt; <span class="built_in">endl</span>;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt; <span class="title">mytest2</span><span class="params">(<span class="number">100000</span>, <span class="number">1</span>)</span></span>;</span><br><span class="line">    <span class="built_in">cout</span> &lt;&lt; <span class="string">"org:"</span> &lt;&lt; &amp;(mytest2[<span class="number">0</span>]) &lt;&lt; <span class="built_in">endl</span>;</span><br><span class="line">    <span class="function">testc_const_ref <span class="title">t4</span><span class="params">(mytest2)</span></span>;</span><br><span class="line">    <span class="built_in">cout</span> &lt;&lt; <span class="string">"t4:"</span>&lt;&lt; &amp;(t4.inner[<span class="number">0</span>]) &lt;&lt; <span class="built_in">endl</span>;</span><br><span class="line">    <span class="built_in">cout</span> &lt;&lt; &amp;(mytest2[<span class="number">0</span>]) &lt;&lt; <span class="built_in">endl</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>上面程序的输出为。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">org:0x7f39d2d5f010</span><br><span class="line">t1:0x7f39d2cfd010</span><br><span class="line">0x7f39d2d5f010</span><br><span class="line">t2:0x7f39d2d5f010</span><br><span class="line">0</span><br><span class="line">org:0x7f39d2c9b010</span><br><span class="line">t3:0x7f39d2c9b010</span><br><span class="line">0</span><br><span class="line">org:0x7f39d2c39010</span><br><span class="line">t4:0x7f39d1e45010</span><br><span class="line">0x7f39d2c39010</span><br></pre></td></tr></table></figure>
+<p>==可以看出按值传参时需要在调用点和内部都用move才能避免内存分配。==<br>==按引用传参时，只需在子函数内move即可。==<br>==而以const 引用传参时，move不会生效，并且也不会有任何告警。==</p>
+<p>3 如何使用string_view作为key来访问string为key的map<br>需要使用map&lt;string, int, less&lt;&gt;&gt;这样的方式建立map，否则find必须使用string做key。<br>当使用map&lt;string, int, less&lt;&gt;&gt; 建立map时，调用find实际上是把string_view透传到std:less这个模板中。<br>后续在find的过程中，less会把map中每一个待比较的string转为string_view，然后进行两个string_view的比较。<br>如果是调用find的时候，把string_view先转为string再传入，则find内部就不再需要构建临时object。<br>使用下面的示例进行对比测试，使用string_view的版本由于有string转string_view的过程，其速度要略微慢于string的版本。下面是g++-7 -O2编译的结果。性能差距在1%以内。<br> ./t3   string_view<br>102400<br>Time taken by function: 1254672 microseconds<br>./t4    string版本<br>102400<br>Time taken by function: 1243754 microseconds</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;map&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;string&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;string_view&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;chrono&gt; </span></span></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;</span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>::chrono; </span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    string_view key = <span class="string">"hello"</span>;   <span class="comment">//string key = "hello"</span></span><br><span class="line">    <span class="built_in">map</span>&lt;<span class="built_in">string</span>, <span class="keyword">int</span>, less&lt;&gt;&gt; coll;  <span class="comment">//map&lt;string, int&gt; coll;</span></span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i=<span class="number">0</span>;i &lt; <span class="number">102400</span>;i++)</span><br><span class="line">        coll.insert(make_pair(to_string(i),i));</span><br><span class="line">    <span class="built_in">cout</span> &lt;&lt; coll.<span class="built_in">size</span>()&lt;&lt; <span class="built_in">endl</span>;</span><br><span class="line">    <span class="keyword">long</span> <span class="keyword">unsigned</span> rep = <span class="number">1024</span>*<span class="number">1024</span> * <span class="number">10</span>;</span><br><span class="line">    <span class="keyword">auto</span> re = coll.<span class="built_in">find</span>(key);</span><br><span class="line">    <span class="keyword">auto</span> start = high_resolution_clock::now(); </span><br><span class="line">    <span class="keyword">while</span> (rep--)</span><br><span class="line">    &#123;</span><br><span class="line">        re = coll.<span class="built_in">find</span>(key); <span class="comment">// ok</span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">auto</span> <span class="built_in">stop</span> = high_resolution_clock::now(); </span><br><span class="line">    <span class="keyword">auto</span> duration = duration_cast&lt;microseconds&gt;(<span class="built_in">stop</span> - start); </span><br><span class="line">    <span class="built_in">cout</span> &lt;&lt; <span class="string">"Time taken by function: "</span></span><br><span class="line">        &lt;&lt; duration.count() &lt;&lt; <span class="string">" microseconds"</span> &lt;&lt; <span class="built_in">endl</span>; </span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://mjblog.github.io/2020/03/02/llvm_tr7_mutable_variables/" data-id="ckg246lql001a52fab5m0ewua" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/LLVM-STUDY/" rel="tag">LLVM_STUDY</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2020/03/10/llvm_tr8_object_generation/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          Kaleidoscope object generation
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2020/03/02/hexo%E5%8D%87%E7%BA%A7%E5%92%8C%E6%B7%BB%E5%8A%A0%E5%9B%BE%E7%89%87/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">hexo升级和插入图片</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">标签</h3>
+    <div class="widget">
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/AI/" rel="tag">AI</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/GRAALVM/" rel="tag">GRAALVM</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/IDE/" rel="tag">IDE</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/LLVM-STUDY/" rel="tag">LLVM_STUDY</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/env/" rel="tag">env</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">标签云</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/AI/" style="font-size: 20px;">AI</a> <a href="/tags/GRAALVM/" style="font-size: 10px;">GRAALVM</a> <a href="/tags/IDE/" style="font-size: 10px;">IDE</a> <a href="/tags/LLVM-STUDY/" style="font-size: 20px;">LLVM_STUDY</a> <a href="/tags/env/" style="font-size: 10px;">env</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">归档</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/09/">九月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/07/">七月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/06/">六月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/05/">五月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/04/">四月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/03/">三月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/02/">二月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/01/">一月 2020</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">最新文章</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2020/09/25/graal_license/">graalvm license分析</a>
+          </li>
+        
+          <li>
+            <a href="/2020/09/18/eclipse_theia/">eclipse theia 研究</a>
+          </li>
+        
+          <li>
+            <a href="/2020/07/28/first-test/">ubuntu 16.04下驱动TP-LINK TL-WDN6200H免驱版无线网卡</a>
+          </li>
+        
+          <li>
+            <a href="/2020/07/09/tvm_ir_debug/">tvm 构建结果调试</a>
+          </li>
+        
+          <li>
+            <a href="/2020/06/05/arduino_dev/">arduino开发体验</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2020 Ma Jiang<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+
+  
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+
+
+<script src="/js/script.js"></script>
+
+
+  </div>
+</body>
+</html>
