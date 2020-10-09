@@ -12,11 +12,13 @@
 <meta property="og:site_name" content="mjblog">
 <meta property="og:description" content="1 背景由于graalvm的社区版本整体是作为GPLV2发布，希望了解graalvm的详细license情况，确定是否有开源风险。 2 入口资料2.1 官网介绍https:&#x2F;&#x2F;www.graalvm.org&#x2F;faq&#x2F; 有专门的说明。 GraalVM Community Edition is open source software built from the sources available">
 <meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://mjblog.github.io/2020/09/25/graal_license/graal_ach_with_license_note.png">
 <meta property="article:published_time" content="2020-09-25T03:24:26.000Z">
-<meta property="article:modified_time" content="2020-10-09T11:33:30.063Z">
+<meta property="article:modified_time" content="2020-10-09T11:49:29.257Z">
 <meta property="article:author" content="Ma Jiang">
 <meta property="article:tag" content="GRAALVM">
 <meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://mjblog.github.io/2020/09/25/graal_license/graal_ach_with_license_note.png">
   
     <link rel="alternate" href="/atom.xml" title="mjblog" type="application/atom+xml">
   
@@ -111,8 +113,7 @@
 <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span> x <span class="keyword">in</span> `grep  <span class="string">"designates"</span> ./ -RI -L |grep <span class="string">'\.java'</span>| grep -v generated |grep -v /<span class="built_in">test</span>/ |grep -v \.class` ; <span class="keyword">do</span> grep <span class="string">'GENERATED CONTENT - DO NOT EDIT'</span> <span class="variable">$x</span> -L ; <span class="keyword">done</span></span><br></pre></td></tr></table></figure>
 <h2 id="3-license影响分析"><a href="#3-license影响分析" class="headerlink" title="3 license影响分析"></a>3 license影响分析</h2><p>graalvm社区版本使整体是GPLV2 with classpath exception， 本次分析开源license的主要目的是：识别代码被传染开源的风险 和 专利纠纷的风险。</p>
 <h3 id="3-1-传染性分析"><a href="#3-1-传染性分析" class="headerlink" title="3.1 传染性分析"></a>3.1 传染性分析</h3><h4 id="3-1-1-Graal架构分析"><a href="#3-1-1-Graal架构分析" class="headerlink" title="3.1.1 Graal架构分析"></a>3.1.1 Graal架构分析</h4><p>为了明确graal的license会对用户代码产生何种影响，需要对其架构进行基础的分析。从其官方介绍中摘抄架构并标注如下。</p>
-
-
+<img src="/2020/09/25/graal_license/graal_ach_with_license_note.png" class="" title="Graal 架构示意图">
 
 <h4 id="3-1-2-传染性分析结论"><a href="#3-1-2-传染性分析结论" class="headerlink" title="3.1.2 传染性分析结论"></a>3.1.2 传染性分析结论</h4><p>参考如上节的架构图，graalvm底层部分由于有多个GPLV2的组件，毫无疑问compiler/vm部分的改进代码肯定需要开源。<br>但是，由于compiler/vm与上层的js/java代码不直接链接，而是数据处理的关系，所以上层的代码无需开源。<br>我们需要保护的资产绝大部分在上层的js/java代码中，graalvm的GPL传染风险不大。</p>
 <h3 id="3-2-专利纠纷分析"><a href="#3-2-专利纠纷分析" class="headerlink" title="3.2 专利纠纷分析"></a>3.2 专利纠纷分析</h3><p>参考上一部分的架构图，目前关心的组件主要有GPLV2(compiler/vm)、UPL(truffle/js)和BSD(sulong)三种协议。下面逐一进行分析。</p>
