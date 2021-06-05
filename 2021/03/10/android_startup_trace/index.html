@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>app_process 初始化阶段trace | mjblog</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="背景android 中为了提升程序启动速度，将许多的初始化动作前移到了 app_process中。这为调试一些系统行为(尤其启动时行为)造成了比较大的障碍。因此希望获得一种能够debug或者至少trace 启动阶段行为的方案。 尝试调试先行尝试调试。执行app_process -v 可以在logcat中看到各种可用的命令。再参考https:&#x2F;&#x2F;blog.csdn.net&#x2F;tanzui&#x2F;articl">
+<meta property="og:type" content="article">
+<meta property="og:title" content="app_process 初始化阶段trace">
+<meta property="og:url" content="http://mjblog.github.io/2021/03/10/android_startup_trace/index.html">
+<meta property="og:site_name" content="mjblog">
+<meta property="og:description" content="背景android 中为了提升程序启动速度，将许多的初始化动作前移到了 app_process中。这为调试一些系统行为(尤其启动时行为)造成了比较大的障碍。因此希望获得一种能够debug或者至少trace 启动阶段行为的方案。 尝试调试先行尝试调试。执行app_process -v 可以在logcat中看到各种可用的命令。再参考https:&#x2F;&#x2F;blog.csdn.net&#x2F;tanzui&#x2F;articl">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2021-03-10T04:21:37.000Z">
+<meta property="article:modified_time" content="2021-03-24T02:48:42.278Z">
+<meta property="article:author" content="Ma Jiang">
+<meta property="article:tag" content="ANDROID">
+<meta name="twitter:card" content="summary">
+  
+    <link rel="alternate" href="/atom.xml" title="mjblog" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+  
+
+<meta name="generator" content="Hexo 4.2.1"></head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">mjblog</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="搜索"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://mjblog.github.io"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-android_startup_trace" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2021/03/10/android_startup_trace/" class="article-date">
+  <time datetime="2021-03-10T04:21:37.000Z" itemprop="datePublished">2021-03-10</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      app_process 初始化阶段trace
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h2><p>android 中为了提升程序启动速度，将许多的初始化动作前移到了 app_process中。<br>这为调试一些系统行为(尤其启动时行为)造成了比较大的障碍。<br>因此希望获得一种能够debug或者至少trace 启动阶段行为的方案。</p>
+<h2 id="尝试调试"><a href="#尝试调试" class="headerlink" title="尝试调试"></a>尝试调试</h2><p>先行尝试调试。执行app_process -v 可以在logcat中看到各种可用的命令。<br>再参考<a href="https://blog.csdn.net/tanzui/article/details/87901884，添加如下的命令可以使得程序能够被调试。" target="_blank" rel="noopener">https://blog.csdn.net/tanzui/article/details/87901884，添加如下的命令可以使得程序能够被调试。</a><br>export 变量参考/system/bin/am脚本。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">export CLASSPATH&#x3D;&#x2F;system&#x2F;framework&#x2F;am.jar</span><br><span class="line">app_process  -XjdwpProvider:adbconnection -XjdwpOptions:suspend&#x3D;n,server&#x3D;y -Xcompiler-option --debuggable    &#x2F;system&#x2F;bin com.android.commands.am.Am instrument</span><br></pre></td></tr></table></figure>
+<p>但是当我们将suspend=n改为suspend=y时，ART会abort，提示Cannot use suspend=y with late-init jdwp。原理上看，应该是未完全初始化前，无法使用调试器。</p>
+<p>1-23 15:44:02.062 15371 15371 D AndroidRuntime: &gt;&gt;&gt;&gt;&gt;&gt; START com.android.internal.os.RuntimeInit uid 0 &lt;&lt;&lt;&lt;&lt;&lt;<br>01-23 15:44:02.071 15371 15371 I AndroidRuntime: Using default boot image<br>01-23 15:44:02.071 15371 15371 I AndroidRuntime: Leaving lock profiling enabled<br>01-23 15:44:02.076 15371 15371 I app_process: Core platform API reporting enabled, enforcing=false<br>01-23 15:44:02.243 15371 15371 E app_process: Cannot use suspend=y with late-init jdwp.<br>01-23 15:44:02.244 15371 15371 F app_process: runtime.cc:1657] Plugin { library=”libadbconnection.so”, handle=0x0 } failed to load: Initialization of plugin failed<br>01-23 15:44:02.314 15371 15371 F app_process: runtime.cc:630] Runtime aborting…<br>01-23 15:44:02.314 15371 15371 F app_process: runtime.cc:630] Dumping all threads without mutator lock held<br>01-23 15:44:02.314 15371 15371 F app_process: runtime.cc:630] All threads:<br>01-23 15:44:02.314 15371 15371 F app_process: runtime.cc:630] DALVIK THREADS (1):<br>01-23 15:44:02.314 15371 15371 F app_process: runtime.cc:630] “main” prio=5 tid=1 Runnable (still starting up)<br>01-23 15:44:02.314 15371 15371 F app_process: runtime.cc:630]   | group=”” sCount=0 dsCount=0 flags=0 obj=0x0 self=0x77abc10800<br>01-23 15:44:02.314 15371 15371 F app_process: runtime.cc:630]   | sysTid=15371 nice=0 cgrp=default sched=0/0 handle=0x78321e6ed8<br>01-23 15:44:02.314 15371 15371 F app_process: runtime.cc:630]   | state=R schedstat=( 496134003 4942656 33 ) utm=20 stm=29 core=4 HZ=100<br>01-23 15:44:02.314 15371 15371 F app_process: runtime.cc:630]   | stack=0x7fdbd37000-0x7fdbd39000 stackSize=8192KB<br>01-23 15:44:02.314 15371 15371 F app_process: runtime.cc:630]   | held mutexes= “abort lock” “mutator lock”(shared held)<br>01-23 15:44:02.314 15371 15371 F app_process: runtime.cc:630]   native: #00 pc 0000000000411f18  /apex/com.android.runtime/lib64/libart.so (art::DumpNativeStack(std::<strong>1::basic_ostream&lt;char, std::</strong>1::char_traits<char>&gt;&amp;, int, BacktraceMap<em>, char const</em>, art::ArtMethod<em>, void</em>, bool)+140)<br>01-23 15:44:02.314 15371 15371 F app_process: runtime.cc:630]   native: #01 pc 00000000004f977c  /apex/com.android.runtime/lib64/libart.so (art::Thread::DumpStack(std::<strong>1::basic_ostream&lt;char, std::</strong>1::char_traits<char>&gt;&amp;, bool, BacktraceMap<em>, bool) const+512)<br>01-23 15:44:02.314 15371 15371 F app_process: runtime.cc:630]   native: #02 pc 00000000005140c0  /apex/com.android.runtime/lib64/libart.so (art::DumpCheckpoint::Run(art::Thread</em>)+828)</p>
+<h2 id="尝试trace"><a href="#尝试trace" class="headerlink" title="尝试trace"></a>尝试trace</h2><p>由于需要初始化时的trace，普通的trace功能肯定是无法满足要求了。<br>因为前面app_process -v中给出了art支持 -Xmethod-trace，所以尝试了如下命令(也参考了art自己的测试用例304-method-tracing/run)。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">app_process -verbose:class  -Xmethod-trace  -Xmethod-trace-file:&#x2F;data&#x2F;local&#x2F;tmp&#x2F;trace.bin  &#x2F;system&#x2F;bin com.android.commands.am.Am instrumen</span><br></pre></td></tr></table></figure>
+<p>这一命令可以正常地生成trace文件，直接用文本编辑器可以打开并查看头部信息，但是剩余信息是二进制的。<br>将其pull到pc机器上，可以用android studio打开。<br>具体方法是:<br>将文件pull到pc上<br>将文件名改为.trace结尾(一定要改，否则android studio会报错)<br>android studio中打开profiler<br>点击+号，选择load from file，然后选中前面的trace即可</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://mjblog.github.io/2021/03/10/android_startup_trace/" data-id="cknykihku0004otfa0ifcdr3o" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/ANDROID/" rel="tag">ANDROID</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2021/03/26/graalvm_observing_compilations/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          graalvm 编译过程分析工具
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2021/02/26/android_core_limit/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">android app cpu核心限制尝试</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">标签</h3>
+    <div class="widget">
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/AI/" rel="tag">AI</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ANDROID/" rel="tag">ANDROID</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Android/" rel="tag">Android</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/GRAALVM/" rel="tag">GRAALVM</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/IDE/" rel="tag">IDE</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/LLVM-STUDY/" rel="tag">LLVM_STUDY</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/env/" rel="tag">env</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">标签云</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/AI/" style="font-size: 20px;">AI</a> <a href="/tags/ANDROID/" style="font-size: 13.33px;">ANDROID</a> <a href="/tags/Android/" style="font-size: 13.33px;">Android</a> <a href="/tags/GRAALVM/" style="font-size: 16.67px;">GRAALVM</a> <a href="/tags/IDE/" style="font-size: 10px;">IDE</a> <a href="/tags/LLVM-STUDY/" style="font-size: 20px;">LLVM_STUDY</a> <a href="/tags/env/" style="font-size: 10px;">env</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">归档</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/05/">五月 2021</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/04/">四月 2021</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/03/">三月 2021</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/02/">二月 2021</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/01/">一月 2021</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/12/">十二月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/09/">九月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/07/">七月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/06/">六月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/05/">五月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/04/">四月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/03/">三月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/02/">二月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/01/">一月 2020</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">最新文章</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2021/05/28/android_rust_dev/">Android Rust 接入</a>
+          </li>
+        
+          <li>
+            <a href="/2021/04/27/node_js_native_plugin_ana/">nodejs native 插件调研</a>
+          </li>
+        
+          <li>
+            <a href="/2021/03/26/graalvm_observing_compilations/">graalvm 编译过程分析工具</a>
+          </li>
+        
+          <li>
+            <a href="/2021/03/10/android_startup_trace/">app_process 初始化阶段trace</a>
+          </li>
+        
+          <li>
+            <a href="/2021/02/26/android_core_limit/">android app cpu核心限制尝试</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2021 Ma Jiang<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+
+  
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+
+
+<script src="/js/script.js"></script>
+
+
+  </div>
+</body>
+</html>

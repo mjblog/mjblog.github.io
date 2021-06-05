@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>nodejs native 插件调研 | mjblog</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="背景nodejs的native插件是典型的混合语言开发场景(js + C)。为了辅助评估多语言运行时的价值，希望获取nodejs社区中native插件的总代码量。 方法nodejs社区有中心分发系统，可以认为绝大部分的native插件都会进入npmjs这个中心网站。我们可以利用npmjs提供的查询功能来统计native 插件的数量，获取插件的源码，然后使用cloc等工具来最终得到代码行数。 获取n">
+<meta property="og:type" content="article">
+<meta property="og:title" content="nodejs native 插件调研">
+<meta property="og:url" content="http://mjblog.github.io/2021/04/27/node_js_native_plugin_ana/index.html">
+<meta property="og:site_name" content="mjblog">
+<meta property="og:description" content="背景nodejs的native插件是典型的混合语言开发场景(js + C)。为了辅助评估多语言运行时的价值，希望获取nodejs社区中native插件的总代码量。 方法nodejs社区有中心分发系统，可以认为绝大部分的native插件都会进入npmjs这个中心网站。我们可以利用npmjs提供的查询功能来统计native 插件的数量，获取插件的源码，然后使用cloc等工具来最终得到代码行数。 获取n">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2021-04-27T04:21:37.000Z">
+<meta property="article:modified_time" content="2021-06-05T04:12:28.847Z">
+<meta property="article:author" content="Ma Jiang">
+<meta property="article:tag" content="GRAALVM">
+<meta name="twitter:card" content="summary">
+  
+    <link rel="alternate" href="/atom.xml" title="mjblog" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+  
+
+<meta name="generator" content="Hexo 4.2.1"></head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">mjblog</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="搜索"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://mjblog.github.io"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-node_js_native_plugin_ana" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2021/04/27/node_js_native_plugin_ana/" class="article-date">
+  <time datetime="2021-04-27T04:21:37.000Z" itemprop="datePublished">2021-04-27</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      nodejs native 插件调研
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h2><p>nodejs的native插件是典型的混合语言开发场景(js + C)。为了辅助评估多语言运行时的价值，希望获取nodejs社区中native插件的总代码量。</p>
+<h2 id="方法"><a href="#方法" class="headerlink" title="方法"></a>方法</h2><p>nodejs社区有中心分发系统，可以认为绝大部分的native插件都会进入npmjs这个中心网站。我们可以利用npmjs提供的查询功能来统计native 插件的数量，获取插件的源码，然后使用cloc等工具来最终得到代码行数。</p>
+<h3 id="获取native插件总量"><a href="#获取native插件总量" class="headerlink" title="获取native插件总量"></a>获取native插件总量</h3><p>npmjs中没有特异性的标签用于确定哪一个npm包是native插件，获取插件总量的确切数量非常困难。<br>一个比较取巧的方案是利用npmjs中的包依赖信息。nodejs主要的native插件都依赖两个接口机制NAN(Native Abstractions for Node.js 其较为成熟)和NAPI(较新的接口层，功能更强更简洁)。这两个机制分别对应<a href="https://www.npmjs.com/package/nan" target="_blank" rel="noopener">https://www.npmjs.com/package/nan</a> 和 <a href="https://www.npmjs.com/package/node-addon-api" target="_blank" rel="noopener">https://www.npmjs.com/package/node-addon-api</a> 这两个npm包。因此，只需要查看这两个npm包被依赖的数量，就可以估算出npmjs中的native插件数量了。在本文档写作时，NAN有5564个依赖，NAPI有986个依赖。<br><font color=red>较为粗略的估算，当前nodejs的native插件数量大致是6500个</font></p>
+<h3 id="获取native插件的代码并统计代码行数"><a href="#获取native插件的代码并统计代码行数" class="headerlink" title="获取native插件的代码并统计代码行数"></a>获取native插件的代码并统计代码行数</h3><p>使用cloc等工具统计代码较为简单，核心问题是需要从nan和napi包的依赖信息中抽取出各native插件的源代码。<br>调研了各种方案后，当前的唯一可行的方案是(需要说明的是，即使是使用这个方案，也无法完整获取所有的信息。因为在超过396个依赖后，npmjs就拒绝再展示后面的依赖条目了)：<br>基于 <a href="https://www.npmjs.com/browse/depended/nan" target="_blank" rel="noopener">https://www.npmjs.com/browse/depended/nan</a> 这样的页面信息分析nan的依赖包 (npmjs rest api接口中已经无法直接获取依赖信息了，可能是由于负载较重的原因)<br>取出包名后，通过 npmjs 的 restapi 可以查询到该 native 插件的源代码地址<br>使用git 取出源代码后，使用cloc 统计代码行数</p>
+<p>第一条的依赖分析可使用现成的npm包，如下所示，可以将依赖信息导出到文本文件中。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">npm install npm-dependants</span><br><span class="line">npx npm-dependants node-addon-api &amp;&gt; napi_dep.txt</span><br><span class="line">npx npm-dependants nan &amp;&gt; nan_dep.txt</span><br></pre></td></tr></table></figure>
+<p>使用curl可以访问内npmjs的restapi获取插件的代码位置，示例脚本如下。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#set -x</span></span><br><span class="line"><span class="comment">#dep_file是前面获得的依赖包文件</span></span><br><span class="line">dep_file=./napi_dep.txt</span><br><span class="line">result_dir=<span class="string">"./results_<span class="variable">$&#123;dep_file##*/&#125;</span>"</span></span><br><span class="line">rm <span class="variable">$&#123;result_dir&#125;</span> -rf; mkdir <span class="variable">$&#123;result_dir&#125;</span></span><br><span class="line"><span class="keyword">for</span> pkg <span class="keyword">in</span> `cat <span class="variable">$&#123;dep_file&#125;</span>`</span><br><span class="line"><span class="keyword">do</span></span><br><span class="line">  <span class="comment">#pkg="node-stringprep"</span></span><br><span class="line">  output=`curl https://registry.npmjs.org/<span class="variable">$&#123;pkg&#125;</span>/latest`</span><br><span class="line">  <span class="built_in">echo</span> <span class="string">"now ##<span class="variable">$pkg</span>##"</span></span><br><span class="line">  <span class="keyword">for</span> field <span class="keyword">in</span> <span class="variable">$&#123;output&#125;</span></span><br><span class="line">  <span class="keyword">do</span></span><br><span class="line">    <span class="comment">#"url":"https://</span></span><br><span class="line">    <span class="comment">#,"url":"git+https:</span></span><br><span class="line">    used_line=`<span class="built_in">echo</span> <span class="variable">$&#123;field&#125;</span>|grep <span class="string">'"repository":&#123;"type":"git","url":"'</span>`</span><br><span class="line">    <span class="keyword">if</span> [ $? -eq 0 ] ; <span class="keyword">then</span></span><br><span class="line">      used_line=<span class="variable">$&#123;used_line##*\"repository\"\:\&#123;\"type\"\:\"git\"\,\"url\"\:\"&#125;</span></span><br><span class="line">      used_line=<span class="variable">$&#123;used_line%%\"\&#125;</span>\,\"*&#125;</span><br><span class="line"></span><br><span class="line">      used_line=<span class="variable">$&#123;used_line##*github.com\/&#125;</span></span><br><span class="line"></span><br><span class="line">      <span class="built_in">echo</span> <span class="string">"getting git://github.com/<span class="variable">$&#123;used_line&#125;</span>"</span></span><br><span class="line">      bash ./cloc-git.sh git://github.com/<span class="variable">$&#123;used_line&#125;</span> &gt; <span class="variable">$&#123;result_dir&#125;</span>/<span class="variable">$&#123;used_line##*/&#125;</span>.<span class="built_in">log</span></span><br><span class="line">    <span class="keyword">fi</span></span><br><span class="line">  <span class="keyword">done</span></span><br><span class="line"><span class="keyword">done</span></span><br></pre></td></tr></table></figure>
+
+<p>上面文件依赖的cloc-git.sh 是一个对cloc工具的简单封装，如下代码所示.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#!/usr/bin/env bash</span></span><br><span class="line">git <span class="built_in">clone</span> --depth 1 <span class="string">"<span class="variable">$1</span>"</span> temp-linecount-repo &amp;&amp;</span><br><span class="line">          <span class="built_in">printf</span> <span class="string">"\nnow <span class="variable">$1</span>\n\n"</span> &amp;&amp;</span><br><span class="line">            cloc temp-linecount-repo &amp;&amp;</span><br><span class="line">              rm -rf temp-linecount-repo</span><br></pre></td></tr></table></figure>
+<p>上面步骤执行完成后，可以得到一系列cloc的输出文件，再用如下脚本抽取所需的代码行号信息。<br>注意我们不能直接提取SUM的结果，因为native 插件中可能包含原始的工程项目(如C代码和其相关的文档说明)。<br>为了减小干扰，我们只提取c++和js的信息(插件中包含原c++工程的，后续通过代码行数量来过滤)。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#set -x</span></span><br><span class="line">dep_file=./napi_dep.txt</span><br><span class="line">result_dir=<span class="string">"./results_<span class="variable">$&#123;dep_file##*/&#125;</span>"</span></span><br><span class="line"><span class="keyword">for</span> file <span class="keyword">in</span> `ls <span class="variable">$&#123;result_dir&#125;</span>/*.<span class="built_in">log</span>`</span><br><span class="line"><span class="keyword">do</span></span><br><span class="line">  cpp_header_comment=`cat <span class="variable">$&#123;file&#125;</span>  |grep <span class="string">'C++ Header'</span>  -w | awk  <span class="string">'&#123;print $5&#125;'</span>`</span><br><span class="line">  cpp_header_code=`cat <span class="variable">$&#123;file&#125;</span>|grep <span class="string">'C++ Header'</span>  -w | awk  <span class="string">'&#123;print $6&#125;'</span>`</span><br><span class="line">  cpp_comment=`cat <span class="variable">$&#123;file&#125;</span> |grep <span class="string">'^C++  '</span>  -w| awk  <span class="string">'&#123;print $4&#125;'</span>`</span><br><span class="line">  cpp_code=`cat <span class="variable">$&#123;file&#125;</span>  |grep <span class="string">'^C++  '</span>  -w | awk  <span class="string">'&#123;print $5&#125;'</span>`</span><br><span class="line">  js_comment=`cat <span class="variable">$&#123;file&#125;</span>  |grep <span class="string">'^JavaScript '</span>  -w | awk  <span class="string">'&#123;print $4&#125;'</span>`</span><br><span class="line">  js_code=`cat <span class="variable">$&#123;file&#125;</span>  |grep <span class="string">'^JavaScript '</span>  -w | awk  <span class="string">'&#123;print $5&#125;'</span>`</span><br><span class="line">  <span class="comment">#echo $&#123;file&#125;</span></span><br><span class="line">  <span class="built_in">echo</span> <span class="string">"<span class="variable">$&#123;file&#125;</span>:<span class="variable">$&#123;cpp_header_comment&#125;</span>:<span class="variable">$&#123;cpp_header_code&#125;</span>:<span class="variable">$&#123;cpp_comment&#125;</span>:<span class="variable">$&#123;cpp_code&#125;</span>:<span class="variable">$&#123;js_comment&#125;</span>:<span class="variable">$&#123;js_code&#125;</span>"</span></span><br><span class="line"><span class="keyword">done</span></span><br></pre></td></tr></table></figure>
+<p>这里可以得到如下所示的输出。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">results&#x2F;64.git.log:63:1941:13:45:0:119</span><br><span class="line">results&#x2F;ApplicationInsights-node.js-native-metrics.git.log:2:189:9:139:3:45</span><br><span class="line">results&#x2F;BridJS.git.log:1241:1475:708:3247:654:1426</span><br></pre></td></tr></table></figure>
+<p>这样的数据就便于分析了，可以按需进行数据处理。</p>
+<h3 id="估算总代码行数"><a href="#估算总代码行数" class="headerlink" title="估算总代码行数"></a>估算总代码行数</h3><p>在得到上面的分析数据后，通过抽样观察，过滤掉满足如下条件之一的项目(以屏蔽native插件中包含原工程的场景)：<br>1 c++代码行超过10000行<br>2 c++头文件代码超过5000行<br>3 js代码超过5000行</p>
+<p>对nan总共得到270条数据，数值如下。</p>
+<table>
+<thead>
+<tr>
+<th align="center">c++_header_comment</th>
+<th align="center">cpp_header_code</th>
+<th align="center">cpp_comment</th>
+<th align="center">cpp_code</th>
+<th align="center">js_comment</th>
+<th align="center">js_code</th>
+<th align="center">SUM</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">286.678392</td>
+<td align="center">584.8241206</td>
+<td align="center">96.65055762</td>
+<td align="center">848.3197026</td>
+<td align="center">147.6666667</td>
+<td align="center">1026.724138</td>
+<td align="center">2990.863577</td>
+</tr>
+</tbody></table>
+<p>对napi总共得到225条数据，数值如下。</p>
+<table>
+<thead>
+<tr>
+<th align="center">c++_header_comment</th>
+<th align="center">cpp_header_code</th>
+<th align="center">cpp_comment</th>
+<th align="center">cpp_code</th>
+<th align="center">js_comment</th>
+<th align="center">js_code</th>
+<th align="center">SUM</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">237.8641975</td>
+<td align="center">450.3703704</td>
+<td align="center">66.64516129</td>
+<td align="center">536.4193548</td>
+<td align="center">56.06542056</td>
+<td align="center">460.5</td>
+<td align="center">1807.864505</td>
+</tr>
+</tbody></table>
+<p>根据上述数据，估算native插件总代码数量如下：<br>2000 行/每个插件 * 6500 个插件 = 6.5k * 2k = 13m = 一千三百万行<br><font color=red>较为粗略的估算，当前nodejs的native插件总代码行为 一千三百万行 。</font></p>
+<p>需要注意到，整个分析过程中出现了很多干扰因素，上面的数据可能产生较大偏差。</p>
+<p>可能导致数据低估的因素：<br>有一些由于行数过多被过滤掉的项目，其实并没有包含原工程(如nodegui)。<br>NAPI中出现了对接Object C++和RUST的情况，这些语言的代码行没有被统计</p>
+<p>可能导致数据高估的因素：<br>过滤后仍然有部分项目含有了原工程</p>
+<p>可能导致数据不定向偏差的因素：<br>由于npmjs的限制，只能获得396个插件的抽样统计数据，抽样导致的偏差不可控</p>
+<h2 id="结论"><a href="#结论" class="headerlink" title="结论"></a>结论</h2><p>依据上面的分析，nodejs的native插件生态维护的代码行数应该在数百万行到数千万行之间。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://mjblog.github.io/2021/04/27/node_js_native_plugin_ana/" data-id="ckpj8lyne000115fadvbme8rv" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/GRAALVM/" rel="tag">GRAALVM</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2021/05/28/android_rust_dev/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          Android Rust 接入
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2021/03/26/graalvm_observing_compilations/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">graalvm 编译过程分析工具</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">标签</h3>
+    <div class="widget">
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/AI/" rel="tag">AI</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ANDROID/" rel="tag">ANDROID</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Android/" rel="tag">Android</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/GRAALVM/" rel="tag">GRAALVM</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/IDE/" rel="tag">IDE</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/LLVM-STUDY/" rel="tag">LLVM_STUDY</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/env/" rel="tag">env</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">标签云</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/AI/" style="font-size: 20px;">AI</a> <a href="/tags/ANDROID/" style="font-size: 13.33px;">ANDROID</a> <a href="/tags/Android/" style="font-size: 13.33px;">Android</a> <a href="/tags/GRAALVM/" style="font-size: 16.67px;">GRAALVM</a> <a href="/tags/IDE/" style="font-size: 10px;">IDE</a> <a href="/tags/LLVM-STUDY/" style="font-size: 20px;">LLVM_STUDY</a> <a href="/tags/env/" style="font-size: 10px;">env</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">归档</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/05/">五月 2021</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/04/">四月 2021</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/03/">三月 2021</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/02/">二月 2021</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/01/">一月 2021</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/12/">十二月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/09/">九月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/07/">七月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/06/">六月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/05/">五月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/04/">四月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/03/">三月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/02/">二月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/01/">一月 2020</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">最新文章</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2021/05/28/android_rust_dev/">Android Rust 接入</a>
+          </li>
+        
+          <li>
+            <a href="/2021/04/27/node_js_native_plugin_ana/">nodejs native 插件调研</a>
+          </li>
+        
+          <li>
+            <a href="/2021/03/26/graalvm_observing_compilations/">graalvm 编译过程分析工具</a>
+          </li>
+        
+          <li>
+            <a href="/2021/03/10/android_startup_trace/">app_process 初始化阶段trace</a>
+          </li>
+        
+          <li>
+            <a href="/2021/02/26/android_core_limit/">android app cpu核心限制尝试</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2021 Ma Jiang<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+
+  
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+
+
+<script src="/js/script.js"></script>
+
+
+  </div>
+</body>
+</html>

@@ -1,0 +1,1042 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>graalvm_nodejs_draw_tmp | mjblog</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="graalvm_nodejs_draw.md    &#x2F;* https:&#x2F;&#x2F;github.com&#x2F;microsoft&#x2F;vscode&#x2F;blob&#x2F;master&#x2F;extensions&#x2F;markdown-language-features&#x2F;media&#x2F;markdown.css *&#x2F; &#x2F;*----------------------------------------------------------">
+<meta property="og:type" content="article">
+<meta property="og:title" content="graalvm_nodejs_draw_tmp">
+<meta property="og:url" content="http://mjblog.github.io/2021/04/26/graalvm_nodejs_draw_tmp/index.html">
+<meta property="og:site_name" content="mjblog">
+<meta property="og:description" content="graalvm_nodejs_draw.md    &#x2F;* https:&#x2F;&#x2F;github.com&#x2F;microsoft&#x2F;vscode&#x2F;blob&#x2F;master&#x2F;extensions&#x2F;markdown-language-features&#x2F;media&#x2F;markdown.css *&#x2F; &#x2F;*----------------------------------------------------------">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="data:image/png;base64,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">
+<meta property="og:image" content="file:///d:/opensource/blog_internal/source/_posts/test_pack.tar.xz">
+<meta property="article:published_time" content="2021-04-26T11:58:27.966Z">
+<meta property="article:modified_time" content="2021-04-26T11:58:27.966Z">
+<meta property="article:author" content="Ma Jiang">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="data:image/png;base64,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">
+  
+    <link rel="alternate" href="/atom.xml" title="mjblog" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+  
+
+<meta name="generator" content="Hexo 4.2.1"></head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">mjblog</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="搜索"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://mjblog.github.io"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-graalvm_nodejs_draw_tmp" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2021/04/26/graalvm_nodejs_draw_tmp/" class="article-date">
+  <time datetime="2021-04-26T11:58:27.966Z" itemprop="datePublished">2021-04-26</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      graalvm_nodejs_draw_tmp
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <!DOCTYPE html>
+<html>
+<head>
+<title>graalvm_nodejs_draw.md</title>
+<meta http-equiv="Content-type" content="text/html;charset=UTF-8">
+
+<style>
+/* https://github.com/microsoft/vscode/blob/master/extensions/markdown-language-features/media/markdown.css */
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
+body {
+	font-family: var(--vscode-markdown-font-family, -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI", "Ubuntu", "Droid Sans", sans-serif);
+	font-size: var(--vscode-markdown-font-size, 14px);
+	padding: 0 26px;
+	line-height: var(--vscode-markdown-line-height, 22px);
+	word-wrap: break-word;
+}
+
+#code-csp-warning {
+	position: fixed;
+	top: 0;
+	right: 0;
+	color: white;
+	margin: 16px;
+	text-align: center;
+	font-size: 12px;
+	font-family: sans-serif;
+	background-color:#444444;
+	cursor: pointer;
+	padding: 6px;
+	box-shadow: 1px 1px 1px rgba(0,0,0,.25);
+}
+
+#code-csp-warning:hover {
+	text-decoration: none;
+	background-color:#007acc;
+	box-shadow: 2px 2px 2px rgba(0,0,0,.25);
+}
+
+body.scrollBeyondLastLine {
+	margin-bottom: calc(100vh - 22px);
+}
+
+body.showEditorSelection .code-line {
+	position: relative;
+}
+
+body.showEditorSelection .code-active-line:before,
+body.showEditorSelection .code-line:hover:before {
+	content: "";
+	display: block;
+	position: absolute;
+	top: 0;
+	left: -12px;
+	height: 100%;
+}
+
+body.showEditorSelection li.code-active-line:before,
+body.showEditorSelection li.code-line:hover:before {
+	left: -30px;
+}
+
+.vscode-light.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(0, 0, 0, 0.15);
+}
+
+.vscode-light.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(0, 0, 0, 0.40);
+}
+
+.vscode-light.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+.vscode-dark.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(255, 255, 255, 0.4);
+}
+
+.vscode-dark.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(255, 255, 255, 0.60);
+}
+
+.vscode-dark.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+.vscode-high-contrast.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(255, 160, 0, 0.7);
+}
+
+.vscode-high-contrast.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(255, 160, 0, 1);
+}
+
+.vscode-high-contrast.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+img {
+	max-width: 100%;
+	max-height: 100%;
+}
+
+a {
+	text-decoration: none;
+}
+
+a:hover {
+	text-decoration: underline;
+}
+
+a:focus,
+input:focus,
+select:focus,
+textarea:focus {
+	outline: 1px solid -webkit-focus-ring-color;
+	outline-offset: -1px;
+}
+
+hr {
+	border: 0;
+	height: 2px;
+	border-bottom: 2px solid;
+}
+
+h1 {
+	padding-bottom: 0.3em;
+	line-height: 1.2;
+	border-bottom-width: 1px;
+	border-bottom-style: solid;
+}
+
+h1, h2, h3 {
+	font-weight: normal;
+}
+
+table {
+	border-collapse: collapse;
+}
+
+table > thead > tr > th {
+	text-align: left;
+	border-bottom: 1px solid;
+}
+
+table > thead > tr > th,
+table > thead > tr > td,
+table > tbody > tr > th,
+table > tbody > tr > td {
+	padding: 5px 10px;
+}
+
+table > tbody > tr + tr > td {
+	border-top: 1px solid;
+}
+
+blockquote {
+	margin: 0 7px 0 5px;
+	padding: 0 16px 0 10px;
+	border-left-width: 5px;
+	border-left-style: solid;
+}
+
+code {
+	font-family: Menlo, Monaco, Consolas, "Droid Sans Mono", "Courier New", monospace, "Droid Sans Fallback";
+	font-size: 1em;
+	line-height: 1.357em;
+}
+
+body.wordWrap pre {
+	white-space: pre-wrap;
+}
+
+pre:not(.hljs),
+pre.hljs code > div {
+	padding: 16px;
+	border-radius: 3px;
+	overflow: auto;
+}
+
+pre code {
+	color: var(--vscode-editor-foreground);
+	tab-size: 4;
+}
+
+/** Theming */
+
+.vscode-light pre {
+	background-color: rgba(220, 220, 220, 0.4);
+}
+
+.vscode-dark pre {
+	background-color: rgba(10, 10, 10, 0.4);
+}
+
+.vscode-high-contrast pre {
+	background-color: rgb(0, 0, 0);
+}
+
+.vscode-high-contrast h1 {
+	border-color: rgb(0, 0, 0);
+}
+
+.vscode-light table > thead > tr > th {
+	border-color: rgba(0, 0, 0, 0.69);
+}
+
+.vscode-dark table > thead > tr > th {
+	border-color: rgba(255, 255, 255, 0.69);
+}
+
+.vscode-light h1,
+.vscode-light hr,
+.vscode-light table > tbody > tr + tr > td {
+	border-color: rgba(0, 0, 0, 0.18);
+}
+
+.vscode-dark h1,
+.vscode-dark hr,
+.vscode-dark table > tbody > tr + tr > td {
+	border-color: rgba(255, 255, 255, 0.18);
+}
+
+</style>
+
+<style>
+/* Tomorrow Theme */
+/* http://jmblog.github.com/color-themes-for-google-code-highlightjs */
+/* Original theme - https://github.com/chriskempson/tomorrow-theme */
+
+/* Tomorrow Comment */
+.hljs-comment,
+.hljs-quote {
+	color: #8e908c;
+}
+
+/* Tomorrow Red */
+.hljs-variable,
+.hljs-template-variable,
+.hljs-tag,
+.hljs-name,
+.hljs-selector-id,
+.hljs-selector-class,
+.hljs-regexp,
+.hljs-deletion {
+	color: #c82829;
+}
+
+/* Tomorrow Orange */
+.hljs-number,
+.hljs-built_in,
+.hljs-builtin-name,
+.hljs-literal,
+.hljs-type,
+.hljs-params,
+.hljs-meta,
+.hljs-link {
+	color: #f5871f;
+}
+
+/* Tomorrow Yellow */
+.hljs-attribute {
+	color: #eab700;
+}
+
+/* Tomorrow Green */
+.hljs-string,
+.hljs-symbol,
+.hljs-bullet,
+.hljs-addition {
+	color: #718c00;
+}
+
+/* Tomorrow Blue */
+.hljs-title,
+.hljs-section {
+	color: #4271ae;
+}
+
+/* Tomorrow Purple */
+.hljs-keyword,
+.hljs-selector-tag {
+	color: #8959a8;
+}
+
+.hljs {
+	display: block;
+	overflow-x: auto;
+	color: #4d4d4c;
+	padding: 0.5em;
+}
+
+.hljs-emphasis {
+	font-style: italic;
+}
+
+.hljs-strong {
+	font-weight: bold;
+}
+</style>
+
+<style>
+/*
+ * Markdown PDF CSS
+ */
+
+ body {
+	font-family: -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI", "Ubuntu", "Droid Sans", sans-serif, "Meiryo";
+	padding: 0 12px;
+}
+
+pre {
+	background-color: #f8f8f8;
+	border: 1px solid #cccccc;
+	border-radius: 3px;
+	overflow-x: auto;
+	white-space: pre-wrap;
+	overflow-wrap: break-word;
+}
+
+pre:not(.hljs) {
+	padding: 23px;
+	line-height: 19px;
+}
+
+blockquote {
+	background: rgba(127, 127, 127, 0.1);
+	border-color: rgba(0, 122, 204, 0.5);
+}
+
+.emoji {
+	height: 1.4em;
+}
+
+code {
+	font-size: 14px;
+	line-height: 19px;
+}
+
+/* for inline code */
+:not(pre):not(.hljs) > code {
+	color: #C9AE75; /* Change the old color so it seems less like an error */
+	font-size: inherit;
+}
+
+/* Page Break : use <div class="page"/> to insert page break
+-------------------------------------------------------- */
+.page {
+	page-break-after: always;
+}
+
+</style>
+
+<script src="https://unpkg.com/mermaid/dist/mermaid.min.js"></script>
+<meta name="generator" content="Hexo 4.2.1"></head>
+<body>
+  <script>
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: document.body.classList.contains('vscode-dark') || document.body.classList.contains('vscode-high-contrast')
+          ? 'dark'
+          : 'default'
+    });
+  </script>
+<h2 id="%E8%83%8C%E6%99%AF">背景</h2>
+<p>为探索多语言混合优化的可能应用场景，考虑选择一些多种语言频繁交互的实际场景进行分析，获取实际的性能数据供参考。</p>
+<h2 id="%E5%9C%BA%E6%99%AF%E9%80%89%E6%8B%A9">场景选择</h2>
+<p>前期已知android 针对绘图场景做了大量优化JNI调用效率的优化，并且其测试数据也显示优化效果很好。因此考虑将绘图场景作为一个切入点进行分析。java语言的绘图场景另有文档进行分析，本文选择了js语言的绘图场景进行分析。
+js有大量的绘图库，但是很多都是在浏览器环境下使用，要进行进一步分析和修改的成本太高。为了快速分析和推进，将目标缩小到nodejs上的绘图场景来分析。
+根据前期的线索选择了p5.js --&gt; node-p5 这个绘图场景先行考察。经过初步的尝试和分析，发现node-p5 依赖底层node-canvas 包进行绘图。node-canvas 周下载量有50万左右，被近1500个包依赖，是一个比较热门的应用包。简单的分析node-canvas的实现，可以看到其就是一个node c++插件，将底层图形库libcairo(c语言实现)的功能封装后导入到了js中。整个流程不复杂，并且底层库libcairo也是一个广泛使用的绘图实现。
+综合来看，可以尝试直接用graalvm的nodejs+llvm实现复现对比node-canvas的跨语言调用场景。</p>
+<h2 id="%E6%B5%8B%E8%AF%95%E7%8E%AF%E5%A2%83%E5%87%86%E5%A4%87">测试环境准备</h2>
+<h3 id="%E4%B8%8B%E8%BD%BD%E5%B9%B6%E5%AE%89%E8%A3%85graalvm-ee%E7%89%88%E6%9C%AC">下载并安装graalvm-ee版本</h3>
+<p>注册oracle账号后从 https://www.oracle.com/downloads/graalvm-downloads.html 下载最新的21.1发布版版本。
+一并下载Node.js Runtime Plugin的jar包(通过gu -L install 进行安装)。</p>
+<h3 id="%E4%BD%BF%E7%94%A8graalvm%E6%8F%90%E4%BE%9B%E7%9A%84clang%E7%BC%96%E8%AF%91libcairo">使用graalvm提供的clang编译libcairo</h3>
+<p>从 https://www.cairographics.org/releases/pixman-0.40.0.tar.gz 和 https://www.cairographics.org/releases/cairo-1.16.0.tar.xz 下载代码并解压。
+实际测试时发现使用graalvm提供的clang configure并make后无法构建出动态库，原因未知。当前使用的方案是，configure时不做指定，使用gcc进行配置，编译时使用export CC等环境变量结合make -e命令强制使用graalvm-clang。</p>
+<h4 id="%E7%BC%96%E8%AF%91pixman">编译pixman</h4>
+<pre class="hljs"><code><div>tar xf pixman-0.40.0.tar.gz
+<span class="hljs-built_in">cd</span> pixman-0.40.0
+mkdir build
+<span class="hljs-built_in">cd</span> build/
+../configure
+<span class="hljs-built_in">export</span> CC=/home/majiang/opensrc/graalvm-ce-java11-21.0.0.2/languages/llvm/native/bin/clang
+<span class="hljs-built_in">export</span> CXX=/home/majiang/opensrc/graalvm-ce-java11-21.0.0.2/languages/llvm/native/bin/clang++
+<span class="hljs-built_in">export</span> LD=/home/majiang/opensrc/graalvm-ce-java11-21.0.0.2/languages/llvm/native/bin/clang
+make -e V=1 -j 8
+<span class="hljs-comment">#vim libtool  将其中的gcc全部修改为${CC}</span>
+mkdir inst
+make install DESTDIR=`<span class="hljs-built_in">pwd</span>`/inst
+</div></code></pre>
+<h4 id="%E7%BC%96%E8%AF%91libcairo">编译libcairo</h4>
+<pre class="hljs"><code><div>tar xf cairo-1.16.0.tar.xz
+<span class="hljs-built_in">cd</span> cairo-1.16.0
+mkdir build_env
+<span class="hljs-built_in">cd</span> build_env/
+<span class="hljs-built_in">export</span> PKG_CONFIG_PATH=/home/majiang/opensrc/cario/release_src/pixman-0.40.0/build/inst/usr/<span class="hljs-built_in">local</span>/lib/pkgconfig
+<span class="hljs-comment">#vim ${PKG_CONFIG_PATH}/pixman-1.pc 修改第一行的prefix，将其修正为真实安装路径 如prefix=/home/majiang/opensrc/cario/release_src/pixman-0.40.0/build/inst/usr/local/</span>
+<span class="hljs-comment">#如果是接着pixman构建，需要先UNSET</span>
+<span class="hljs-built_in">unset</span> CC
+<span class="hljs-built_in">unset</span> CXX
+<span class="hljs-built_in">unset</span> LD
+../configure
+<span class="hljs-built_in">export</span> CC=/home/majiang/opensrc/graalvm-ce-java11-21.0.0.2/languages/llvm/native/bin/clang
+<span class="hljs-built_in">export</span> CXX=/home/majiang/opensrc/graalvm-ce-java11-21.0.0.2/languages/llvm/native/bin/clang++
+<span class="hljs-built_in">export</span> LD=/home/majiang/opensrc/graalvm-ce-java11-21.0.0.2/languages/llvm/native/bin/clang
+make -e -j8 V=1
+<span class="hljs-comment"># vim libtool 将其中的gcc全部修改为${CC}</span>
+mkdir inst
+make install DESTDIR=`<span class="hljs-built_in">pwd</span>`/inst
+</div></code></pre>
+<h2 id="%E6%B5%8B%E8%AF%95%E5%9C%BA%E6%99%AF%E6%9E%84%E5%BB%BA">测试场景构建</h2>
+<p>参考https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API/Tutorial/Drawing_shapes 中的示例。
+构建了下面三个示例。
+第一个示例是单纯设置画笔的颜色
+第二个示例是画逐渐变粗的细线
+第三个示例是画实心方块</p>
+<p>编写测试用例时有一些值得注意的发现：
+1 graalvm直接使用c接口的版本和nodejs封装后的代码非常相似，调用c接口并没有增加编码负担
+2 graalvm的truffle在翻译llvm-IR的向量化指令时，将其重写拆分成了标量操作(参考sulong/projects/com.oracle.truffle.llvm.runtime/src/com/oracle/truffle/llvm/runtime/nodes/memory/store/LLVMStoreVectorNode.java)，但是graal中的自动向量化优化没有能够将向量操作还原出来。这导致单条绘制命令需要操作较多数据点时(如画一条较长的线，或填充一个较大的矩形)，graalvm的性能大大低于node版本(这也可能是由于编译cario的优化级别导致的，https://www.graalvm.org/reference-manual/llvm/Compatibility/ 这里建议使用-O1获得好性能，实际编译时没有修改原编译过程，所以采用了-O2或者-O3；理论上，这里应该尊重llvm优化出的向量指令，因为当前java中的自动向量化尚不够成熟)。为了暂时规避该问题，下列测试用例中有意缩小了单条绘制命令的数据量。
+3 truffle中动态语言传递字符串指针给静态语言比较痛苦(如输出文件的文件名)，这里需要一些专门的设计，否则用起来很别扭（本次的测试中，graalvm的版本就因为这个原因无法直接导出png文件）。</p>
+<h3 id="%E8%AE%BE%E7%BD%AE%E7%94%BB%E7%AC%94%E5%B1%9E%E6%80%A7">设置画笔属性</h3>
+<p>nodejs版本如下</p>
+<pre class="hljs"><code><div><span class="hljs-keyword">const</span> args = process.argv.slice(<span class="hljs-number">2</span>)
+<span class="hljs-keyword">var</span> rep_input = <span class="hljs-number">20000</span>
+<span class="hljs-keyword">if</span> (args.length != <span class="hljs-number">0</span>)
+  rep_input = args[<span class="hljs-number">0</span>]
+
+<span class="hljs-keyword">const</span> { createCanvas, loadImage } = <span class="hljs-built_in">require</span>(<span class="hljs-string">'canvas'</span>)
+<span class="hljs-keyword">var</span> fs = <span class="hljs-built_in">require</span>(<span class="hljs-string">'fs'</span>)
+<span class="hljs-keyword">var</span> path = <span class="hljs-built_in">require</span>(<span class="hljs-string">'path'</span>)
+<span class="hljs-keyword">const</span> canvas = createCanvas(<span class="hljs-number">200</span>, <span class="hljs-number">200</span>)
+<span class="hljs-keyword">const</span> ctx = canvas.getContext(<span class="hljs-string">'2d'</span>)
+
+<span class="hljs-keyword">for</span> (rep = <span class="hljs-number">0</span>; rep &lt; rep_input; rep++)
+{
+  <span class="hljs-keyword">for</span> (x = <span class="hljs-number">0</span>; x &lt; <span class="hljs-number">100</span> ; x+=<span class="hljs-number">1</span>)
+  {
+    <span class="hljs-keyword">for</span> (y = <span class="hljs-number">0</span>; y &lt; <span class="hljs-number">100</span>; y+=<span class="hljs-number">1</span>)
+    {
+      ctx.fillStyle = <span class="hljs-string">'rgb(255, 221, 0)'</span>;
+      <span class="hljs-comment">//ctx.fillRect(x+0, y+0, 150, 37.5);</span>
+    }
+  }
+}
+<span class="hljs-comment">//canvas.createPNGStream().pipe(fs.createWriteStream(path.join(__dirname, 'kraken.png')))</span>
+</div></code></pre>
+<p>graalvm的版本如下。</p>
+<pre class="hljs"><code><div><span class="hljs-keyword">const</span> args = process.argv.slice(<span class="hljs-number">2</span>)
+<span class="hljs-keyword">var</span> rep_input = <span class="hljs-number">20000</span>
+<span class="hljs-keyword">if</span> (args.length != <span class="hljs-number">0</span>)
+  rep_input = args[<span class="hljs-number">0</span>]
+
+<span class="hljs-keyword">var</span> cpart = Polyglot.evalFile(<span class="hljs-string">"llvm"</span> ,<span class="hljs-string">"/home/majiang/opensrc/cario/cairo/build_env/inst/usr/local/lib/libcairo.so.2.11704.0"</span>);
+<span class="hljs-keyword">var</span> surface = cpart.cairo_image_surface_create (<span class="hljs-number">0</span>, <span class="hljs-number">200</span>, <span class="hljs-number">200</span>);
+<span class="hljs-keyword">var</span> cr = cpart.cairo_create (surface);
+<span class="hljs-keyword">for</span> (<span class="hljs-keyword">let</span> rep = <span class="hljs-number">0</span>; rep &lt; rep_input; rep++)
+{
+  <span class="hljs-keyword">for</span> (<span class="hljs-keyword">let</span> x = <span class="hljs-number">0</span>; x &lt; <span class="hljs-number">100</span>; x+=<span class="hljs-number">1</span>)
+  {
+    <span class="hljs-keyword">for</span> (<span class="hljs-keyword">let</span> y = <span class="hljs-number">0</span>; y &lt; <span class="hljs-number">100</span>; y+=<span class="hljs-number">1</span>)
+    {
+      cpart.cairo_set_source_rgb (cr, <span class="hljs-number">255</span>, <span class="hljs-number">221</span>, <span class="hljs-number">0</span>);
+    }
+  }
+}
+</div></code></pre>
+<h3 id="%E7%94%BB%E9%80%90%E6%B8%90%E5%8F%98%E7%B2%97%E7%9A%84%E7%AB%96%E7%BA%BF">画逐渐变粗的竖线</h3>
+<p>nodejs版本如下</p>
+<pre class="hljs"><code><div><span class="hljs-keyword">const</span> args = process.argv.slice(<span class="hljs-number">2</span>)
+<span class="hljs-keyword">var</span> rep_input = <span class="hljs-number">400000</span>
+<span class="hljs-keyword">if</span> (args.length != <span class="hljs-number">0</span>)
+  rep_input = args[<span class="hljs-number">0</span>]
+
+<span class="hljs-keyword">const</span> { createCanvas, loadImage } = <span class="hljs-built_in">require</span>(<span class="hljs-string">'canvas'</span>)
+<span class="hljs-keyword">var</span> fs = <span class="hljs-built_in">require</span>(<span class="hljs-string">'fs'</span>)
+<span class="hljs-keyword">var</span> path = <span class="hljs-built_in">require</span>(<span class="hljs-string">'path'</span>)
+<span class="hljs-keyword">const</span> canvas = createCanvas(<span class="hljs-number">2000</span>, <span class="hljs-number">2000</span>)
+<span class="hljs-keyword">const</span> ctx = canvas.getContext(<span class="hljs-string">'2d'</span>)
+
+<span class="hljs-keyword">for</span> (rep = <span class="hljs-number">0</span>; rep &lt; rep_input; rep++)
+{
+  <span class="hljs-keyword">for</span> (j = <span class="hljs-number">0</span>; j &lt; <span class="hljs-number">1000</span>; j+=<span class="hljs-number">20</span>)
+  {
+    <span class="hljs-keyword">for</span> (i = <span class="hljs-number">0</span>; i &lt; <span class="hljs-number">40</span>; i++)
+    {
+      ctx.lineWidth = <span class="hljs-number">1</span> + i;
+      ctx.beginPath();
+      ctx.moveTo(<span class="hljs-number">5</span> + i * <span class="hljs-number">40</span>, j + <span class="hljs-number">5</span>);
+      ctx.lineTo(<span class="hljs-number">5</span> + i * <span class="hljs-number">40</span>, j + <span class="hljs-number">10</span>);
+      ctx.stroke();
+    }
+  }
+}
+
+canvas.createPNGStream().pipe(fs.createWriteStream(path.join(__dirname, <span class="hljs-string">'kraken.png'</span>)))
+</div></code></pre>
+<p>graalvm版本如下</p>
+<pre class="hljs"><code><div><span class="hljs-keyword">const</span> args = process.argv.slice(<span class="hljs-number">2</span>)
+<span class="hljs-keyword">var</span> rep_input = <span class="hljs-number">400000</span>
+<span class="hljs-keyword">if</span> (args.length != <span class="hljs-number">0</span>)
+  rep_input = args[<span class="hljs-number">0</span>]
+
+<span class="hljs-keyword">var</span> cpart = Polyglot.evalFile(<span class="hljs-string">"llvm"</span> ,<span class="hljs-string">"/home/majiang/opensrc/cario/cairo/build_env/inst/usr/local/lib/libcairo.so.2.11704.0"</span>);
+
+<span class="hljs-keyword">var</span> surface = cpart.cairo_image_surface_create (<span class="hljs-number">0</span>, <span class="hljs-number">2000</span>, <span class="hljs-number">2000</span>);
+<span class="hljs-keyword">var</span> cr = cpart.cairo_create (surface);
+<span class="hljs-keyword">var</span> filename = <span class="hljs-string">"graalvm.png"</span>;
+
+<span class="hljs-keyword">for</span> (rep = <span class="hljs-number">0</span>; rep &lt; rep_input; rep++)
+{
+  <span class="hljs-keyword">for</span> (j = <span class="hljs-number">0</span>; j &lt; <span class="hljs-number">1000</span>; j+=<span class="hljs-number">20</span>)
+  {
+    <span class="hljs-keyword">for</span> (i = <span class="hljs-number">0</span>; i &lt; <span class="hljs-number">40</span>; i++)
+    {
+      cpart.cairo_set_line_width(cr, <span class="hljs-number">1</span> + i)
+      cpart.cairo_new_path(cr);
+      cpart.cairo_move_to(cr, <span class="hljs-number">5</span> + i * <span class="hljs-number">40</span>, <span class="hljs-number">5</span>)
+      cpart.cairo_line_to(cr, <span class="hljs-number">5</span> + i * <span class="hljs-number">40</span>, <span class="hljs-number">10</span>)
+      cpart.cairo_stroke(cr);
+    }
+  }
+}
+<span class="hljs-comment">//cpart.cairo_surface_write_to_png(surface, filename.asNative());</span>
+</div></code></pre>
+<h3 id="%E7%94%BB%E5%AE%9E%E5%BF%83%E7%9F%A9%E5%BD%A2">画实心矩形</h3>
+<p>nodejs版本如下</p>
+<pre class="hljs"><code><div><span class="hljs-keyword">const</span> args = process.argv.slice(<span class="hljs-number">2</span>)
+<span class="hljs-keyword">var</span> rep_input = <span class="hljs-number">2000</span>
+<span class="hljs-keyword">if</span> (args.length != <span class="hljs-number">0</span>)
+  rep_input = args[<span class="hljs-number">0</span>]
+
+<span class="hljs-keyword">const</span> { createCanvas, loadImage } = <span class="hljs-built_in">require</span>(<span class="hljs-string">'canvas'</span>)
+<span class="hljs-keyword">var</span> fs = <span class="hljs-built_in">require</span>(<span class="hljs-string">'fs'</span>)
+<span class="hljs-keyword">var</span> path = <span class="hljs-built_in">require</span>(<span class="hljs-string">'path'</span>)
+<span class="hljs-keyword">const</span> canvas = createCanvas(<span class="hljs-number">2000</span>, <span class="hljs-number">2000</span>)
+<span class="hljs-keyword">const</span> ctx = canvas.getContext(<span class="hljs-string">'2d'</span>)
+
+<span class="hljs-keyword">for</span> (rep = <span class="hljs-number">0</span>; rep &lt; rep_input; rep++)
+{
+  <span class="hljs-keyword">for</span> (x = <span class="hljs-number">0</span>; x &lt; <span class="hljs-number">1800</span> ; x+=<span class="hljs-number">5</span>)
+  {
+    <span class="hljs-keyword">for</span> (y = <span class="hljs-number">0</span>; y &lt; <span class="hljs-number">1800</span> ; y+=<span class="hljs-number">5</span>)
+    {
+      ctx.fillStyle = <span class="hljs-string">'rgb(255, 221, 0)'</span>;
+      ctx.fillRect(x+<span class="hljs-number">0</span>, y+<span class="hljs-number">0</span>, <span class="hljs-number">4</span>, <span class="hljs-number">4</span>);
+    }
+  }
+}
+canvas.createPNGStream().pipe(fs.createWriteStream(path.join(__dirname, <span class="hljs-string">'kraken.png'</span>)))
+</div></code></pre>
+<p>graalvm版本如下</p>
+<pre class="hljs"><code><div><span class="hljs-keyword">const</span> args = process.argv.slice(<span class="hljs-number">2</span>)
+<span class="hljs-keyword">var</span> rep_input = <span class="hljs-number">2000</span>
+<span class="hljs-keyword">if</span> (args.length != <span class="hljs-number">0</span>)
+  rep_input = args[<span class="hljs-number">0</span>]
+
+<span class="hljs-keyword">var</span> cpart = Polyglot.evalFile(<span class="hljs-string">"llvm"</span> ,<span class="hljs-string">"/home/majiang/opensrc/cario/cairo/build_env/inst/usr/local/lib/libcairo.so.2.11704.0"</span>);
+
+<span class="hljs-keyword">var</span> surface = cpart.cairo_image_surface_create (<span class="hljs-number">0</span>, <span class="hljs-number">2000</span>, <span class="hljs-number">2000</span>);
+<span class="hljs-keyword">var</span> cr = cpart.cairo_create (surface);
+
+<span class="hljs-keyword">for</span> (rep = <span class="hljs-number">0</span>; rep &lt; rep_input; rep++)
+{
+  <span class="hljs-keyword">for</span> (x = <span class="hljs-number">0</span>; x &lt; <span class="hljs-number">1800</span>; x+=<span class="hljs-number">5</span>)
+  {
+    <span class="hljs-keyword">for</span> (y = <span class="hljs-number">0</span>; y &lt; <span class="hljs-number">1800</span>; y+=<span class="hljs-number">5</span>)
+    {
+      cpart.cairo_set_source_rgb (cr, <span class="hljs-number">255</span>, <span class="hljs-number">221</span>, <span class="hljs-number">0</span>);
+      cpart.cairo_rectangle (cr,x+<span class="hljs-number">0</span>, y+<span class="hljs-number">0</span>, <span class="hljs-number">4</span>, <span class="hljs-number">4</span>);
+      cpart.cairo_fill(cr);
+    }
+  }
+}
+</div></code></pre>
+<h2 id="%E6%B5%8B%E8%AF%95%E6%80%A7%E8%83%BD%E6%80%BB%E7%BB%93%E4%B8%8E%E5%88%86%E6%9E%90">测试性能总结与分析</h2>
+<h3 id="%E6%B5%8B%E8%AF%95%E6%95%B0%E6%8D%AE%E8%8E%B7%E5%8F%96">测试数据获取</h3>
+<p>将测试用例命名为*_demo_graal.js( *_demo.js放置使用原始node的测试代码)，再在该目录下使用如下的性能测试脚本：</p>
+<pre class="hljs"><code><div><span class="hljs-comment">#set -x</span>
+GRAAL_NODE=/home/majiang/opensrc/graalvm-ee-java11-21.1.0/bin/node
+
+<span class="hljs-keyword">function</span> <span class="hljs-function"><span class="hljs-title">getTiming</span></span>() {  
+    start=<span class="hljs-variable">$1</span>  
+    end=<span class="hljs-variable">$2</span>  
+
+    start_s=$(<span class="hljs-built_in">echo</span> <span class="hljs-variable">$start</span> | cut -d <span class="hljs-string">'.'</span> -f 1)  
+    start_ns=$(<span class="hljs-built_in">echo</span> <span class="hljs-variable">$start</span> | cut -d <span class="hljs-string">'.'</span> -f 2)  
+    end_s=$(<span class="hljs-built_in">echo</span> <span class="hljs-variable">$end</span> | cut -d <span class="hljs-string">'.'</span> -f 1)  
+    end_ns=$(<span class="hljs-built_in">echo</span> <span class="hljs-variable">$end</span> | cut -d <span class="hljs-string">'.'</span> -f 2)  
+    time=$(( ( 10<span class="hljs-comment">#$end_s - 10#$start_s ) * 1000 + ( 10#$end_ns / 1000000 - 10#$start_ns / 1000000 ) ))  </span>
+    <span class="hljs-built_in">echo</span> <span class="hljs-string">"<span class="hljs-variable">$time</span>"</span>  
+}  
+  
+
+<span class="hljs-keyword">function</span> <span class="hljs-function"><span class="hljs-title">run_till_steady</span></span>()
+{
+  <span class="hljs-built_in">local</span> rep=100
+  <span class="hljs-built_in">local</span> test_file=<span class="hljs-variable">$1</span>
+  <span class="hljs-built_in">local</span> prev_run_time=9999999
+  <span class="hljs-built_in">local</span> run_time=1
+  <span class="hljs-built_in">local</span> steady=`<span class="hljs-built_in">echo</span> \(<span class="hljs-variable">${run_time}</span> - <span class="hljs-variable">${prev_run_time}</span>\)\/<span class="hljs-variable">${prev_run_time}</span> \&gt; 0.9 | bc -l`
+  <span class="hljs-keyword">while</span> [[ <span class="hljs-variable">${steady}</span> == <span class="hljs-string">"0"</span> ]];
+  <span class="hljs-keyword">do</span>
+    start=$(date +%s.%N)
+    <span class="hljs-variable">${GRAAL_NODE}</span> --jvm   --polyglot <span class="hljs-variable">$test_file</span> <span class="hljs-variable">${rep}</span>
+    end=$(date +%s.%N)
+    run_time=`getTiming <span class="hljs-variable">$start</span> <span class="hljs-variable">$end</span>`
+    <span class="hljs-built_in">echo</span> <span class="hljs-string">"graalvm=<span class="hljs-variable">${run_time}</span>"</span>
+    
+	  demo_org=<span class="hljs-string">"<span class="hljs-variable">${test_file%_graal*}</span>.js"</span>
+    start=$(date +%s.%N)
+    node <span class="hljs-variable">${demo_org}</span> <span class="hljs-variable">${rep}</span>
+    end=$(date +%s.%N)
+    run_time_2=`getTiming <span class="hljs-variable">$start</span> <span class="hljs-variable">$end</span>`
+    <span class="hljs-built_in">echo</span> <span class="hljs-string">"node=<span class="hljs-variable">${run_time_2}</span>"</span>
+
+    steady=`<span class="hljs-built_in">echo</span> \(<span class="hljs-variable">${run_time}</span> - <span class="hljs-variable">${prev_run_time}</span>\)\/<span class="hljs-variable">${prev_run_time}</span> \&gt; 0.9 | bc -l`
+    prev_run_time=<span class="hljs-variable">${run_time}</span>
+    rep=$((rep + rep))
+  <span class="hljs-keyword">done</span>  
+}
+
+graal_demo_files=`ls *_demo_graal.js`
+
+<span class="hljs-keyword">for</span> demo <span class="hljs-keyword">in</span> <span class="hljs-variable">${graal_demo_files}</span>
+<span class="hljs-keyword">do</span>
+	<span class="hljs-built_in">echo</span> <span class="hljs-variable">${demo}</span>
+	run_till_steady <span class="hljs-variable">${demo}</span>
+<span class="hljs-keyword">done</span>
+</div></code></pre>
+<p>可获得如下的输出日志:</p>
+<pre class="hljs"><code><div>test_draw_simple_line_demo_graal.js
+100
+graalvm=5188
+100
+node=529
+200
+graalvm=5816
+200
+node=645
+400
+graalvm=7083
+400
+node=920
+800
+graalvm=8791
+800
+node=1411
+1600
+graalvm=10370
+1600
+node=2513
+3200
+graalvm=12590
+3200
+node=4720
+6400
+graalvm=15202
+6400
+node=8578
+12800
+graalvm=20491
+12800
+node=17170
+25600
+graalvm=31949
+25600
+node=34428
+51200
+graalvm=53423
+51200
+node=67018
+102400
+graalvm=99120
+102400
+node=132297
+204800
+graalvm=191348
+204800
+node=277250
+test_draw_simple_rect_demo_graal.js
+100
+graalvm=7270
+100
+node=1627
+200
+graalvm=8996
+200
+node=2854
+400
+graalvm=10264
+400
+node=5581
+800
+graalvm=12747
+800
+node=11245
+1600
+graalvm=17518
+1600
+node=21144
+3200
+graalvm=27435
+3200
+node=44316
+6400
+graalvm=46393
+6400
+node=83729
+12800
+graalvm=85113
+12800
+node=165386
+25600
+graalvm=162004
+25600
+node=354988
+test_draw_simple_rect_slow_large_demo_graal.js
+100
+graalvm=11506
+100
+node=7823
+200
+graalvm=14897
+200
+node=15420
+400
+graalvm=22402
+400
+node=30447
+800
+graalvm=36410
+800
+node=60484
+1600
+graalvm=65170
+1600
+node=121612
+3200
+graalvm=122723
+3200
+node=254210
+6400
+graalvm=233011
+6400
+node=488039
+12800
+graalvm=462382
+12800
+node=974807
+test_draw_simple_setstyle_demo_graal.js
+100
+graalvm=3339
+100
+node=464
+200
+graalvm=3552
+200
+node=512
+400
+graalvm=3647
+400
+node=756
+800
+graalvm=3592
+800
+node=1283
+1600
+graalvm=3668
+1600
+node=2311
+3200
+graalvm=3854
+3200
+node=4493
+6400
+graalvm=3963
+6400
+node=8491
+12800
+graalvm=4544
+12800
+node=16803
+25600
+graalvm=5458
+25600
+node=33471
+51200
+graalvm=7676
+51200
+node=66770
+102400
+graalvm=11424
+102400
+node=134863
+204800
+graalvm=18827
+204800
+node=262601
+409600
+graalvm=36072
+409600
+node=646306
+</div></code></pre>
+<h3 id="%E6%B5%8B%E8%AF%95%E6%95%B0%E6%8D%AE%E6%80%BB%E7%BB%93%E5%92%8C%E5%88%86%E6%9E%90">测试数据总结和分析</h3>
+<p>根据测试数据，结合代码分析，可获得如下的一些初步结论：
+1 graalvm确实提供了跨语言优化能力，这在语言频繁交互的场景下提供了巨大的性能优势。画线的测试提供了45%的性能提升，画矩形的测试提供了110%的性能提升。在设置属性的这个极端场景下，由于graalvm可以直接调用cairo_set_source_rgb，绕过了js的字符串封装层(ctx.fillStyle = 'rgb(255, 221, 0)'<img class="emoji" alt="wink" src="data:image/png;base64,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" />，graalvm提供了13倍的性能提升。
+2 graalvm的跨语言优化需要分析的内容太多，导致warmup过程被大幅度拉长。node的性能在数百到数千次重复后可达到峰值，而graalvm的性能要到数万甚至数十万次重复后才能达到峰值。从时间上看，node 10秒内就可到达峰值性能，graalvm需要数百秒。
+3 graalvm的跨语言优化机制还有很多待完善的空间(这也证实了前期的一个担忧，也即将编译动作从原生环境搬到graalvm上后，由于graalvm本身的优化可能不如原生环境，即使有跨语言的优化，最终的程序性能可能仍然慢于原实现)。在引入LLVM-IR时，由于LLVM端可能已经做了很多激进的优化，如自动向量化、layout布局优化等，graalvm将其重新解释时，需要有更加细粒度的协商过程(例如，LLVM已经O3优化的情况下，就不再走graalvm的中端优化pipeline，还可以节省一些编译时间)。当前观察到的sulong(基于truffle的LLVM字节码解释器)将LLVM-IR的向量操作还原成了标量操作，但是graal的优化pipeline并没有将这些变量操作还原为向量(graalvm的自动向量化似乎还比较初级？)。这导致绘图操作中出现操作大量数据点的情况(如填充一个较大的封闭图形，或画一条较长的线)时，graalvm的性能大幅度下降。</p>
+<h2 id="%E9%99%84%E4%BB%B6">附件</h2>
+<p><img src="file:///d:/opensource/blog_internal/source/_posts/test_pack.tar.xz" alt="附件包" title="测试附件包"></p>
+
+</body>
+</html>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://mjblog.github.io/2021/04/26/graalvm_nodejs_draw_tmp/" data-id="cknyjr7no0000jmfa27tt7tux" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+  
+    <a href="/2021/04/23/graalvm_nodejs_draw/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">graalvm-js 绘图场景性能分析</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">标签</h3>
+    <div class="widget">
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/AI/" rel="tag">AI</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ANDROID/" rel="tag">ANDROID</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Android/" rel="tag">Android</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/GRAALVM/" rel="tag">GRAALVM</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/IDE/" rel="tag">IDE</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/LLVM-STUDY/" rel="tag">LLVM_STUDY</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/env/" rel="tag">env</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">标签云</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/AI/" style="font-size: 20px;">AI</a> <a href="/tags/ANDROID/" style="font-size: 13.33px;">ANDROID</a> <a href="/tags/Android/" style="font-size: 10px;">Android</a> <a href="/tags/GRAALVM/" style="font-size: 16.67px;">GRAALVM</a> <a href="/tags/IDE/" style="font-size: 10px;">IDE</a> <a href="/tags/LLVM-STUDY/" style="font-size: 20px;">LLVM_STUDY</a> <a href="/tags/env/" style="font-size: 10px;">env</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">归档</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/04/">四月 2021</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/03/">三月 2021</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/02/">二月 2021</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/01/">一月 2021</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/12/">十二月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/09/">九月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/07/">七月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/06/">六月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/05/">五月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/04/">四月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/03/">三月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/02/">二月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/01/">一月 2020</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">最新文章</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2021/04/26/graalvm_nodejs_draw_tmp/">graalvm_nodejs_draw_tmp</a>
+          </li>
+        
+          <li>
+            <a href="/2021/04/23/graalvm_nodejs_draw/">graalvm-js 绘图场景性能分析</a>
+          </li>
+        
+          <li>
+            <a href="/2021/03/26/graalvm_observing_compilations/">graalvm 编译过程分析工具</a>
+          </li>
+        
+          <li>
+            <a href="/2021/03/10/android_startup_trace/">app_process 初始化阶段trace</a>
+          </li>
+        
+          <li>
+            <a href="/2021/02/26/android_core_limit/">android app cpu核心限制尝试</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2021 Ma Jiang<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+
+  
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+
+
+<script src="/js/script.js"></script>
+
+
+  </div>
+</body>
+</html>
