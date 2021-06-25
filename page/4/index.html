@@ -64,6 +64,55 @@
       <div class="outer">
         <section id="main">
   
+    <article id="post-llvm_tr3_codegen" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2020/02/12/llvm_tr3_codegen/" class="article-date">
+  <time datetime="2020-02-12T03:18:13.000Z" itemprop="datePublished">2020-02-12</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2020/02/12/llvm_tr3_codegen/">Kaleidoscope LLVM-IR codegen</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="学习内容"><a href="#学习内容" class="headerlink" title="学习内容"></a>学习内容</h2><p>完成对 <a href="https://llvm.org/docs/tutorial/MyFirstLanguageFrontend/LangImpl03.html" target="_blank" rel="noopener">https://llvm.org/docs/tutorial/MyFirstLanguageFrontend/LangImpl03.html</a> 的学习。</p>
+<h2 id="练习"><a href="#练习" class="headerlink" title="练习"></a>练习</h2><p>看懂原网页后，实现同样的功能，补充测试。<br>实现时需要做如下改进：<br>将codegen过程从AST结构中剥离。编写一个codegenerator类，llvm-ir codegen作为该类的子类实现原示例的功能。为后续提供codegen到其他IR的扩展留下空间。</p>
+<h2 id="扩展"><a href="#扩展" class="headerlink" title="扩展"></a>扩展</h2><p>1 clang 是如何实现AST到LLVM-IR的codegen<br>2 玩具实现和clang的实现之间有没有实质性的区别<br>3 是否能以较低的代价实现向方舟编译器的Maple-IR输出</p>
+<h2 id="进展"><a href="#进展" class="headerlink" title="进展"></a>进展</h2><p>实现了原示例的全部功能。<br>考虑到单元测试效率较低，暂时尚未实现。后续可以考虑接入LLVM的测试框架。</p>
+<h3 id="实现"><a href="#实现" class="headerlink" title="实现"></a>实现</h3><p>使用了code_generator这个模板虚基类来表达了处理Kaleidoscope玩具语言AST所需的功能接口。全局的入口只有function和prototype，理论上其实提供两个对应的gen函数就可以了。但是从完整性上考虑，其余的AST类型处理也最好做出约束，所以也一并写到了父类中。如下所示:</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">template</span> &lt;<span class="keyword">typename</span> VAL_PTR&gt;</span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">code_generator</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">	<span class="keyword">virtual</span> ~code_generator()&#123;&#125;;</span><br><span class="line">	<span class="function"><span class="keyword">virtual</span> <span class="keyword">bool</span> <span class="title">gen_function</span><span class="params">(<span class="keyword">const</span> function_ast* func)</span> </span>= <span class="number">0</span>;</span><br><span class="line">	<span class="function"><span class="keyword">virtual</span> <span class="keyword">bool</span> <span class="title">gen_prototype</span><span class="params">(<span class="keyword">const</span> prototype_ast* proto)</span> </span>= <span class="number">0</span>;</span><br><span class="line">	<span class="function"><span class="keyword">virtual</span> VAL_PTR <span class="title">build_expr</span><span class="params">(<span class="keyword">const</span> expr_ast* expr)</span> </span>= <span class="number">0</span>;</span><br><span class="line">	<span class="function"><span class="keyword">virtual</span> VAL_PTR <span class="title">build_call</span><span class="params">(<span class="keyword">const</span> call_ast* callee)</span> </span>= <span class="number">0</span>;</span><br><span class="line">	<span class="function"><span class="keyword">virtual</span> VAL_PTR <span class="title">build_number</span><span class="params">(<span class="keyword">const</span> number_ast* num)</span> </span>= <span class="number">0</span>;</span><br><span class="line">	<span class="function"><span class="keyword">virtual</span> VAL_PTR <span class="title">build_variable</span><span class="params">(<span class="keyword">const</span> variable_ast* var)</span> </span>= <span class="number">0</span>;</span><br><span class="line">	<span class="function"><span class="keyword">virtual</span> VAL_PTR <span class="title">build_binary_op</span><span class="params">(<span class="keyword">const</span> binary_operator_ast* var)</span> </span>= <span class="number">0</span>;</span><br><span class="line">	<span class="function"><span class="keyword">virtual</span> <span class="keyword">bool</span> <span class="title">codegen</span><span class="params">(<span class="keyword">const</span> <span class="keyword">ast_vector_t</span>&amp; global_vec)</span> </span>;  <span class="comment">//唯一的数据输入，使用AST的vector</span></span><br><span class="line">	<span class="function"><span class="keyword">virtual</span> <span class="keyword">void</span> <span class="title">print_IR</span><span class="params">()</span> </span>= <span class="number">0</span>;    <span class="comment">//唯一的数据输出，直接把生成的IR打印到stdin</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>针对LLVM-IR，参考原示例实现了基本相同的IR生成步骤。<br>主要的差异点包括：<br>1 去掉了JIT特性所需的全局expr处理；考虑学习方向是传统编译器架构，这个JIT特性会干扰到后续支持全局变量等特性，所以去掉。<br>2 将原实现基于AST的codegen转换为了独立的codegen框架，后续实现新的codegen会更容易(但是考虑到工作量和复杂度，没有实现vistor模式，两种codegen中一定会出现重复的AST访问模式。这样的模式确实是由AST来固化更好，参考clang对比中的相关内容)。</p>
+<h3 id="clang对比"><a href="#clang对比" class="headerlink" title="clang对比"></a>clang对比</h3><p>1 clang 是如何实现AST到LLVM-IR的codegen<br>clang在lib/CodeGen实现了相关的功能。<br>在实现codegen功能上，代码流程和玩具实现没有本质区别。<br>都是遍历自己的AST，在这个过程中调用LLVM提供的核心类Module、Function、Builder来生成LLVM的IR。</p>
+<p>2 玩具实现和clang的实现之间有没有实质性的区别<br>从调用LLVM的接口这个角度看没有实质性区别。<br>但是clang大量实现了Vistor模式，如AST/StmtVisitor.h、AST/RecursiveASTVisitor.h等。这些Visitor很好地将AST的固有访问模式固化下来，这样不同的任务（如print、codegen和evaluate等）就可以只提供针对具体AST结构的回调实现，而复用访问AST的骨架代码。<br>例如当前这个codegen的任务，它对AST的访问模式就是针对每一个函数递归的访问了所有AST节点。只要对每一种AST提供对应的visit代码就可以了。<br>例如function的visit就可以写成（如下模板），LLVM-IR生成器(作为下面的subclass)和MAPLE-IR生成器各自提供visit_prototype等visit接口就可以了。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">check_muldef();</span><br><span class="line">subclass::visit_prototype(func-&gt;getproto());</span><br><span class="line">prepare_arg_map();</span><br><span class="line">subclass::visit_func_body(func-&gt;get_body());</span><br></pre></td></tr></table></figure>
+<h3 id="方舟IR输出"><a href="#方舟IR输出" class="headerlink" title="方舟IR输出"></a>方舟IR输出</h3><p>方舟的实现也提供了类似的build函数，可参考mir_builder.h。<br>应该能以相似的方式（以及成本）从AST直接build出MAPLE-IR。<br>具体还待确认和核实。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://mjblog.github.io/2020/02/12/llvm_tr3_codegen/" data-id="cknykihl9000sotfa2nh61y5z" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/LLVM-STUDY/" rel="tag">LLVM_STUDY</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-llvm_tr2_ast" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2020/01/24/llvm_tr2_ast/" class="article-date">
@@ -236,7 +285,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">标签云</h3>
     <div class="widget tagcloud">
-      <a href="/tags/AI/" style="font-size: 20px;">AI</a> <a href="/tags/ANDROID/" style="font-size: 13.33px;">ANDROID</a> <a href="/tags/Android/" style="font-size: 13.33px;">Android</a> <a href="/tags/GRAALVM/" style="font-size: 16.67px;">GRAALVM</a> <a href="/tags/IDE/" style="font-size: 10px;">IDE</a> <a href="/tags/LLVM-STUDY/" style="font-size: 20px;">LLVM_STUDY</a> <a href="/tags/env/" style="font-size: 10px;">env</a>
+      <a href="/tags/AI/" style="font-size: 20px;">AI</a> <a href="/tags/ANDROID/" style="font-size: 16.67px;">ANDROID</a> <a href="/tags/Android/" style="font-size: 13.33px;">Android</a> <a href="/tags/GRAALVM/" style="font-size: 16.67px;">GRAALVM</a> <a href="/tags/IDE/" style="font-size: 10px;">IDE</a> <a href="/tags/LLVM-STUDY/" style="font-size: 20px;">LLVM_STUDY</a> <a href="/tags/env/" style="font-size: 10px;">env</a>
     </div>
   </div>
 
@@ -245,7 +294,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">归档</h3>
     <div class="widget">
-      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/05/">五月 2021</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/04/">四月 2021</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/03/">三月 2021</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/02/">二月 2021</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/01/">一月 2021</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/12/">十二月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/09/">九月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/07/">七月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/06/">六月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/05/">五月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/04/">四月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/03/">三月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/02/">二月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/01/">一月 2020</a></li></ul>
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/06/">六月 2021</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/05/">五月 2021</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/04/">四月 2021</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/03/">三月 2021</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/02/">二月 2021</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/01/">一月 2021</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/12/">十二月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/09/">九月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/07/">七月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/06/">六月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/05/">五月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/04/">四月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/03/">三月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/02/">二月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/01/">一月 2020</a></li></ul>
     </div>
   </div>
 
@@ -256,6 +305,10 @@
     <h3 class="widget-title">最新文章</h3>
     <div class="widget">
       <ul>
+        
+          <li>
+            <a href="/2021/06/17/react_native_profile/">react native 手势动画性能分析</a>
+          </li>
         
           <li>
             <a href="/2021/05/28/android_rust_dev/">Android Rust 接入</a>
@@ -271,10 +324,6 @@
         
           <li>
             <a href="/2021/03/10/android_startup_trace/">app_process 初始化阶段trace</a>
-          </li>
-        
-          <li>
-            <a href="/2021/02/26/android_core_limit/">android app cpu核心限制尝试</a>
           </li>
         
       </ul>
